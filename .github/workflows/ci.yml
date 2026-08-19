@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    runs-on: macos-26
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Show toolchain
+        run: swift --version
+
+      - name: Check formatting
+        run: xcrun swift-format lint --recursive Sources Tests Package.swift
+
+      - name: Build
+        run: swift build
+
+      - name: Run unit tests
+        run: swift test
+
+      - name: Run portable integration self-test
+        run: swift run sensorlab-selftest --portable
+
+      - name: Assemble and verify local app bundle
+        run: ./scripts/build-app.sh
