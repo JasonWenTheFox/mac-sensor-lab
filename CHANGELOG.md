@@ -11,6 +11,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - Separate `raw_value` and `formatted_value` CSV columns.
 - Ambient-light rolling raw statistics and optional single-point, user-referenced estimated lux.
 - Exportable `ambient_estimated_lux` channel clearly marked as `Estimated`.
+- User-initiated import/export of portable, identity-free single-point light calibration JSON with strict validation.
 - Lid-angle reference capture and signed relative change.
 - Aggregate CPU utilization, load averages, raw Mach memory categories, and swap telemetry without collecting a process list.
 - Aggregate receive/send throughput, packet rates, and byte counters without exporting interface or network identifiers.

@@ -221,6 +221,54 @@ final class SensorDashboardModel: ObservableObject {
     lastActionMessage = "Cleared ambient-light calibration"
   }
 
+  func exportAmbientLuxCalibration() {
+    guard let ambientLuxCalibration else {
+      lastActionMessage = "Create an ambient-light calibration before exporting it"
+      return
+    }
+    let panel = NSSavePanel()
+    panel.title = "Export Ambient-Light Calibration"
+    panel.nameFieldStringValue = "mac-sensor-lab-light-calibration.json"
+    panel.allowedContentTypes = [.json]
+    guard panel.runModal() == .OK, let url = panel.url else { return }
+
+    do {
+      let encoder = JSONEncoder()
+      encoder.dateEncodingStrategy = .iso8601
+      encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+      try encoder.encode(ambientLuxCalibration).write(to: url, options: .atomic)
+      lastActionMessage = "Exported light calibration \(url.lastPathComponent)"
+    } catch {
+      lastActionMessage = "Calibration export failed: \(error.localizedDescription)"
+    }
+  }
+
+  func importAmbientLuxCalibration() {
+    let panel = NSOpenPanel()
+    panel.title = "Import Ambient-Light Calibration"
+    panel.allowedContentTypes = [.json]
+    panel.allowsMultipleSelection = false
+    panel.canChooseDirectories = false
+    guard panel.runModal() == .OK, let url = panel.url else { return }
+
+    do {
+      let decoder = JSONDecoder()
+      decoder.dateDecodingStrategy = .iso8601
+      let calibration = try decoder.decode(
+        AmbientLuxCalibration.self,
+        from: Data(contentsOf: url)
+      )
+      ambientLuxCalibration = calibration
+      if let data = try? JSONEncoder().encode(calibration) {
+        UserDefaults.standard.set(data, forKey: Self.ambientCalibrationDefaultsKey)
+      }
+      reapplyAmbientCalibration()
+      lastActionMessage = "Imported light calibration \(url.lastPathComponent)"
+    } catch {
+      lastActionMessage = "Calibration import failed: \(error.localizedDescription)"
+    }
+  }
+
   func stopRecording() async {
     guard let activeRecorder = recorder else { return }
     recorder = nil

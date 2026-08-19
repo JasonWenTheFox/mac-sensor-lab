@@ -145,6 +145,9 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertNil(calibration.estimatedLux(for: .nan))
     let encoded = try JSONEncoder().encode(calibration)
     XCTAssertEqual(try JSONDecoder().decode(AmbientLuxCalibration.self, from: encoded), calibration)
+    let invalid = Data(
+      "{\"rawReference\":0,\"luxReference\":100,\"capturedAt\":0}".utf8)
+    XCTAssertThrowsError(try JSONDecoder().decode(AmbientLuxCalibration.self, from: invalid))
     XCTAssertNil(AmbientLuxCalibration(rawReference: 0, luxReference: 100))
     XCTAssertNil(AmbientLuxCalibration(rawReference: 25, luxReference: -1))
   }

@@ -51,6 +51,40 @@ public struct AmbientLuxCalibration: Codable, Equatable, Sendable {
     self.capturedAt = capturedAt
   }
 
+  private enum CodingKeys: String, CodingKey {
+    case rawReference
+    case luxReference
+    case capturedAt
+  }
+
+  public init(from decoder: any Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    let rawReference = try container.decode(Double.self, forKey: .rawReference)
+    let luxReference = try container.decode(Double.self, forKey: .luxReference)
+    let capturedAt = try container.decode(Date.self, forKey: .capturedAt)
+    guard
+      let calibration = AmbientLuxCalibration(
+        rawReference: rawReference,
+        luxReference: luxReference,
+        capturedAt: capturedAt
+      )
+    else {
+      throw DecodingError.dataCorruptedError(
+        forKey: .rawReference,
+        in: container,
+        debugDescription: "Ambient-light calibration values must be finite and positive."
+      )
+    }
+    self = calibration
+  }
+
+  public func encode(to encoder: any Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(rawReference, forKey: .rawReference)
+    try container.encode(luxReference, forKey: .luxReference)
+    try container.encode(capturedAt, forKey: .capturedAt)
+  }
+
   public func estimatedLux(for rawValue: Double) -> Double? {
     guard rawValue.isFinite, rawValue >= 0 else { return nil }
     let estimate = rawValue * scale

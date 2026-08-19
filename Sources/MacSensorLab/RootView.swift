@@ -26,7 +26,9 @@ struct RootView: View {
             history: model.history,
             ambientLuxCalibration: model.ambientLuxCalibration,
             onSetAmbientCalibration: model.setAmbientLuxCalibration,
-            onClearAmbientCalibration: model.clearAmbientLuxCalibration
+            onClearAmbientCalibration: model.clearAmbientLuxCalibration,
+            onExportAmbientCalibration: model.exportAmbientLuxCalibration,
+            onImportAmbientCalibration: model.importAmbientLuxCalibration
           )
         case .diagnostics:
           DiagnosticsView(
@@ -328,6 +330,8 @@ private struct ExperimentsView: View {
   let ambientLuxCalibration: AmbientLuxCalibration?
   let onSetAmbientCalibration: (Double, Double) -> Void
   let onClearAmbientCalibration: () -> Void
+  let onExportAmbientCalibration: () -> Void
+  let onImportAmbientCalibration: () -> Void
 
   private struct Experiment {
     let name: String
@@ -462,7 +466,9 @@ private struct ExperimentsView: View {
             historyValues: points.map(\.value),
             calibration: ambientLuxCalibration,
             onSetCalibration: onSetAmbientCalibration,
-            onClearCalibration: onClearAmbientCalibration
+            onClearCalibration: onClearAmbientCalibration,
+            onExportCalibration: onExportAmbientCalibration,
+            onImportCalibration: onImportAmbientCalibration
           )
         }
       }
@@ -511,6 +517,8 @@ private struct AmbientLightInterpretationPanel: View {
   let calibration: AmbientLuxCalibration?
   let onSetCalibration: (Double, Double) -> Void
   let onClearCalibration: () -> Void
+  let onExportCalibration: () -> Void
+  let onImportCalibration: () -> Void
 
   @State private var referenceLuxText = ""
 
@@ -574,6 +582,12 @@ private struct AmbientLightInterpretationPanel: View {
           .disabled(enteredLux == nil || rawValue <= 0 || !rawValue.isFinite)
         if calibration != nil {
           Button("Clear") { clearCalibration() }
+        }
+      }
+      HStack {
+        Button("Import Calibration…") { onImportCalibration() }
+        if calibration != nil {
+          Button("Export Calibration…") { onExportCalibration() }
         }
       }
       Text(
