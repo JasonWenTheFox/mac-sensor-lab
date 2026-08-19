@@ -19,6 +19,9 @@ jobs:
       - name: Show toolchain
         run: swift --version
 
+      - name: Audit release boundaries
+        run: ./scripts/release-audit.sh
+
       - name: Check formatting
         run: xcrun swift-format lint --recursive Sources Tests Package.swift
 

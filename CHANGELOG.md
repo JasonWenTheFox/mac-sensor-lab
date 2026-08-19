@@ -21,6 +21,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - Allowlisted battery design/full-charge capacity, derived capacity ratio, and valid controller time estimates.
 - Allowlisted AGX GPU, renderer, and tiler utilization plus GPU memory counters without registry identity fields.
 - User-initiated privacy-safe diagnostics JSON containing provider status and stable channel metadata but no sensor readings or free-text fields.
+- A CI release audit for tracked build output, absolute user paths, secret signatures, undeclared permission expansion, forbidden mutation APIs, licenses, and privacy-manifest consistency.
 
 ### Changed
 

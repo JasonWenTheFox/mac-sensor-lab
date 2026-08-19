@@ -69,6 +69,7 @@ DEVELOPER_DIR=/Library/Developer/CommandLineTools swift run sensorlab-selftest -
 DEVELOPER_DIR=/Library/Developer/CommandLineTools swift run sensorlab-selftest --portable
 DEVELOPER_DIR=/Library/Developer/CommandLineTools swift run sensorlab-probe
 ./scripts/build-app.sh
+./scripts/release-audit.sh
 open "outputs/Mac Sensor Lab.app"
 ```
 
@@ -82,6 +83,8 @@ swift test
 ```
 
 `scripts/build-app.sh` 会在 Xcode 尚不可用时自动回退到 Command Line Tools，生成并临时签名本地 `.app`，不会修改全局开发者目录。
+
+`scripts/release-audit.sh` 只检查本仓库的已跟踪文件和发布资源：阻止构建产物、绝对用户路径、密钥特征、未实现的受保护权限、危险写入 API 或与当前离线行为不一致的 Privacy Manifest 进入发布分支。
 
 ## 采样与记录
 
@@ -141,6 +144,7 @@ swift test
 - [x] 扩展电池固定白名单，加入设计容量、报告容量、派生容量比例和有效时间估算。
 - [x] 加入只读取 AGX 固定统计键的 GPU/Renderer/Tiler 利用率和 GPU 内存 Provider。
 - [x] 加入不含传感器读数和自由文本的隐私安全诊断 JSON 导出。
+- [x] 在 CI 中加入项目范围的发布边界与隐私清单审计。
 - [ ] 用户确认正式名称后公开 GitHub 仓库。
 
 ## 重要边界
