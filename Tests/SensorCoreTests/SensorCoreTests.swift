@@ -215,6 +215,35 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertNil(DiskIORateCalculator.rates(previous: current, current: previous))
   }
 
+  func testSnapshotSearchMatchesProvidersAndNarrowsChannels() throws {
+    let snapshot = SensorSnapshot(
+      id: "storage.disk_io",
+      name: "Disk Activity",
+      category: .storage,
+      summary: "Read 1 MB/s",
+      status: .available,
+      source: "IOKit statistics",
+      capability: .publicAPI,
+      channels: [
+        SensorChannel(
+          id: "disk_read_rate", label: "Read rate", value: 1,
+          formattedValue: "1 MB/s", unit: "bytes/s", kind: .derived),
+        SensorChannel(
+          id: "disk_write_rate", label: "Write rate", value: 2,
+          formattedValue: "2 MB/s", unit: "bytes/s", kind: .derived),
+      ]
+    )
+
+    let providerMatch = try XCTUnwrap(
+      SensorSnapshotSearch.filter([snapshot], query: "disk activity").first)
+    XCTAssertEqual(providerMatch.channels.count, 2)
+    let channelMatch = try XCTUnwrap(
+      SensorSnapshotSearch.filter([snapshot], query: "write_rate").first)
+    XCTAssertEqual(channelMatch.channels.map(\.id), ["disk_write_rate"])
+    XCTAssertTrue(SensorSnapshotSearch.filter([snapshot], query: "microphone").isEmpty)
+    XCTAssertEqual(SensorSnapshotSearch.filter([snapshot], query: "   "), [snapshot])
+  }
+
   func testRegistryHasStableUniqueProviderIDs() {
     let ids = SensorProviderRegistry.providers().map(\.metadata.id)
     XCTAssertEqual(Set(ids).count, ids.count)

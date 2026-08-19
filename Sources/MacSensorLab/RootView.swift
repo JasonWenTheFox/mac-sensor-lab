@@ -254,10 +254,22 @@ private struct StatusPill: View {
 
 private struct RawSensorsView: View {
   let snapshots: [SensorSnapshot]
+  @State private var query = ""
+
+  private var filteredSnapshots: [SensorSnapshot] {
+    SensorSnapshotSearch.filter(snapshots, query: query)
+  }
 
   var body: some View {
     List {
-      ForEach(snapshots) { snapshot in
+      if filteredSnapshots.isEmpty {
+        ContentUnavailableView(
+          "No Sensors Found",
+          systemImage: "magnifyingglass",
+          description: Text("Try a provider, channel, source, status, or stable ID.")
+        )
+      }
+      ForEach(filteredSnapshots) { snapshot in
         Section {
           ForEach(snapshot.channels) { channel in
             VStack(alignment: .leading, spacing: 5) {
@@ -299,6 +311,7 @@ private struct RawSensorsView: View {
       }
     }
     .navigationTitle("Raw Sensors")
+    .searchable(text: $query, prompt: "Provider, channel, source, status, or ID")
   }
 }
 

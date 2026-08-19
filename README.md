@@ -93,6 +93,7 @@ swift test
 - Lid Protractor 可以把当前开合角设为参考，并显示带方向的相对角度变化；不会改变或重新配置传感器。
 - App 不会自动开始记录，不会上传数据，也不会把用户选择的记录文件加入仓库。
 - Dashboard 使用单一原生窗口，避免多个窗口为同一硬件启动互相争用的采样循环；关闭窗口时会安全结束仍在进行的连续记录。
+- Raw Sensors 支持按 Provider、通道、来源、状态或稳定 ID 做本地即时搜索；通道命中时只收窄显示，不改变底层采样或导出内容。
 
 ## 当前可读能力
 
@@ -123,13 +124,14 @@ swift test
 - [x] 添加 macOS 26 / Xcode 26 CI 和 Pull Request 安全检查模板。
 - [x] 建立私有 GitHub 仓库并通过首轮 CI。
 - [x] 用户接受 Xcode 许可。
-- [x] 完成 Xcode 首次组件初始化并在本机通过 18 项 XCTest。
+- [x] 完成 Xcode 首次组件初始化并在本机通过 19 项 XCTest。
 - [x] 加入可调采样、暂停/恢复、历史清空和 50 MB 上限的连续 CSV 记录。
 - [x] 加入环境光滚动统计、可选 Estimated lux 和上盖相对角度实验。
 - [x] 加入汇总 CPU 利用率、1/5/15 分钟负载、Mach 内存分类和 swap Provider。
 - [x] 加入不导出网络标识的聚合上下行吞吐量、包速率和累计字节 Provider。
 - [x] 加入不读取磁盘身份信息的聚合读写吞吐量、操作速率和驱动错误计数 Provider。
 - [x] 随 App Bundle 打包并校验 Privacy Manifest，明确声明不跟踪、不联网收集数据。
+- [x] 为 Raw Sensors 加入不影响原始数据的 Provider/通道/来源/ID 搜索。
 - [ ] 用户确认正式名称后公开 GitHub 仓库。
 
 ## 重要边界
