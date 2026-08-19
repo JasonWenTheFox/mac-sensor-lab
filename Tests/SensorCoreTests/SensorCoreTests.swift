@@ -257,10 +257,17 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertNil(BatteryMeasurements.validMinutes(-1))
   }
 
+  func testGPUPerformanceValueRejectsInvalidPercentages() {
+    XCTAssertEqual(GPUPerformanceValue.percentage(64), 64)
+    XCTAssertNil(GPUPerformanceValue.percentage(-1))
+    XCTAssertNil(GPUPerformanceValue.percentage(101))
+    XCTAssertNil(GPUPerformanceValue.percentage(.nan))
+  }
+
   func testRegistryHasStableUniqueProviderIDs() {
     let ids = SensorProviderRegistry.providers().map(\.metadata.id)
     XCTAssertEqual(Set(ids).count, ids.count)
-    XCTAssertGreaterThanOrEqual(ids.count, 13)
+    XCTAssertGreaterThanOrEqual(ids.count, 14)
   }
 
   func testSPUVectorReportDecoding() {

@@ -18,6 +18,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - A bundled privacy manifest declaring no tracking, tracking domains, off-device collection, or required-reason API use for this macOS-only build.
 - Native Raw Sensors search across providers, channels, sources, statuses, and stable IDs.
 - Allowlisted battery design/full-charge capacity, derived capacity ratio, and valid controller time estimates.
+- Allowlisted AGX GPU, renderer, and tiler utilization plus GPU memory counters without registry identity fields.
 
 ### Changed
 

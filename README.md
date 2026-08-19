@@ -27,7 +27,7 @@ Mac Sensor Lab 希望填补 macOS 上“原始传感器浏览器 + 面向用户�
 
 1. 原生 SwiftUI 总览和分组详情；
 2. 统一的 Sensor Provider、状态、通道和历史样本模型；
-3. 无需提权即可读取的系统、CPU 利用率、负载、内存页分类、交换空间、聚合网络吞吐量、磁盘 I/O、热状态、电池、电源、存储、显示和硬件存在性信息；
+3. 无需提权即可读取的系统、CPU/GPU 利用率、负载、内存/GPU 内存、交换空间、聚合网络吞吐量、磁盘 I/O、热状态、电池、电源、存储、显示和硬件存在性信息；
 4. Apple SPU、AppleSMC、Force Touch 等实验性硬件的普通权限探测；
 5. 无驱动写入的 SPU 实时报告尝试、环境光原始强度与四个光谱通道；
 6. AppleSMC 的固定白名单温度、风扇转速与功耗只读通道；
@@ -102,6 +102,7 @@ swift test
 | 数据源 | 当前状态 | 安全边界 |
 |---|---|---|
 | 系统性能 | 可用 | Mach 汇总 CPU tick、内存页分类、负载和 swap；不读取进程列表或机器唯一标识 |
+| GPU 性能 | Apple Silicon 条件可用 | AGX 固定统计键白名单；利用率与 GPU 内存，不读取 registry 名称、ID 或设备身份字段 |
 | 网络吞吐量 | 可用 | BSD 聚合计数器；只汇总启用的非回环接口，不导出接口名、地址、SSID、BSSID 或 MAC 地址 |
 | 磁盘活动 | 可用 | IOKit 固定统计字段；聚合读写字节、操作数和错误数，不读取设备名、序列号、卷名或文件路径 |
 | 系统、显示、存储、热压力 | 可用 | 公开 API；不导出机器唯一标识 |
@@ -126,7 +127,7 @@ swift test
 - [x] 添加 macOS 26 / Xcode 26 CI 和 Pull Request 安全检查模板。
 - [x] 建立私有 GitHub 仓库并通过首轮 CI。
 - [x] 用户接受 Xcode 许可。
-- [x] 完成 Xcode 首次组件初始化并在本机通过 20 项 XCTest。
+- [x] 完成 Xcode 首次组件初始化并在本机通过 21 项 XCTest。
 - [x] 加入可调采样、暂停/恢复、历史清空和 50 MB 上限的连续 CSV 记录。
 - [x] 加入环境光滚动统计、可选 Estimated lux 和上盖相对角度实验。
 - [x] 加入汇总 CPU 利用率、1/5/15 分钟负载、Mach 内存分类和 swap Provider。
@@ -135,6 +136,7 @@ swift test
 - [x] 随 App Bundle 打包并校验 Privacy Manifest，明确声明不跟踪、不联网收集数据。
 - [x] 为 Raw Sensors 加入不影响原始数据的 Provider/通道/来源/ID 搜索。
 - [x] 扩展电池固定白名单，加入设计容量、报告容量、派生容量比例和有效时间估算。
+- [x] 加入只读取 AGX 固定统计键的 GPU/Renderer/Tiler 利用率和 GPU 内存 Provider。
 - [ ] 用户确认正式名称后公开 GitHub 仓库。
 
 ## 重要边界

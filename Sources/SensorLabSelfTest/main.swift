@@ -14,8 +14,8 @@ struct SensorLabSelfTest {
     if Set(providerIDs).count != providerIDs.count {
       failures.append("provider IDs are not unique")
     }
-    if providers.count < 13 {
-      failures.append("expected at least 13 providers, found \(providers.count)")
+    if providers.count < 14 {
+      failures.append("expected at least 14 providers, found \(providers.count)")
     }
 
     let snapshots = await SensorProviderRegistry.readAll()
@@ -67,6 +67,11 @@ struct SensorLabSelfTest {
       }
       if channel.id == "cpu_utilization", let value = channel.value, !(0...100).contains(value) {
         failures.append("CPU utilization is out of range: \(value)")
+      }
+      if channel.id.hasPrefix("gpu_") && channel.id.hasSuffix("_utilization"),
+        let value = channel.value, !(0...100).contains(value)
+      {
+        failures.append("GPU utilization is out of range: \(channel.id)=\(value)")
       }
     }
 
