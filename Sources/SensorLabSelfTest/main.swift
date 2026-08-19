@@ -104,6 +104,19 @@ struct SensorLabSelfTest {
     do {
       let json = try SensorExportService.jsonData(snapshots)
       _ = try JSONSerialization.jsonObject(with: json)
+      let diagnostics = try SensorDiagnosticsExportService.jsonData(
+        snapshots,
+        applicationVersion: "self-test"
+      )
+      _ = try JSONSerialization.jsonObject(with: diagnostics)
+      let diagnosticText = String(decoding: diagnostics, as: UTF8.self)
+      let forbiddenDiagnosticKeys = [
+        "value", "formattedValue", "summary", "notes", "source", "timestamp", "name",
+        "label",
+      ]
+      for key in forbiddenDiagnosticKeys where diagnosticText.contains("\"\(key)\"") {
+        failures.append("diagnostics report contains forbidden key: \(key)")
+      }
     } catch {
       failures.append("JSON export is invalid: \(error.localizedDescription)")
     }

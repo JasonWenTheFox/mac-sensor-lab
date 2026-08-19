@@ -97,6 +97,7 @@ swift test
 - Dashboard 使用单一原生窗口，避免多个窗口为同一硬件启动互相争用的采样循环；关闭窗口时会安全结束仍在进行的连续记录。
 - Raw Sensors 支持按 Provider、通道、来源、状态或稳定 ID 做本地即时搜索；通道命中时只收窄显示，不改变底层采样或导出内容。
 - Raw Sensors 的每个 Provider 页脚显示该 Snapshot 的实际时间戳；最近样本降级不会伪装成新的更新时间。
+- Diagnostics 可由用户主动导出隐私安全的支持报告；它只含 Provider 状态和稳定通道元数据，不含传感器读数、自由文本、机器标识或文件路径。
 
 ## 当前可读能力
 
@@ -128,7 +129,7 @@ swift test
 - [x] 添加 macOS 26 / Xcode 26 CI 和 Pull Request 安全检查模板。
 - [x] 建立私有 GitHub 仓库并通过首轮 CI。
 - [x] 用户接受 Xcode 许可。
-- [x] 完成 Xcode 首次组件初始化并在本机通过 21 项 XCTest。
+- [x] 完成 Xcode 首次组件初始化并在本机通过 22 项 XCTest。
 - [x] 加入可调采样、暂停/恢复、历史清空和 50 MB 上限的连续 CSV 记录。
 - [x] 加入环境光滚动统计、可选 Estimated lux 和上盖相对角度实验。
 - [x] 加入严格校验且不含设备标识的单点光照校准 JSON 导入/导出。
@@ -139,6 +140,7 @@ swift test
 - [x] 为 Raw Sensors 加入不影响原始数据的 Provider/通道/来源/ID 搜索。
 - [x] 扩展电池固定白名单，加入设计容量、报告容量、派生容量比例和有效时间估算。
 - [x] 加入只读取 AGX 固定统计键的 GPU/Renderer/Tiler 利用率和 GPU 内存 Provider。
+- [x] 加入不含传感器读数和自由文本的隐私安全诊断 JSON 导出。
 - [ ] 用户确认正式名称后公开 GitHub 仓库。
 
 ## 重要边界

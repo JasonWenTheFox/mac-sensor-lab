@@ -36,6 +36,45 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertFalse(text.localizedCaseInsensitiveContains("provisioning udid"))
   }
 
+  func testDiagnosticsExportContainsMetadataButNeverReadingsOrFreeText() throws {
+    let snapshot = SensorSnapshot(
+      id: "test.provider",
+      name: "SENSITIVE_NAME",
+      category: .environment,
+      summary: "SENSITIVE_SUMMARY",
+      status: .degraded,
+      source: "SENSITIVE_SOURCE",
+      capability: .undocumented,
+      channels: [
+        SensorChannel(
+          id: "ambient_intensity",
+          label: "SENSITIVE_LABEL",
+          value: 123_456.789,
+          formattedValue: "SENSITIVE_FORMATTED",
+          unit: "raw",
+          kind: .raw,
+          note: "SENSITIVE_NOTE"
+        )
+      ],
+      notes: ["SENSITIVE_SNAPSHOT_NOTE"],
+      timestamp: Date(timeIntervalSince1970: 1_000)
+    )
+
+    let data = try SensorDiagnosticsExportService.jsonData(
+      [snapshot],
+      applicationVersion: "0.1.0-test",
+      generatedAt: Date(timeIntervalSince1970: 2_000)
+    )
+    let report = try JSONDecoder.withISO8601.decode(SensorDiagnosticsReport.self, from: data)
+    XCTAssertEqual(report.schemaVersion, 1)
+    XCTAssertEqual(report.providers.first?.providerID, "test.provider")
+    XCTAssertEqual(report.providers.first?.channels.first?.channelID, "ambient_intensity")
+    let text = String(decoding: data, as: UTF8.self)
+    XCTAssertFalse(text.contains("SENSITIVE_"))
+    XCTAssertFalse(text.contains("123456"))
+    XCTAssertFalse(text.contains("1000"))
+  }
+
   func testCSVExportKeepsRawAndFormattedValuesSeparate() {
     let snapshot = SensorSnapshot(
       id: "test.provider",
@@ -406,5 +445,13 @@ final class SensorCoreTests: XCTestCase {
     } catch {
       errorHandler(error)
     }
+  }
+}
+
+extension JSONDecoder {
+  fileprivate static var withISO8601: JSONDecoder {
+    let decoder = JSONDecoder()
+    decoder.dateDecodingStrategy = .iso8601
+    return decoder
   }
 }

@@ -173,6 +173,27 @@ final class SensorDashboardModel: ObservableObject {
     }
   }
 
+  func exportDiagnostics() {
+    let panel = NSSavePanel()
+    panel.title = "Export Privacy-Safe Diagnostics"
+    panel.message =
+      "Includes provider status and stable channel metadata, but no sensor readings or machine identifiers."
+    panel.nameFieldStringValue = "mac-sensor-lab-diagnostics-\(Self.fileTimestamp()).json"
+    panel.allowedContentTypes = [.json]
+    guard panel.runModal() == .OK, let url = panel.url else { return }
+
+    do {
+      let data = try SensorDiagnosticsExportService.jsonData(
+        snapshots,
+        applicationVersion: AppBuildInfo.version
+      )
+      try data.write(to: url, options: .atomic)
+      lastActionMessage = "Exported privacy-safe diagnostics \(url.lastPathComponent)"
+    } catch {
+      lastActionMessage = "Diagnostics export failed: \(error.localizedDescription)"
+    }
+  }
+
   func startRecording() {
     guard recorder == nil else { return }
     let panel = NSSavePanel()

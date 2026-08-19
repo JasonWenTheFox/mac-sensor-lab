@@ -38,7 +38,8 @@ struct RootView: View {
             lastRefreshDate: model.lastRefreshDate,
             recordingFileName: model.recordingFileName,
             recordingProgress: model.recordingProgress,
-            message: model.lastActionMessage
+            message: model.lastActionMessage,
+            onExportDiagnostics: model.exportDiagnostics
           )
         }
       }
@@ -690,6 +691,7 @@ private struct DiagnosticsView: View {
   let recordingFileName: String?
   let recordingProgress: SensorCSVRecordingProgress?
   let message: String?
+  let onExportDiagnostics: () -> Void
 
   var body: some View {
     Form {
@@ -736,7 +738,16 @@ private struct DiagnosticsView: View {
         Text(
           "No serial number, hardware UUID, UDID, host name, user name, location, process list, SSID or audio recording is collected by this build."
         )
-        Text("All readings stay on this Mac unless you explicitly export a snapshot.")
+        Text(
+          "All readings stay on this Mac unless you explicitly export a snapshot, recording, calibration, or diagnostics file."
+        )
+      }
+      Section("Support") {
+        Button("Export Privacy-Safe Diagnostics…") { onExportDiagnostics() }
+        Text(
+          "The support report contains provider status and stable channel metadata, never sensor readings, notes, source strings, machine identifiers, or file paths."
+        )
+        .foregroundStyle(.secondary)
       }
       Section("Safety") {
         Text(
@@ -753,7 +764,7 @@ private struct DiagnosticsView: View {
   }
 }
 
-private enum AppBuildInfo {
+enum AppBuildInfo {
   static let version: String = {
     let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
     let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String
