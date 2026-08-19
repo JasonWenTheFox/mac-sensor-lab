@@ -90,6 +90,9 @@ It supplies 14 built-in, finite, identity-free provider fixtures. A persistent o
 Diagnostics screen identify the data as synthetic. Demo sampling and light-calibration preferences
 use separate keys, so they do not change live-mode preferences.
 
+The probe CLI also accepts `--demo`. Add `--diagnostics` to output only the privacy-safe provider
+metadata report; without options it retains the original live, full-snapshot behavior.
+
 ## Build and test
 
 Xcode must have completed its first-launch setup. The project never invokes `sudo` itself.
@@ -101,6 +104,8 @@ swift run sensorlab-selftest --portable
 swift run sensorlab-selftest
 swift run sensorlab-selftest --spu-stability
 swift run sensorlab-probe
+swift run sensorlab-probe -- --demo
+swift run sensorlab-probe -- --diagnostics
 ./scripts/build-app.sh
 ./scripts/release-audit.sh
 open "outputs/Mac Sensor Lab.app"

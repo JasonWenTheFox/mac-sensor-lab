@@ -24,6 +24,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - A CI release audit for tracked build output, absolute user paths, secret signatures, undeclared permission expansion, forbidden mutation APIs, licenses, and privacy-manifest consistency.
 - An explicit `--demo` mode with 14 deterministic, identity-free provider fixtures, a persistent on-screen banner, and preferences isolated from live mode.
 - A complete English project overview alongside the original Chinese planning and implementation documentation.
+- Probe CLI options for deterministic demo snapshots, value-free diagnostics, help, and strict unknown-option rejection.
 
 ### Changed
 

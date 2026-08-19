@@ -429,6 +429,9 @@ final class SensorCoreTests: XCTestCase {
       XCTAssertTrue(snapshot.notes.contains("Synthetic demo data; not a hardware reading."))
       XCTAssertTrue(snapshot.channels.allSatisfy { $0.value?.isFinite ?? true })
     }
+
+    let snapshots = await SensorProviderRegistry.readAll(providers)
+    XCTAssertEqual(snapshots.map(\.id), providers.map(\.metadata.id))
   }
 
   func testSPUVectorReportDecoding() {

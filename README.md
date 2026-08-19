@@ -76,6 +76,8 @@ DEVELOPER_DIR=/Library/Developer/CommandLineTools swift run sensorlab-selftest
 DEVELOPER_DIR=/Library/Developer/CommandLineTools swift run sensorlab-selftest --spu-stability
 DEVELOPER_DIR=/Library/Developer/CommandLineTools swift run sensorlab-selftest --portable
 DEVELOPER_DIR=/Library/Developer/CommandLineTools swift run sensorlab-probe
+DEVELOPER_DIR=/Library/Developer/CommandLineTools swift run sensorlab-probe -- --demo
+DEVELOPER_DIR=/Library/Developer/CommandLineTools swift run sensorlab-probe -- --diagnostics
 ./scripts/build-app.sh
 ./scripts/release-audit.sh
 open "outputs/Mac Sensor Lab.app"
@@ -96,6 +98,8 @@ swift test
 `scripts/release-audit.sh` 只检查本仓库的已跟踪文件和发布资源：阻止构建产物、绝对用户路径、密钥特征、未实现的受保护权限、危险写入 API 或与当前离线行为不一致的 Privacy Manifest 进入发布分支。
 
 显式 `--demo` 启动参数使用 14 个内置、确定性且无机器标识的 Provider fixture。全界面会显示 Demo 横幅，并使用独立的采样/校准偏好键，适合截图、UI 回归和无对应硬件的演示；它绝不会伪装成实时读数。
+
+`sensorlab-probe` 同样支持 `--demo`；加上 `--diagnostics` 时只输出无传感器读数/自由文本的隐私安全 Provider 元数据。无参数时仍按原行为读取真实 Provider 并在本地标准输出完整快照。
 
 ## 采样与记录
 

@@ -21,7 +21,10 @@ public enum SensorProviderRegistry {
   }
 
   public static func readAll() async -> [SensorSnapshot] {
-    let providers = providers()
+    await readAll(providers())
+  }
+
+  public static func readAll(_ providers: [any SensorProvider]) async -> [SensorSnapshot] {
     let order = Dictionary(
       uniqueKeysWithValues: providers.enumerated().map { ($0.element.metadata.id, $0.offset) })
     return await withTaskGroup(of: SensorSnapshot.self) { group in
