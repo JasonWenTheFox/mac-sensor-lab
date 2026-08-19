@@ -23,14 +23,60 @@ struct RootView: View {
         case .experiments:
           ExperimentsView(snapshots: model.snapshots, history: model.history)
         case .diagnostics:
-          DiagnosticsView(snapshots: model.snapshots, message: model.lastExportMessage)
+          DiagnosticsView(
+            snapshots: model.snapshots,
+            samplingCadence: model.samplingCadence,
+            isSamplingPaused: model.isSamplingPaused,
+            lastRefreshDate: model.lastRefreshDate,
+            recordingFileName: model.recordingFileName,
+            recordingProgress: model.recordingProgress,
+            message: model.lastActionMessage
+          )
         }
       }
       .toolbar {
         ToolbarItemGroup {
           Menu {
+            Picker("Refresh interval", selection: $model.samplingCadence) {
+              ForEach(SamplingCadence.allCases) { cadence in
+                Text(cadence.displayName).tag(cadence)
+              }
+            }
+            Divider()
+            Button(
+              model.isSamplingPaused ? "Resume Automatic Sampling" : "Pause Automatic Sampling"
+            ) {
+              model.toggleSampling()
+            }
+            Button("Clear Chart History") { model.clearHistory() }
+          } label: {
+            Label(
+              model.isSamplingPaused ? "Paused" : model.samplingCadence.shortLabel,
+              systemImage: model.isSamplingPaused ? "pause.circle" : "timer")
+          }
+          .help("Sampling controls")
+
+          if model.isRecording {
+            Button {
+              Task { await model.stopRecording() }
+            } label: {
+              Label("Stop Recording", systemImage: "record.circle.fill")
+                .foregroundStyle(.red)
+            }
+            .help("Stop continuous CSV recording")
+          }
+
+          Menu {
             Button("JSON Snapshot") { model.export(.json) }
             Button("CSV Channels") { model.export(.csv) }
+            Divider()
+            if model.isRecording {
+              Button("Stop Continuous Recording") {
+                Task { await model.stopRecording() }
+              }
+            } else {
+              Button("Start Continuous CSV Recording…") { model.startRecording() }
+            }
           } label: {
             Label("Export", systemImage: "square.and.arrow.up")
           }
@@ -126,7 +172,7 @@ private struct SensorCard: View {
 
       if let channel = chartChannel, chartPoints.count >= 2 {
         VStack(alignment: .leading, spacing: 4) {
-          Text("\(channel.label) • live 2 s samples")
+          Text("\(channel.label) • recent samples")
             .font(.caption2)
             .foregroundStyle(.secondary)
           Chart(chartPoints) { point in
@@ -313,9 +359,9 @@ private struct ExperimentsView: View {
               liveReading(for: experiment, snapshot: dependency)
             }
             Spacer()
-            Text(isReady ? "Data source ready" : "Foundation ready • provider pending")
+            Text(sourceState(isReady: isReady, snapshot: dependency))
               .font(.caption.weight(.medium))
-              .foregroundStyle(isReady ? .green : .orange)
+              .foregroundStyle(isReady && dependency?.status == .available ? .green : .orange)
           }
           .frame(maxWidth: .infinity, minHeight: 210, alignment: .leading)
           .padding(18)
@@ -330,10 +376,15 @@ private struct ExperimentsView: View {
 
   private func isReady(_ experiment: Experiment, snapshot: SensorSnapshot?) -> Bool {
     guard let snapshot,
-      snapshot.status == .available,
+      [.available, .degraded].contains(snapshot.status),
       let channelID = experiment.channelID
     else { return false }
     return snapshot.channels.contains { $0.id == channelID && $0.value != nil }
+  }
+
+  private func sourceState(isReady: Bool, snapshot: SensorSnapshot?) -> String {
+    guard isReady else { return "Foundation ready • provider pending" }
+    return snapshot?.status == .degraded ? "Recent data • source limited" : "Data source ready"
   }
 
   @ViewBuilder
@@ -420,6 +471,11 @@ private struct ExperimentsView: View {
 
 private struct DiagnosticsView: View {
   let snapshots: [SensorSnapshot]
+  let samplingCadence: SamplingCadence
+  let isSamplingPaused: Bool
+  let lastRefreshDate: Date?
+  let recordingFileName: String?
+  let recordingProgress: SensorCSVRecordingProgress?
   let message: String?
 
   var body: some View {
@@ -432,6 +488,31 @@ private struct DiagnosticsView: View {
           value:
             "\(snapshots.filter { [.unavailable, .permissionRequired, .error].contains($0.status) }.count)"
         )
+      }
+      Section("Sampling & recording") {
+        LabeledContent(
+          "Automatic sampling",
+          value: isSamplingPaused ? "Paused" : samplingCadence.displayName)
+        if let lastRefreshDate {
+          LabeledContent(
+            "Last refresh", value: lastRefreshDate.formatted(date: .omitted, time: .standard))
+        }
+        if let recordingFileName {
+          LabeledContent("Recording", value: recordingFileName)
+          if let recordingProgress {
+            ProgressView(value: recordingProgress.fractionUsed) {
+              Text("50 MB safety limit")
+            } currentValueLabel: {
+              Text(
+                "\(recordingProgress.rowCount) rows • \(SensorFormatting.bytes(UInt64(recordingProgress.byteCount)))"
+              )
+            }
+          }
+        } else {
+          LabeledContent("Continuous recording", value: "Off")
+        }
+        Text("Chart history stays in memory only and can be cleared from the toolbar.")
+          .foregroundStyle(.secondary)
       }
       Section("Privacy") {
         Text(

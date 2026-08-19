@@ -35,6 +35,85 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertFalse(text.localizedCaseInsensitiveContains("provisioning udid"))
   }
 
+  func testCSVExportKeepsRawAndFormattedValuesSeparate() {
+    let snapshot = SensorSnapshot(
+      id: "test.provider",
+      name: "Test",
+      category: .diagnostics,
+      summary: "Fixture",
+      status: .available,
+      source: "Fixture",
+      capability: .publicAPI,
+      channels: [
+        SensorChannel(
+          id: "value", label: "Value", value: 12.5, formattedValue: "12.500", unit: "raw")
+      ],
+      timestamp: Date(timeIntervalSince1970: 1_000)
+    )
+
+    let text = String(decoding: SensorExportService.csvData([snapshot]), as: UTF8.self)
+    XCTAssertTrue(text.hasPrefix(SensorCSVStreamEncoder.header))
+    XCTAssertTrue(text.contains(",12.5,12.500,raw,raw,"))
+    XCTAssertEqual(text.components(separatedBy: "\n").filter { !$0.isEmpty }.count, 2)
+  }
+
+  func testCSVRecorderAppendsBatchesAndClosesCleanly() async throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
+      UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let destination = directory.appendingPathComponent("recording.csv")
+    let recorder = try SensorCSVRecorder(destinationURL: destination)
+    let snapshot = makeSPUSnapshot(
+      status: .available,
+      channels: [
+        SensorChannel(
+          id: "ambient_intensity", label: "Ambient intensity", value: 12,
+          formattedValue: "12")
+      ],
+      timestamp: Date(timeIntervalSince1970: 1_000)
+    )
+
+    let firstProgress = try await recorder.append([snapshot])
+    let secondProgress = try await recorder.append([snapshot])
+    let finalProgress = try await recorder.finish()
+
+    XCTAssertEqual(firstProgress.rowCount, 1)
+    XCTAssertEqual(secondProgress.rowCount, 2)
+    XCTAssertEqual(finalProgress, secondProgress)
+    let text = try String(contentsOf: destination, encoding: .utf8)
+    XCTAssertEqual(text.components(separatedBy: "\n").filter { !$0.isEmpty }.count, 3)
+    await assertThrowsErrorAsync(try await recorder.append([snapshot])) { error in
+      XCTAssertEqual(error as? SensorCSVRecorderError, .alreadyClosed)
+    }
+  }
+
+  func testCSVRecorderStopsBeforeExceedingByteLimit() async throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
+      UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let destination = directory.appendingPathComponent("limited.csv")
+    let limit = SensorCSVStreamEncoder.header.utf8.count + 1
+    let recorder = try SensorCSVRecorder(destinationURL: destination, byteLimit: limit)
+    let snapshot = makeSPUSnapshot(
+      status: .available,
+      channels: [
+        SensorChannel(
+          id: "ambient_intensity", label: "Ambient intensity", value: 12,
+          formattedValue: "12")
+      ],
+      timestamp: Date(timeIntervalSince1970: 1_000)
+    )
+
+    await assertThrowsErrorAsync(try await recorder.append([snapshot])) { error in
+      XCTAssertEqual(error as? SensorCSVRecorderError, .sizeLimitReached(limit: limit))
+    }
+    let progress = try await recorder.finish()
+    XCTAssertEqual(progress.rowCount, 0)
+    XCTAssertLessThanOrEqual(progress.byteCount, limit)
+  }
+
   func testRegistryHasStableUniqueProviderIDs() {
     let ids = SensorProviderRegistry.providers().map(\.metadata.id)
     XCTAssertEqual(Set(ids).count, ids.count)
@@ -162,5 +241,17 @@ final class SensorCoreTests: XCTestCase {
     bytes[offset + 1] = UInt8(truncatingIfNeeded: value >> 8)
     bytes[offset + 2] = UInt8(truncatingIfNeeded: value >> 16)
     bytes[offset + 3] = UInt8(truncatingIfNeeded: value >> 24)
+  }
+
+  private func assertThrowsErrorAsync<T>(
+    _ expression: @autoclosure () async throws -> T,
+    _ errorHandler: (Error) -> Void = { _ in }
+  ) async {
+    do {
+      _ = try await expression()
+      XCTFail("Expected expression to throw")
+    } catch {
+      errorHandler(error)
+    }
   }
 }
