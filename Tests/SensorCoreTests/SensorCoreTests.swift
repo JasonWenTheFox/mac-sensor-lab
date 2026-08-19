@@ -192,10 +192,33 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertNil(NetworkRateCalculator.rates(previous: current, current: previous))
   }
 
+  func testDiskIORateCalculatorUsesMonotonicDeltas() throws {
+    let previous = DiskIOCounterSample(
+      bytesRead: 1_000,
+      bytesWritten: 2_000,
+      readOperations: 10,
+      writeOperations: 20,
+      timestamp: 100
+    )
+    let current = DiskIOCounterSample(
+      bytesRead: 5_000,
+      bytesWritten: 4_000,
+      readOperations: 30,
+      writeOperations: 30,
+      timestamp: 102
+    )
+    let rates = try XCTUnwrap(DiskIORateCalculator.rates(previous: previous, current: current))
+    XCTAssertEqual(rates.readBytesPerSecond, 2_000)
+    XCTAssertEqual(rates.writeBytesPerSecond, 1_000)
+    XCTAssertEqual(rates.readOperationsPerSecond, 10)
+    XCTAssertEqual(rates.writeOperationsPerSecond, 5)
+    XCTAssertNil(DiskIORateCalculator.rates(previous: current, current: previous))
+  }
+
   func testRegistryHasStableUniqueProviderIDs() {
     let ids = SensorProviderRegistry.providers().map(\.metadata.id)
     XCTAssertEqual(Set(ids).count, ids.count)
-    XCTAssertGreaterThanOrEqual(ids.count, 12)
+    XCTAssertGreaterThanOrEqual(ids.count, 13)
   }
 
   func testSPUVectorReportDecoding() {

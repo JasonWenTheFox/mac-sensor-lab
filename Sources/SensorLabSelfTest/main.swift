@@ -14,8 +14,8 @@ struct SensorLabSelfTest {
     if Set(providerIDs).count != providerIDs.count {
       failures.append("provider IDs are not unique")
     }
-    if providers.count < 12 {
-      failures.append("expected at least 12 providers, found \(providers.count)")
+    if providers.count < 13 {
+      failures.append("expected at least 13 providers, found \(providers.count)")
     }
 
     let snapshots = await SensorProviderRegistry.readAll()
@@ -85,6 +85,14 @@ struct SensorLabSelfTest {
       let network = await networkProvider.read()
       if network.channels.first(where: { $0.id == "network_receive_rate" })?.value == nil {
         failures.append("network provider did not produce throughput after a baseline")
+      }
+
+      let diskProvider = DiskIOProvider()
+      _ = await diskProvider.read()
+      try? await Task.sleep(for: .milliseconds(150))
+      let disk = await diskProvider.read()
+      if disk.channels.first(where: { $0.id == "disk_read_rate" })?.value == nil {
+        failures.append("disk provider did not produce throughput after a baseline")
       }
     }
 

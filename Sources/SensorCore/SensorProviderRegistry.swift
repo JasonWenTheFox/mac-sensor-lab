@@ -11,6 +11,7 @@ public enum SensorProviderRegistry {
       SMCSensorProvider(),
       DisplayProvider(),
       StorageProvider(),
+      DiskIOProvider(),
       SPUDiscoveryProvider(),
       SPULiveProvider(),
       LidAngleProvider(),

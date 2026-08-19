@@ -15,6 +15,7 @@
 - Thermals
 - Display
 - Storage
+- Disk Activity
 - Experimental Hardware
 
 每张卡只显示关键指标和状态，不堆满跳动数字。
