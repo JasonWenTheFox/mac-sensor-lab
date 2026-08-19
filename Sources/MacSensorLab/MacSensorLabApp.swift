@@ -3,7 +3,17 @@ import SwiftUI
 
 @main
 struct MacSensorLabApp: App {
-  @StateObject private var model = SensorDashboardModel()
+  @StateObject private var model: SensorDashboardModel
+
+  init() {
+    let isDemoMode = CommandLine.arguments.contains("--demo")
+    _model = StateObject(
+      wrappedValue: SensorDashboardModel(
+        providers: isDemoMode
+          ? SensorDemoProviderRegistry.providers() : SensorProviderRegistry.providers(),
+        isDemoMode: isDemoMode
+      ))
+  }
 
   var body: some Scene {
     Window("Mac Sensor Lab", id: "dashboard") {
@@ -28,6 +38,12 @@ private struct SettingsView: View {
 
   var body: some View {
     Form {
+      if model.isDemoMode {
+        Section("Data mode") {
+          Label("Demo data — no hardware is being read", systemImage: "testtube.2")
+            .foregroundStyle(.orange)
+        }
+      }
       Section("Sampling") {
         Picker("Automatic sampling interval", selection: $model.samplingCadence) {
           ForEach(SamplingCadence.allCases) { cadence in

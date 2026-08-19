@@ -44,13 +44,14 @@ struct SensorHistoryPoint: Identifiable {
 
 @MainActor
 final class SensorDashboardModel: ObservableObject {
+  let isDemoMode: Bool
   @Published var selection: DashboardSection? = .overview
   @Published var samplingCadence: SamplingCadence {
     didSet {
       guard samplingCadence != oldValue else { return }
       UserDefaults.standard.set(
         samplingCadence.rawValue,
-        forKey: Self.samplingCadenceDefaultsKey
+        forKey: samplingCadenceDefaultsKey
       )
     }
   }
@@ -72,11 +73,25 @@ final class SensorDashboardModel: ObservableObject {
 
   var isRecording: Bool { recordingFileName != nil }
 
-  init(providers: [any SensorProvider] = SensorProviderRegistry.providers()) {
+  private var ambientCalibrationDefaultsKey: String {
+    Self.ambientCalibrationDefaultsKey + (isDemoMode ? ".demo" : "")
+  }
+
+  private var samplingCadenceDefaultsKey: String {
+    Self.samplingCadenceDefaultsKey + (isDemoMode ? ".demo" : "")
+  }
+
+  init(
+    providers: [any SensorProvider] = SensorProviderRegistry.providers(),
+    isDemoMode: Bool = false
+  ) {
+    self.isDemoMode = isDemoMode
     self.providers = providers
     self.snapshots = providers.map { SensorSnapshot.loading(metadata: $0.metadata) }
-    self.ambientLuxCalibration = Self.loadAmbientCalibration()
-    self.samplingCadence = Self.loadSamplingCadence()
+    self.ambientLuxCalibration = Self.loadAmbientCalibration(
+      key: Self.ambientCalibrationDefaultsKey + (isDemoMode ? ".demo" : ""))
+    self.samplingCadence = Self.loadSamplingCadence(
+      key: Self.samplingCadenceDefaultsKey + (isDemoMode ? ".demo" : ""))
   }
 
   func runLiveUpdates() async {
@@ -179,7 +194,7 @@ final class SensorDashboardModel: ObservableObject {
     do {
       let data = try SensorDiagnosticsExportService.jsonData(
         snapshots,
-        applicationVersion: AppBuildInfo.version
+        applicationVersion: AppBuildInfo.version + (isDemoMode ? " demo" : "")
       )
       try data.write(to: url, options: .atomic)
       lastActionMessage = "Exported privacy-safe diagnostics \(url.lastPathComponent)"
@@ -222,7 +237,7 @@ final class SensorDashboardModel: ObservableObject {
     }
     ambientLuxCalibration = calibration
     if let data = try? JSONEncoder().encode(calibration) {
-      UserDefaults.standard.set(data, forKey: Self.ambientCalibrationDefaultsKey)
+      UserDefaults.standard.set(data, forKey: ambientCalibrationDefaultsKey)
     }
     reapplyAmbientCalibration()
     lastActionMessage = "Saved a single-point ambient-light calibration"
@@ -230,7 +245,7 @@ final class SensorDashboardModel: ObservableObject {
 
   func clearAmbientLuxCalibration() {
     ambientLuxCalibration = nil
-    UserDefaults.standard.removeObject(forKey: Self.ambientCalibrationDefaultsKey)
+    UserDefaults.standard.removeObject(forKey: ambientCalibrationDefaultsKey)
     reapplyAmbientCalibration()
     lastActionMessage = "Cleared ambient-light calibration"
   }
@@ -274,7 +289,7 @@ final class SensorDashboardModel: ObservableObject {
       )
       ambientLuxCalibration = calibration
       if let data = try? JSONEncoder().encode(calibration) {
-        UserDefaults.standard.set(data, forKey: Self.ambientCalibrationDefaultsKey)
+        UserDefaults.standard.set(data, forKey: ambientCalibrationDefaultsKey)
       }
       reapplyAmbientCalibration()
       lastActionMessage = "Imported light calibration \(url.lastPathComponent)"
@@ -345,19 +360,19 @@ final class SensorDashboardModel: ObservableObject {
     snapshots[index] = applyingUserDerivations(to: snapshots[index])
   }
 
-  private static func loadAmbientCalibration() -> AmbientLuxCalibration? {
-    guard let data = UserDefaults.standard.data(forKey: ambientCalibrationDefaultsKey) else {
+  private static func loadAmbientCalibration(key: String) -> AmbientLuxCalibration? {
+    guard let data = UserDefaults.standard.data(forKey: key) else {
       return nil
     }
     return try? JSONDecoder().decode(AmbientLuxCalibration.self, from: data)
   }
 
-  private static func loadSamplingCadence() -> SamplingCadence {
-    guard UserDefaults.standard.object(forKey: samplingCadenceDefaultsKey) != nil else {
+  private static func loadSamplingCadence(key: String) -> SamplingCadence {
+    guard UserDefaults.standard.object(forKey: key) != nil else {
       return .twoSeconds
     }
     return SamplingCadence(
-      rawValue: UserDefaults.standard.double(forKey: samplingCadenceDefaultsKey))
+      rawValue: UserDefaults.standard.double(forKey: key))
       ?? .twoSeconds
   }
 

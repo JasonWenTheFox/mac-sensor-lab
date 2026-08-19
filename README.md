@@ -7,9 +7,15 @@
 主要产出：software
 创建时间：2026-08-03
 最近更新：2026-08-20
-代码仓库：本地 Git 仓库（`main`）
+代码仓库：GitHub（当前私有，公开发布前加固中）
 许可证：MIT；第三方代码继续遵守各自许可证
 数据位置：项目内仅保存脱敏测试夹具；大型或私密采样不进入仓库
+
+## 界面预览
+
+![Mac Sensor Lab 使用确定性 Demo Provider 的 Overview](docs/images/overview-demo.png)
+
+截图使用明确标识的内置 Demo fixture，不包含这台 Mac 的真实传感器读数或机器标识。
 
 ## 项目目标
 
@@ -71,6 +77,7 @@ DEVELOPER_DIR=/Library/Developer/CommandLineTools swift run sensorlab-probe
 ./scripts/build-app.sh
 ./scripts/release-audit.sh
 open "outputs/Mac Sensor Lab.app"
+open "outputs/Mac Sensor Lab.app" --args --demo
 ```
 
 Command Line Tools 不包含本项目测试所需的 XCTest 模块。首次安装 Xcode 时，许可和组件初始化必须由用户本人完成；项目本身不会调用 `sudo`：
@@ -85,6 +92,8 @@ swift test
 `scripts/build-app.sh` 会在 Xcode 尚不可用时自动回退到 Command Line Tools，生成并临时签名本地 `.app`，不会修改全局开发者目录。
 
 `scripts/release-audit.sh` 只检查本仓库的已跟踪文件和发布资源：阻止构建产物、绝对用户路径、密钥特征、未实现的受保护权限、危险写入 API 或与当前离线行为不一致的 Privacy Manifest 进入发布分支。
+
+显式 `--demo` 启动参数使用 14 个内置、确定性且无机器标识的 Provider fixture。全界面会显示 Demo 横幅，并使用独立的采样/校准偏好键，适合截图、UI 回归和无对应硬件的演示；它绝不会伪装成实时读数。
 
 ## 采样与记录
 
@@ -132,7 +141,7 @@ swift test
 - [x] 添加 macOS 26 / Xcode 26 CI 和 Pull Request 安全检查模板。
 - [x] 建立私有 GitHub 仓库并通过首轮 CI。
 - [x] 用户接受 Xcode 许可。
-- [x] 完成 Xcode 首次组件初始化并在本机通过 23 项 XCTest。
+- [x] 完成 Xcode 首次组件初始化并在本机通过 24 项 XCTest。
 - [x] 加入可调采样、暂停/恢复、历史清空和 50 MB 上限的连续 CSV 记录。
 - [x] 加入环境光滚动统计、可选 Estimated lux 和上盖相对角度实验。
 - [x] 加入严格校验且不含设备标识的单点光照校准 JSON 导入/导出。
@@ -145,6 +154,7 @@ swift test
 - [x] 加入只读取 AGX 固定统计键的 GPU/Renderer/Tiler 利用率和 GPU 内存 Provider。
 - [x] 加入不含传感器读数和自由文本的隐私安全诊断 JSON 导出。
 - [x] 在 CI 中加入项目范围的发布边界与隐私清单审计。
+- [x] 加入明确标识且与真实偏好隔离的确定性 Demo Provider 模式。
 - [ ] 用户确认正式名称后公开 GitHub 仓库。
 
 ## 重要边界

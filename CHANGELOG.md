@@ -22,6 +22,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - Allowlisted AGX GPU, renderer, and tiler utilization plus GPU memory counters without registry identity fields.
 - User-initiated privacy-safe diagnostics JSON containing provider status and stable channel metadata but no sensor readings or free-text fields.
 - A CI release audit for tracked build output, absolute user paths, secret signatures, undeclared permission expansion, forbidden mutation APIs, licenses, and privacy-manifest consistency.
+- An explicit `--demo` mode with 14 deterministic, identity-free provider fixtures, a persistent on-screen banner, and preferences isolated from live mode.
 
 ### Changed
 

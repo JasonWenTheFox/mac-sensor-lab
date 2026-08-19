@@ -346,6 +346,21 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertGreaterThanOrEqual(ids.count, 14)
   }
 
+  func testDemoRegistryIsCompleteFiniteAndClearlyLabeled() async {
+    let providers = SensorDemoProviderRegistry.providers()
+    XCTAssertEqual(providers.count, SensorProviderRegistry.providers().count)
+    XCTAssertEqual(Set(providers.map(\.metadata.id)).count, providers.count)
+
+    for provider in providers {
+      XCTAssertEqual(provider.metadata.source, "Built-in deterministic demo fixture")
+      let snapshot = await provider.read()
+      XCTAssertEqual(snapshot.status, .available)
+      XCTAssertEqual(snapshot.source, "Built-in deterministic demo fixture")
+      XCTAssertTrue(snapshot.notes.contains("Synthetic demo data; not a hardware reading."))
+      XCTAssertTrue(snapshot.channels.allSatisfy { $0.value?.isFinite ?? true })
+    }
+  }
+
   func testSPUVectorReportDecoding() {
     var report = [UInt8](repeating: 0, count: 22)
     writeLittleEndian(UInt32(bitPattern: 65_536), to: &report, at: 6)

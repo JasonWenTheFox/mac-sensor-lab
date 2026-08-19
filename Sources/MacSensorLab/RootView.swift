@@ -14,33 +14,49 @@ struct RootView: View {
       .navigationTitle("Mac Sensor Lab")
       .navigationSplitViewColumnWidth(min: 190, ideal: 220)
     } detail: {
-      Group {
-        switch model.selection ?? .overview {
-        case .overview:
-          OverviewView(snapshots: model.snapshots, history: model.history)
-        case .rawSensors:
-          RawSensorsView(snapshots: model.snapshots)
-        case .experiments:
-          ExperimentsView(
-            snapshots: model.snapshots,
-            history: model.history,
-            ambientLuxCalibration: model.ambientLuxCalibration,
-            onSetAmbientCalibration: model.setAmbientLuxCalibration,
-            onClearAmbientCalibration: model.clearAmbientLuxCalibration,
-            onExportAmbientCalibration: model.exportAmbientLuxCalibration,
-            onImportAmbientCalibration: model.importAmbientLuxCalibration
-          )
-        case .diagnostics:
-          DiagnosticsView(
-            snapshots: model.snapshots,
-            samplingCadence: model.samplingCadence,
-            isSamplingPaused: model.isSamplingPaused,
-            lastRefreshDate: model.lastRefreshDate,
-            recordingFileName: model.recordingFileName,
-            recordingProgress: model.recordingProgress,
-            message: model.lastActionMessage,
-            onExportDiagnostics: model.exportDiagnostics
-          )
+      VStack(spacing: 0) {
+        if model.isDemoMode {
+          Label("Demo data — not live sensor readings", systemImage: "testtube.2")
+            .font(.callout.weight(.semibold))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 8)
+            .foregroundStyle(.orange)
+            .background(.orange.opacity(0.12))
+        }
+        Group {
+          switch model.selection ?? .overview {
+          case .overview:
+            OverviewView(
+              snapshots: model.snapshots,
+              history: model.history,
+              isDemoMode: model.isDemoMode
+            )
+          case .rawSensors:
+            RawSensorsView(snapshots: model.snapshots)
+          case .experiments:
+            ExperimentsView(
+              snapshots: model.snapshots,
+              history: model.history,
+              ambientLuxCalibration: model.ambientLuxCalibration,
+              onSetAmbientCalibration: model.setAmbientLuxCalibration,
+              onClearAmbientCalibration: model.clearAmbientLuxCalibration,
+              onExportAmbientCalibration: model.exportAmbientLuxCalibration,
+              onImportAmbientCalibration: model.importAmbientLuxCalibration
+            )
+          case .diagnostics:
+            DiagnosticsView(
+              snapshots: model.snapshots,
+              samplingCadence: model.samplingCadence,
+              isSamplingPaused: model.isSamplingPaused,
+              isDemoMode: model.isDemoMode,
+              lastRefreshDate: model.lastRefreshDate,
+              recordingFileName: model.recordingFileName,
+              recordingProgress: model.recordingProgress,
+              message: model.lastActionMessage,
+              onExportDiagnostics: model.exportDiagnostics
+            )
+          }
         }
       }
       .toolbar {
@@ -104,6 +120,7 @@ struct RootView: View {
 private struct OverviewView: View {
   let snapshots: [SensorSnapshot]
   let history: [String: [SensorHistoryPoint]]
+  let isDemoMode: Bool
   private let columns = [GridItem(.adaptive(minimum: 300), spacing: 16)]
 
   var body: some View {
@@ -111,8 +128,12 @@ private struct OverviewView: View {
       VStack(alignment: .leading, spacing: 8) {
         Text("Overview")
           .font(.largeTitle.bold())
-        Text("Live local readings, with source and confidence kept visible.")
-          .foregroundStyle(.secondary)
+        Text(
+          isDemoMode
+            ? "Deterministic fixture readings for screenshots and UI review."
+            : "Live local readings, with source and confidence kept visible."
+        )
+        .foregroundStyle(.secondary)
       }
       .frame(maxWidth: .infinity, alignment: .leading)
       .padding(.bottom, 12)
@@ -687,6 +708,7 @@ private struct DiagnosticsView: View {
   let snapshots: [SensorSnapshot]
   let samplingCadence: SamplingCadence
   let isSamplingPaused: Bool
+  let isDemoMode: Bool
   let lastRefreshDate: Date?
   let recordingFileName: String?
   let recordingProgress: SensorCSVRecordingProgress?
@@ -697,6 +719,8 @@ private struct DiagnosticsView: View {
     Form {
       Section("Build") {
         LabeledContent("Version", value: AppBuildInfo.version)
+        LabeledContent(
+          "Data mode", value: isDemoMode ? "Built-in demo fixtures" : "Live hardware")
         LabeledContent("Sensor providers", value: "\(snapshots.count)")
         LabeledContent("Privacy manifest", value: AppBuildInfo.privacyManifestStatus)
       }
