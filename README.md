@@ -1,5 +1,7 @@
 # Mac Sensor Lab
 
+简体中文 | [English](README.en.md)
+
 > 工作名。一个事实优先、原生、可扩展的 macOS 传感器查看与实验工具。
 
 状态：active
