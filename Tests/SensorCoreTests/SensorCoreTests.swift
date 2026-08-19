@@ -244,6 +244,19 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertEqual(SensorSnapshotSearch.filter([snapshot], query: "   "), [snapshot])
   }
 
+  func testBatteryMeasurementsValidateCapacityAndTime() throws {
+    XCTAssertEqual(
+      try XCTUnwrap(BatteryMeasurements.capacityRatio(nominal: 5_000, design: 6_250)),
+      80,
+      accuracy: 0.000_001
+    )
+    XCTAssertNil(BatteryMeasurements.capacityRatio(nominal: 5_000, design: 0))
+    XCTAssertNil(BatteryMeasurements.capacityRatio(nominal: .nan, design: 6_250))
+    XCTAssertEqual(BatteryMeasurements.validMinutes(90), 90)
+    XCTAssertNil(BatteryMeasurements.validMinutes(65_535))
+    XCTAssertNil(BatteryMeasurements.validMinutes(-1))
+  }
+
   func testRegistryHasStableUniqueProviderIDs() {
     let ids = SensorProviderRegistry.providers().map(\.metadata.id)
     XCTAssertEqual(Set(ids).count, ids.count)

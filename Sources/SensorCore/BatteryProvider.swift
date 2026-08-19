@@ -1,6 +1,18 @@
 import Foundation
 import IOKit
 
+enum BatteryMeasurements {
+  static func capacityRatio(nominal: Double, design: Double) -> Double? {
+    guard nominal.isFinite, design.isFinite, nominal >= 0, design > 0 else { return nil }
+    return nominal / design * 100
+  }
+
+  static func validMinutes(_ value: Double?) -> Double? {
+    guard let value, value.isFinite, (0...1_440).contains(value) else { return nil }
+    return value
+  }
+}
+
 public struct BatteryProvider: SensorProvider {
   public let metadata = SensorProviderMetadata(
     id: "power.battery",
@@ -34,6 +46,12 @@ public struct BatteryProvider: SensorProvider {
     let charging = IOKitHelpers.bool(service, key: "IsCharging") ?? false
     let fullyCharged = IOKitHelpers.bool(service, key: "FullyCharged") ?? false
     let cycles = IOKitHelpers.number(service, key: "CycleCount")
+    let designCapacity = IOKitHelpers.number(service, key: "DesignCapacity")
+    let nominalCapacity = IOKitHelpers.number(service, key: "NominalChargeCapacity")
+    let timeRemaining = BatteryMeasurements.validMinutes(
+      IOKitHelpers.number(service, key: "TimeRemaining"))
+    let averageTimeToFull = BatteryMeasurements.validMinutes(
+      IOKitHelpers.number(service, key: "AvgTimeToFull"))
     let voltageMillivolts = IOKitHelpers.number(service, key: "Voltage")
     let amperageMilliamps = IOKitHelpers.number(service, key: "Amperage")
     let temperatureRaw = IOKitHelpers.number(service, key: "Temperature")
@@ -62,6 +80,17 @@ public struct BatteryProvider: SensorProvider {
       SensorChannel(
         id: "power_source", label: "Power source", value: external ? 1 : 0,
         formattedValue: external ? "AC power" : "Battery"))
+    if let designCapacity, let nominalCapacity,
+      let capacityRatio = BatteryMeasurements.capacityRatio(
+        nominal: nominalCapacity, design: designCapacity)
+    {
+      channels.append(
+        SensorChannel(
+          id: "capacity_ratio", label: "Reported capacity ratio", value: capacityRatio,
+          formattedValue: SensorFormatting.percentage(capacityRatio), unit: "%", kind: .derived,
+          note:
+            "Reported full-charge capacity ÷ design capacity; not Apple's Battery Health status."))
+    }
     channels.append(
       SensorChannel(
         id: "charging", label: "Charging", value: charging ? 1 : 0,
@@ -75,6 +104,38 @@ public struct BatteryProvider: SensorProvider {
         SensorChannel(
           id: "cycle_count", label: "Cycle count", value: cycles,
           formattedValue: SensorFormatting.decimal(cycles, fractionDigits: 0), unit: "cycles"))
+    }
+    if let designCapacity, designCapacity > 0 {
+      channels.append(
+        SensorChannel(
+          id: "design_capacity", label: "Design capacity", value: designCapacity,
+          formattedValue: SensorFormatting.decimal(designCapacity, fractionDigits: 0), unit: "mAh",
+          note: "Fixed allowlisted AppleSmartBattery field."))
+    }
+    if let nominalCapacity, nominalCapacity >= 0 {
+      channels.append(
+        SensorChannel(
+          id: "nominal_capacity", label: "Reported full-charge capacity",
+          value: nominalCapacity,
+          formattedValue: SensorFormatting.decimal(nominalCapacity, fractionDigits: 0), unit: "mAh",
+          note: "Controller-reported capacity; it can change as the battery calibrates."))
+    }
+    if !external, let timeRemaining {
+      channels.append(
+        SensorChannel(
+          id: "time_remaining", label: "Estimated time remaining", value: timeRemaining,
+          formattedValue: SensorFormatting.decimal(timeRemaining, fractionDigits: 0),
+          unit: "minutes",
+          kind: .estimated,
+          note: "Controller estimate; unavailable sentinel values are omitted."))
+    }
+    if charging, let averageTimeToFull {
+      channels.append(
+        SensorChannel(
+          id: "time_to_full", label: "Estimated time to full", value: averageTimeToFull,
+          formattedValue: SensorFormatting.decimal(averageTimeToFull, fractionDigits: 0),
+          unit: "minutes", kind: .estimated,
+          note: "Controller estimate; unavailable sentinel values are omitted."))
     }
     if let voltage {
       channels.append(
