@@ -69,7 +69,8 @@ The Overview, Raw Sensors, Experiments, and Diagnostics screens share the same n
 - Use rolling raw ambient-light statistics. A lux value appears only after an explicit one-point
   external reference and remains labeled `Estimated`.
 - Import or export a portable light-calibration JSON file containing only the two reference values
-  and capture time. Invalid values cannot replace the current calibration.
+  and capture time. Imports are local files capped at 64 KiB; invalid or oversized input cannot
+  replace the current calibration.
 - Capture a local lid-angle reference and view signed relative opening/closing change.
 - Export a privacy-safe support report containing provider status and stable channel metadata, but
   no readings, summaries, notes, source strings, snapshot timestamps, identifiers, or file paths.
@@ -113,7 +114,7 @@ rejects tracked build output, absolute user paths, common secret signatures, pro
 keys that this release does not implement, forbidden mutation/privilege APIs, missing release
 documents, or a privacy manifest inconsistent with the current offline behavior.
 
-GitHub Actions repeats formatting, audit, build, 24 XCTest cases, portable self-test, and app-bundle
+GitHub Actions repeats formatting, audit, build, 25 XCTest cases, portable self-test, and app-bundle
 assembly on `macos-26`.
 
 ## Repository layout

@@ -225,6 +225,50 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertNil(AmbientLuxCalibration(rawReference: 25, luxReference: -1))
   }
 
+  func testAmbientCalibrationFileRoundTripsAndBoundsInput() throws {
+    let calibration = try XCTUnwrap(
+      AmbientLuxCalibration(
+        rawReference: 25,
+        luxReference: 100,
+        capturedAt: Date(timeIntervalSince1970: 1_000)
+      ))
+    let data = try AmbientLuxCalibrationFileService.data(for: calibration)
+    XCTAssertLessThan(data.count, AmbientLuxCalibrationFileService.maximumByteCount)
+    XCTAssertEqual(
+      try AmbientLuxCalibrationFileService.calibration(from: data),
+      calibration
+    )
+
+    let oversized = Data(
+      repeating: 0x20,
+      count: AmbientLuxCalibrationFileService.maximumByteCount + 1
+    )
+    XCTAssertThrowsError(try AmbientLuxCalibrationFileService.calibration(from: oversized)) {
+      XCTAssertEqual(
+        $0 as? AmbientLuxCalibrationFileError,
+        .fileTooLarge(maximumBytes: AmbientLuxCalibrationFileService.maximumByteCount)
+      )
+    }
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
+      UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let oversizedURL = directory.appendingPathComponent("oversized.json")
+    try oversized.write(to: oversizedURL)
+    XCTAssertThrowsError(try AmbientLuxCalibrationFileService.read(from: oversizedURL)) {
+      XCTAssertEqual(
+        $0 as? AmbientLuxCalibrationFileError,
+        .fileTooLarge(maximumBytes: AmbientLuxCalibrationFileService.maximumByteCount)
+      )
+    }
+    let remoteURL = try XCTUnwrap(URL(string: "https://example.invalid"))
+    XCTAssertThrowsError(
+      try AmbientLuxCalibrationFileService.read(from: remoteURL)
+    ) {
+      XCTAssertEqual($0 as? AmbientLuxCalibrationFileError, .invalidSource)
+    }
+  }
+
   func testRelativeAngleMeasurementPreservesDirection() throws {
     let opening = try XCTUnwrap(RelativeAngleMeasurement(current: 110, reference: 90))
     let closing = try XCTUnwrap(RelativeAngleMeasurement(current: 70, reference: 90))

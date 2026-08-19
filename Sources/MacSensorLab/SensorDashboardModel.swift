@@ -262,10 +262,10 @@ final class SensorDashboardModel: ObservableObject {
     guard panel.runModal() == .OK, let url = panel.url else { return }
 
     do {
-      let encoder = JSONEncoder()
-      encoder.dateEncodingStrategy = .iso8601
-      encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-      try encoder.encode(ambientLuxCalibration).write(to: url, options: .atomic)
+      try AmbientLuxCalibrationFileService.data(for: ambientLuxCalibration).write(
+        to: url,
+        options: .atomic
+      )
       lastActionMessage = "Exported light calibration \(url.lastPathComponent)"
     } catch {
       lastActionMessage = "Calibration export failed: \(error.localizedDescription)"
@@ -281,12 +281,7 @@ final class SensorDashboardModel: ObservableObject {
     guard panel.runModal() == .OK, let url = panel.url else { return }
 
     do {
-      let decoder = JSONDecoder()
-      decoder.dateDecodingStrategy = .iso8601
-      let calibration = try decoder.decode(
-        AmbientLuxCalibration.self,
-        from: Data(contentsOf: url)
-      )
+      let calibration = try AmbientLuxCalibrationFileService.read(from: url)
       ambientLuxCalibration = calibration
       if let data = try? JSONEncoder().encode(calibration) {
         UserDefaults.standard.set(data, forKey: ambientCalibrationDefaultsKey)
