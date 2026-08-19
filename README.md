@@ -92,6 +92,7 @@ swift test
 - Light Meter 显示原始值的滚动最小/平均/最大；只有用户输入外部照度参考并主动校准后，才增加明确标为 `Estimated` 的 `ambient_estimated_lux` 通道。
 - Lid Protractor 可以把当前开合角设为参考，并显示带方向的相对角度变化；不会改变或重新配置传感器。
 - App 不会自动开始记录，不会上传数据，也不会把用户选择的记录文件加入仓库。
+- Dashboard 使用单一原生窗口，避免多个窗口为同一硬件启动互相争用的采样循环；关闭窗口时会安全结束仍在进行的连续记录。
 
 ## 当前可读能力
 
@@ -126,6 +127,7 @@ swift test
 - [x] 加入环境光滚动统计、可选 Estimated lux 和上盖相对角度实验。
 - [x] 加入汇总 CPU 利用率、1/5/15 分钟负载、Mach 内存分类和 swap Provider。
 - [x] 加入不导出网络标识的聚合上下行吞吐量、包速率和累计字节 Provider。
+- [x] 随 App Bundle 打包并校验 Privacy Manifest，明确声明不跟踪、不联网收集数据。
 - [ ] 用户确认正式名称后公开 GitHub 仓库。
 
 ## 重要边界

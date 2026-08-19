@@ -664,6 +664,11 @@ private struct DiagnosticsView: View {
 
   var body: some View {
     Form {
+      Section("Build") {
+        LabeledContent("Version", value: AppBuildInfo.version)
+        LabeledContent("Sensor providers", value: "\(snapshots.count)")
+        LabeledContent("Privacy manifest", value: AppBuildInfo.privacyManifestStatus)
+      }
       Section("Provider health") {
         LabeledContent("Available", value: "\(snapshots.filter { $0.status == .available }.count)")
         LabeledContent("Limited", value: "\(snapshots.filter { $0.status == .degraded }.count)")
@@ -717,4 +722,20 @@ private struct DiagnosticsView: View {
     .formStyle(.grouped)
     .navigationTitle("Diagnostics")
   }
+}
+
+private enum AppBuildInfo {
+  static let version: String = {
+    let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+    let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String
+    return switch (version, build) {
+    case (.some(let version), .some(let build)): "\(version) (\(build))"
+    case (.some(let version), .none): version
+    default: "Development"
+    }
+  }()
+
+  static let privacyManifestStatus =
+    Bundle.main.url(forResource: "PrivacyInfo", withExtension: "xcprivacy") == nil
+    ? "Development executable" : "Included"
 }

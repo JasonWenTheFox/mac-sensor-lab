@@ -6,10 +6,13 @@ struct MacSensorLabApp: App {
   @StateObject private var model = SensorDashboardModel()
 
   var body: some Scene {
-    WindowGroup("Mac Sensor Lab") {
+    Window("Mac Sensor Lab", id: "dashboard") {
       RootView(model: model)
         .frame(minWidth: 940, minHeight: 640)
         .task { await model.runLiveUpdates() }
+        .onDisappear {
+          Task { await model.stopRecording() }
+        }
     }
     .windowStyle(.titleBar)
     .defaultSize(width: 1120, height: 760)

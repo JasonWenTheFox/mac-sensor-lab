@@ -14,6 +14,12 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - Lid-angle reference capture and signed relative change.
 - Aggregate CPU utilization, load averages, raw Mach memory categories, and swap telemetry without collecting a process list.
 - Aggregate receive/send throughput, packet rates, and byte counters without exporting interface or network identifiers.
+- A bundled privacy manifest declaring no tracking, tracking domains, off-device collection, or required-reason API use for this macOS-only build.
+
+### Changed
+
+- The dashboard now uses a single native window so multiple sampling loops cannot contend for the same hardware providers.
+- Closing the dashboard stops an active continuous recording cleanly.
 
 ### Fixed
 
