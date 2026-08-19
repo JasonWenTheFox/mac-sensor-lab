@@ -58,18 +58,18 @@ public enum SensorCSVStreamEncoder {
     timestamp: String
   ) -> String {
     [
-      snapshot.id,
-      snapshot.name,
-      snapshot.status.rawValue,
-      snapshot.source,
-      channelID,
-      channelName,
-      rawValue,
-      formattedValue,
-      unit,
-      kind,
-      timestamp,
-    ].map(SensorFormatting.csvCell).joined(separator: ",") + "\n"
+      SensorFormatting.csvTextCell(snapshot.id),
+      SensorFormatting.csvTextCell(snapshot.name),
+      SensorFormatting.csvTextCell(snapshot.status.rawValue),
+      SensorFormatting.csvTextCell(snapshot.source),
+      SensorFormatting.csvTextCell(channelID),
+      SensorFormatting.csvTextCell(channelName),
+      SensorFormatting.csvCell(rawValue),
+      SensorFormatting.csvTextCell(formattedValue),
+      SensorFormatting.csvTextCell(unit),
+      SensorFormatting.csvTextCell(kind),
+      SensorFormatting.csvCell(timestamp),
+    ].joined(separator: ",") + "\n"
   }
 }
 

@@ -19,9 +19,24 @@ public enum SensorFormatting {
   }
 
   public static func csvCell(_ value: String) -> String {
-    guard value.contains(",") || value.contains("\"") || value.contains("\n") else {
+    guard
+      value.contains(",") || value.contains("\"") || value.contains("\n")
+        || value.contains("\r")
+    else {
       return value
     }
     return "\"\(value.replacingOccurrences(of: "\"", with: "\"\""))\""
+  }
+
+  /// Escapes a text field for CSV and prevents spreadsheet formula interpretation.
+  /// Numeric raw-value columns intentionally continue to use `csvCell` directly.
+  public static func csvTextCell(_ value: String) -> String {
+    let protectedValue: String
+    if let first = value.first, "=+-@\t\r".contains(first) {
+      protectedValue = "'\(value)"
+    } else {
+      protectedValue = value
+    }
+    return csvCell(protectedValue)
   }
 }

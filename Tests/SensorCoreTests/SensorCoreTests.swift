@@ -10,10 +10,36 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertTrue(SensorFormatting.bytesPerSecond(1_024).contains("/s"))
   }
 
-  func testCSVScapesUnsafeCells() {
+  func testCSVEscapesStructureAndSpreadsheetFormulas() {
     XCTAssertEqual(SensorFormatting.csvCell("plain"), "plain")
     XCTAssertEqual(SensorFormatting.csvCell("a,b"), "\"a,b\"")
     XCTAssertEqual(SensorFormatting.csvCell("a\"b"), "\"a\"\"b\"")
+    XCTAssertEqual(SensorFormatting.csvCell("a\rb"), "\"a\rb\"")
+    XCTAssertEqual(SensorFormatting.csvTextCell("=1+1"), "'=1+1")
+    XCTAssertEqual(SensorFormatting.csvTextCell("+cmd"), "'+cmd")
+    XCTAssertEqual(SensorFormatting.csvTextCell("-label"), "'-label")
+    XCTAssertEqual(SensorFormatting.csvTextCell("@field"), "'@field")
+    XCTAssertEqual(SensorFormatting.csvTextCell("42"), "42")
+  }
+
+  func testCSVExportProtectsTextButPreservesNegativeRawNumbers() {
+    let snapshot = SensorSnapshot(
+      id: "=provider",
+      name: "+name",
+      category: .diagnostics,
+      summary: "Fixture",
+      status: .available,
+      source: "@source",
+      capability: .publicAPI,
+      channels: [
+        SensorChannel(
+          id: "-channel", label: "=label", value: -12.5,
+          formattedValue: "-12.500", unit: "raw")
+      ]
+    )
+    let text = String(decoding: SensorExportService.csvData([snapshot]), as: UTF8.self)
+    XCTAssertTrue(
+      text.contains("'=provider,'+name,available,'@source,'-channel,'=label,-12.5,'-12.500"))
   }
 
   func testExportDoesNotInventMachineIdentifiers() throws {
