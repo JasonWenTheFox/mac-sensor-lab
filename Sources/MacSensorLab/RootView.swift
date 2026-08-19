@@ -306,7 +306,9 @@ private struct RawSensorsView: View {
             StatusPill(status: snapshot.status)
           }
         } footer: {
-          Text("Source: \(snapshot.source) • \(snapshot.capability.displayName)")
+          Text(
+            "Updated \(snapshot.timestamp.formatted(date: .omitted, time: .standard)) • Source: \(snapshot.source) • \(snapshot.capability.displayName)"
+          )
         }
       }
     }

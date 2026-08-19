@@ -18,14 +18,25 @@ struct MacSensorLabApp: App {
     .defaultSize(width: 1120, height: 760)
 
     Settings {
-      SettingsView()
+      SettingsView(model: model)
     }
   }
 }
 
 private struct SettingsView: View {
+  @ObservedObject var model: SensorDashboardModel
+
   var body: some View {
     Form {
+      Section("Sampling") {
+        Picker("Automatic sampling interval", selection: $model.samplingCadence) {
+          ForEach(SamplingCadence.allCases) { cadence in
+            Text(cadence.displayName).tag(cadence)
+          }
+        }
+        Text("The interval is remembered. Pause state is intentionally reset on every launch.")
+          .foregroundStyle(.secondary)
+      }
       Section("Safety") {
         Text(
           "Mac Sensor Lab reads sensors locally and does not request administrator access in this build."
@@ -36,7 +47,7 @@ private struct SettingsView: View {
       }
     }
     .formStyle(.grouped)
-    .frame(width: 520, height: 220)
+    .frame(width: 520, height: 330)
     .padding()
   }
 }

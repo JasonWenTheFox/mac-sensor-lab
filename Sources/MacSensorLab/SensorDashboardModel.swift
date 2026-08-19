@@ -45,7 +45,15 @@ struct SensorHistoryPoint: Identifiable {
 @MainActor
 final class SensorDashboardModel: ObservableObject {
   @Published var selection: DashboardSection? = .overview
-  @Published var samplingCadence: SamplingCadence = .twoSeconds
+  @Published var samplingCadence: SamplingCadence {
+    didSet {
+      guard samplingCadence != oldValue else { return }
+      UserDefaults.standard.set(
+        samplingCadence.rawValue,
+        forKey: Self.samplingCadenceDefaultsKey
+      )
+    }
+  }
   @Published private(set) var snapshots: [SensorSnapshot]
   @Published private(set) var history: [String: [SensorHistoryPoint]] = [:]
   @Published private(set) var isRefreshing = false
@@ -59,6 +67,7 @@ final class SensorDashboardModel: ObservableObject {
   private let providers: [any SensorProvider]
   private let maximumHistoryPoints = 600
   private static let ambientCalibrationDefaultsKey = "dev.macsensorlab.ambientLuxCalibration"
+  private static let samplingCadenceDefaultsKey = "dev.macsensorlab.samplingCadence"
   private var recorder: SensorCSVRecorder?
   private var lastRecordedMarkers: [String: RecordingMarker] = [:]
 
@@ -73,6 +82,7 @@ final class SensorDashboardModel: ObservableObject {
     self.providers = providers
     self.snapshots = providers.map { SensorSnapshot.loading(metadata: $0.metadata) }
     self.ambientLuxCalibration = Self.loadAmbientCalibration()
+    self.samplingCadence = Self.loadSamplingCadence()
   }
 
   func runLiveUpdates() async {
@@ -289,6 +299,15 @@ final class SensorDashboardModel: ObservableObject {
       return nil
     }
     return try? JSONDecoder().decode(AmbientLuxCalibration.self, from: data)
+  }
+
+  private static func loadSamplingCadence() -> SamplingCadence {
+    guard UserDefaults.standard.object(forKey: samplingCadenceDefaultsKey) != nil else {
+      return .twoSeconds
+    }
+    return SamplingCadence(
+      rawValue: UserDefaults.standard.double(forKey: samplingCadenceDefaultsKey))
+      ?? .twoSeconds
   }
 
   private static func fileTimestamp() -> String {
