@@ -114,6 +114,48 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertLessThanOrEqual(progress.byteCount, limit)
   }
 
+  func testSensorSeriesStatisticsIgnoreNonFiniteValues() throws {
+    let statistics = try XCTUnwrap(
+      SensorSeriesStatistics(values: [10, .nan, 20, .infinity, 30]))
+    XCTAssertEqual(statistics.sampleCount, 3)
+    XCTAssertEqual(statistics.latest, 30)
+    XCTAssertEqual(statistics.minimum, 10)
+    XCTAssertEqual(statistics.maximum, 30)
+    XCTAssertEqual(statistics.average, 20)
+    XCTAssertEqual(statistics.relativePosition ?? .nan, 1, accuracy: 0.000_001)
+    XCTAssertNil(SensorSeriesStatistics(values: [.nan, .infinity]))
+    XCTAssertNil(SensorSeriesStatistics(values: [5])?.relativePosition)
+  }
+
+  func testAmbientLuxCalibrationIsExplicitAndValidated() throws {
+    let calibration = try XCTUnwrap(
+      AmbientLuxCalibration(
+        rawReference: 25,
+        luxReference: 100,
+        capturedAt: Date(timeIntervalSince1970: 1_000)
+      ))
+    XCTAssertEqual(calibration.scale, 4)
+    XCTAssertEqual(try XCTUnwrap(calibration.estimatedLux(for: 12.5)), 50)
+    let channel = try XCTUnwrap(calibration.estimatedChannel(for: 12.5))
+    XCTAssertEqual(channel.id, "ambient_estimated_lux")
+    XCTAssertEqual(channel.value, 50)
+    XCTAssertEqual(channel.unit, "lux")
+    XCTAssertEqual(channel.kind, .estimated)
+    XCTAssertNil(calibration.estimatedLux(for: .nan))
+    let encoded = try JSONEncoder().encode(calibration)
+    XCTAssertEqual(try JSONDecoder().decode(AmbientLuxCalibration.self, from: encoded), calibration)
+    XCTAssertNil(AmbientLuxCalibration(rawReference: 0, luxReference: 100))
+    XCTAssertNil(AmbientLuxCalibration(rawReference: 25, luxReference: -1))
+  }
+
+  func testRelativeAngleMeasurementPreservesDirection() throws {
+    let opening = try XCTUnwrap(RelativeAngleMeasurement(current: 110, reference: 90))
+    let closing = try XCTUnwrap(RelativeAngleMeasurement(current: 70, reference: 90))
+    XCTAssertEqual(opening.delta, 20)
+    XCTAssertEqual(closing.delta, -20)
+    XCTAssertNil(RelativeAngleMeasurement(current: .nan, reference: 90))
+  }
+
   func testRegistryHasStableUniqueProviderIDs() {
     let ids = SensorProviderRegistry.providers().map(\.metadata.id)
     XCTAssertEqual(Set(ids).count, ids.count)

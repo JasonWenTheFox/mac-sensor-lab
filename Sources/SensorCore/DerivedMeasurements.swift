@@ -1,0 +1,85 @@
+import Foundation
+
+public struct SensorSeriesStatistics: Equatable, Sendable {
+  public let sampleCount: Int
+  public let latest: Double
+  public let minimum: Double
+  public let maximum: Double
+  public let average: Double
+
+  public var range: Double { maximum - minimum }
+
+  /// Latest value mapped into the observed range. Nil until the range is non-zero.
+  public var relativePosition: Double? {
+    guard range > 0 else { return nil }
+    return min(max((latest - minimum) / range, 0), 1)
+  }
+
+  public init?(values: [Double]) {
+    let finiteValues = values.filter(\.isFinite)
+    guard let latest = finiteValues.last,
+      let minimum = finiteValues.min(),
+      let maximum = finiteValues.max()
+    else { return nil }
+
+    self.sampleCount = finiteValues.count
+    self.latest = latest
+    self.minimum = minimum
+    self.maximum = maximum
+    self.average = finiteValues.reduce(0, +) / Double(finiteValues.count)
+  }
+}
+
+/// A zero-offset, one-point illuminance estimate supplied by the user.
+///
+/// This intentionally does not claim that the Apple SPU raw channel is lux.
+/// It scales a positive raw reference to a positive external lux reference.
+public struct AmbientLuxCalibration: Codable, Equatable, Sendable {
+  public let rawReference: Double
+  public let luxReference: Double
+  public let capturedAt: Date
+
+  public var scale: Double { luxReference / rawReference }
+
+  public init?(rawReference: Double, luxReference: Double, capturedAt: Date = .now) {
+    guard rawReference.isFinite, rawReference > 0,
+      luxReference.isFinite, luxReference > 0,
+      capturedAt.timeIntervalSinceReferenceDate.isFinite
+    else { return nil }
+    self.rawReference = rawReference
+    self.luxReference = luxReference
+    self.capturedAt = capturedAt
+  }
+
+  public func estimatedLux(for rawValue: Double) -> Double? {
+    guard rawValue.isFinite, rawValue >= 0 else { return nil }
+    let estimate = rawValue * scale
+    return estimate.isFinite ? estimate : nil
+  }
+
+  public func estimatedChannel(for rawValue: Double) -> SensorChannel? {
+    guard let estimate = estimatedLux(for: rawValue) else { return nil }
+    return SensorChannel(
+      id: "ambient_estimated_lux",
+      label: "Estimated illuminance",
+      value: estimate,
+      formattedValue: SensorFormatting.decimal(estimate, fractionDigits: 1),
+      unit: "lux",
+      kind: .estimated,
+      note: "Single-point user calibration; not calibrated or certified by Apple."
+    )
+  }
+}
+
+public struct RelativeAngleMeasurement: Equatable, Sendable {
+  public let current: Double
+  public let reference: Double
+  public let delta: Double
+
+  public init?(current: Double, reference: Double) {
+    guard current.isFinite, reference.isFinite else { return nil }
+    self.current = current
+    self.reference = reference
+    self.delta = current - reference
+  }
+}

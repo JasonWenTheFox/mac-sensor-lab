@@ -21,7 +21,13 @@ struct RootView: View {
         case .rawSensors:
           RawSensorsView(snapshots: model.snapshots)
         case .experiments:
-          ExperimentsView(snapshots: model.snapshots, history: model.history)
+          ExperimentsView(
+            snapshots: model.snapshots,
+            history: model.history,
+            ambientLuxCalibration: model.ambientLuxCalibration,
+            onSetAmbientCalibration: model.setAmbientLuxCalibration,
+            onClearAmbientCalibration: model.clearAmbientLuxCalibration
+          )
         case .diagnostics:
           DiagnosticsView(
             snapshots: model.snapshots,
@@ -303,6 +309,9 @@ private func shouldDisplayUnit(_ unit: String, for channel: SensorChannel) -> Bo
 private struct ExperimentsView: View {
   let snapshots: [SensorSnapshot]
   let history: [String: [SensorHistoryPoint]]
+  let ambientLuxCalibration: AmbientLuxCalibration?
+  let onSetAmbientCalibration: (Double, Double) -> Void
+  let onClearAmbientCalibration: () -> Void
 
   private struct Experiment {
     let name: String
@@ -375,10 +384,11 @@ private struct ExperimentsView: View {
   }
 
   private func isReady(_ experiment: Experiment, snapshot: SensorSnapshot?) -> Bool {
-    guard let snapshot,
-      [.available, .degraded].contains(snapshot.status),
-      let channelID = experiment.channelID
-    else { return false }
+    guard let snapshot, let channelID = experiment.channelID else { return false }
+    let statusIsReady =
+      snapshot.status == .available
+      || (snapshot.id == "motion.spu_live" && snapshot.status == .degraded)
+    guard statusIsReady else { return false }
     return snapshot.channels.contains { $0.id == channelID && $0.value != nil }
   }
 
@@ -392,6 +402,7 @@ private struct ExperimentsView: View {
     if let channelID = experiment.channelID,
       let channel = snapshot.channels.first(where: { $0.id == channelID && $0.value != nil })
     {
+      let points = history["\(snapshot.id)/\(channelID)", default: []]
       HStack(alignment: .firstTextBaseline) {
         Text(channel.formattedValue)
           .font(.title2.bold())
@@ -412,6 +423,7 @@ private struct ExperimentsView: View {
           Text("0° — 180°").font(.caption2)
         }
         .gaugeStyle(.linearCapacity)
+        LidReferencePanel(currentAngle: value)
       }
 
       if channelID == "level_roll",
@@ -428,9 +440,17 @@ private struct ExperimentsView: View {
 
       if channelID == "ambient_intensity" {
         spectralBars(snapshot.channels.filter { $0.id.hasPrefix("ambient_spectral_") })
+        if let rawValue = channel.value {
+          AmbientLightInterpretationPanel(
+            rawValue: rawValue,
+            historyValues: points.map(\.value),
+            calibration: ambientLuxCalibration,
+            onSetCalibration: onSetAmbientCalibration,
+            onClearCalibration: onClearAmbientCalibration
+          )
+        }
       }
 
-      let points = history["\(snapshot.id)/\(channelID)", default: []]
       if points.count >= 2 {
         Chart(points) { point in
           LineMark(x: .value("Time", point.timestamp), y: .value(channel.label, point.value))
@@ -466,6 +486,169 @@ private struct ExperimentsView: View {
       .accessibilityElement(children: .ignore)
       .accessibilityLabel("Four uncalibrated ambient spectral channels")
     }
+  }
+}
+
+private struct AmbientLightInterpretationPanel: View {
+  let rawValue: Double
+  let historyValues: [Double]
+  let calibration: AmbientLuxCalibration?
+  let onSetCalibration: (Double, Double) -> Void
+  let onClearCalibration: () -> Void
+
+  @State private var referenceLuxText = ""
+
+  private var statistics: SensorSeriesStatistics? {
+    SensorSeriesStatistics(values: historyValues.isEmpty ? [rawValue] : historyValues)
+  }
+
+  private var enteredLux: Double? {
+    guard let value = Double(referenceLuxText), value.isFinite, value > 0 else { return nil }
+    return value
+  }
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      if let statistics {
+        HStack(spacing: 8) {
+          ExperimentMetric(label: "Min", value: formatted(statistics.minimum))
+          ExperimentMetric(label: "Average", value: formatted(statistics.average))
+          ExperimentMetric(label: "Max", value: formatted(statistics.maximum))
+        }
+        if let position = statistics.relativePosition {
+          ProgressView(value: position) {
+            Text("Position in observed raw range")
+          } currentValueLabel: {
+            Text(position.formatted(.percent.precision(.fractionLength(0))))
+          }
+          .font(.caption)
+        }
+      }
+
+      Divider()
+      if let calibration,
+        let estimate = calibration.estimatedLux(for: rawValue)
+      {
+        HStack(alignment: .firstTextBaseline) {
+          VStack(alignment: .leading, spacing: 2) {
+            Text("Estimated illuminance")
+              .font(.caption)
+              .foregroundStyle(.secondary)
+            Text("\(SensorFormatting.decimal(estimate, fractionDigits: 1)) lux")
+              .font(.title3.bold())
+              .monospacedDigit()
+          }
+          Spacer()
+          Text("Estimated")
+            .font(.caption.weight(.medium))
+            .foregroundStyle(.orange)
+        }
+        Text(
+          "Single-point scale: \(SensorFormatting.decimal(calibration.luxReference, fractionDigits: 1)) lux at raw \(SensorFormatting.decimal(calibration.rawReference, fractionDigits: 3))."
+        )
+        .font(.caption2)
+        .foregroundStyle(.secondary)
+      }
+
+      HStack {
+        TextField("Reference lux", text: $referenceLuxText)
+          .textFieldStyle(.roundedBorder)
+          .frame(width: 110)
+        Button("Calibrate at Current Raw") { captureCalibration() }
+          .disabled(enteredLux == nil || rawValue <= 0 || !rawValue.isFinite)
+        if calibration != nil {
+          Button("Clear") { clearCalibration() }
+        }
+      }
+      Text(
+        "Requires an external lux reference. This is a one-point estimate, not a certified meter."
+      )
+      .font(.caption2)
+      .foregroundStyle(.secondary)
+    }
+    .padding(.top, 4)
+  }
+
+  private func captureCalibration() {
+    guard let enteredLux,
+      AmbientLuxCalibration(rawReference: rawValue, luxReference: enteredLux) != nil
+    else { return }
+    onSetCalibration(rawValue, enteredLux)
+  }
+
+  private func clearCalibration() {
+    onClearCalibration()
+    referenceLuxText = ""
+  }
+
+  private func formatted(_ value: Double) -> String {
+    SensorFormatting.decimal(value, fractionDigits: 2)
+  }
+}
+
+private struct LidReferencePanel: View {
+  let currentAngle: Double
+
+  @AppStorage("dev.macsensorlab.lid.hasReference") private var hasReference = false
+  @AppStorage("dev.macsensorlab.lid.referenceAngle") private var referenceAngle = 0.0
+
+  private var measurement: RelativeAngleMeasurement? {
+    guard hasReference else { return nil }
+    return RelativeAngleMeasurement(current: currentAngle, reference: referenceAngle)
+  }
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      if let measurement {
+        HStack(spacing: 8) {
+          ExperimentMetric(
+            label: "Reference",
+            value: "\(SensorFormatting.decimal(measurement.reference, fractionDigits: 1))°")
+          ExperimentMetric(
+            label: "Relative change",
+            value: "\(signed(measurement.delta))°")
+        }
+        Text(measurement.delta >= 0 ? "Opened from reference" : "Closed from reference")
+          .font(.caption2)
+          .foregroundStyle(.secondary)
+      }
+      HStack {
+        Button(hasReference ? "Update Reference" : "Set Current as Reference") {
+          referenceAngle = currentAngle
+          hasReference = true
+        }
+        if hasReference {
+          Button("Clear") { hasReference = false }
+        }
+      }
+      Text("Relative change is derived from the raw lid angle and does not alter the sensor.")
+        .font(.caption2)
+        .foregroundStyle(.secondary)
+    }
+    .padding(.top, 4)
+  }
+
+  private func signed(_ value: Double) -> String {
+    value.formatted(.number.sign(strategy: .always()).precision(.fractionLength(1)))
+  }
+}
+
+private struct ExperimentMetric: View {
+  let label: String
+  let value: String
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 2) {
+      Text(label)
+        .font(.caption2)
+        .foregroundStyle(.secondary)
+      Text(value)
+        .font(.caption.weight(.semibold))
+        .monospacedDigit()
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding(7)
+    .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 7))
   }
 }
 

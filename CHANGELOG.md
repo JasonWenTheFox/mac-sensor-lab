@@ -1,0 +1,24 @@
+# Changelog
+
+All notable changes to Mac Sensor Lab will be documented here. The project follows semantic versioning once public releases begin.
+
+## Unreleased
+
+### Added
+
+- Selectable 1, 2, 5, and 10 second sampling cadence, pause/resume, and in-memory history clearing.
+- User-initiated continuous CSV recording with per-batch synchronization and a 50 MB safety limit.
+- Separate `raw_value` and `formatted_value` CSV columns.
+- Ambient-light rolling raw statistics and optional single-point, user-referenced estimated lux.
+- Exportable `ambient_estimated_lux` channel clearly marked as `Estimated`.
+- Lid-angle reference capture and signed relative change.
+
+### Fixed
+
+- SPU contention is no longer reported as a privacy permission failure.
+- Recent SPU samples retain their original timestamp and are not duplicated in chart history.
+- Force Touch presence detection no longer unlocks the Trackpad Scale experiment.
+
+## 0.1.0 - 2026-08-20
+
+- Initial native SwiftUI MVP with 10 sensor providers, read-only SMC data, lid angle, best-effort SPU ambient light, JSON/CSV snapshots, diagnostics, tests, and macOS CI.

@@ -30,7 +30,9 @@ enum SamplingCadence: Double, CaseIterable, Identifiable {
 
   var id: Double { rawValue }
   var duration: Duration { .seconds(rawValue) }
-  var displayName: String { "Every \(Int(rawValue)) seconds" }
+  var displayName: String {
+    rawValue == 1 ? "Every 1 second" : "Every \(Int(rawValue)) seconds"
+  }
   var shortLabel: String { "\(Int(rawValue)) s" }
 }
 
@@ -51,10 +53,12 @@ final class SensorDashboardModel: ObservableObject {
   @Published private(set) var lastRefreshDate: Date?
   @Published private(set) var recordingFileName: String?
   @Published private(set) var recordingProgress: SensorCSVRecordingProgress?
+  @Published private(set) var ambientLuxCalibration: AmbientLuxCalibration?
   @Published var lastActionMessage: String?
 
   private let providers: [any SensorProvider]
   private let maximumHistoryPoints = 600
+  private static let ambientCalibrationDefaultsKey = "dev.macsensorlab.ambientLuxCalibration"
   private var recorder: SensorCSVRecorder?
   private var lastRecordedMarkers: [String: RecordingMarker] = [:]
 
@@ -68,6 +72,7 @@ final class SensorDashboardModel: ObservableObject {
   init(providers: [any SensorProvider] = SensorProviderRegistry.providers()) {
     self.providers = providers
     self.snapshots = providers.map { SensorSnapshot.loading(metadata: $0.metadata) }
+    self.ambientLuxCalibration = Self.loadAmbientCalibration()
   }
 
   func runLiveUpdates() async {
@@ -110,12 +115,13 @@ final class SensorDashboardModel: ObservableObject {
       }
       for await snapshot in group {
         guard !Task.isCancelled else { break }
-        if let index = snapshots.firstIndex(where: { $0.id == snapshot.id }) {
-          snapshots[index] = snapshot
+        let snapshotWithDerivations = applyingUserDerivations(to: snapshot)
+        if let index = snapshots.firstIndex(where: { $0.id == snapshotWithDerivations.id }) {
+          snapshots[index] = snapshotWithDerivations
         } else {
-          snapshots.append(snapshot)
+          snapshots.append(snapshotWithDerivations)
         }
-        appendHistory(snapshot)
+        appendHistory(snapshotWithDerivations)
         snapshots.sort { (order[$0.id] ?? .max) < (order[$1.id] ?? .max) }
       }
     }
@@ -180,6 +186,31 @@ final class SensorDashboardModel: ObservableObject {
     }
   }
 
+  func setAmbientLuxCalibration(rawReference: Double, luxReference: Double) {
+    guard
+      let calibration = AmbientLuxCalibration(
+        rawReference: rawReference,
+        luxReference: luxReference
+      )
+    else {
+      lastActionMessage = "Ambient-light calibration values were invalid"
+      return
+    }
+    ambientLuxCalibration = calibration
+    if let data = try? JSONEncoder().encode(calibration) {
+      UserDefaults.standard.set(data, forKey: Self.ambientCalibrationDefaultsKey)
+    }
+    reapplyAmbientCalibration()
+    lastActionMessage = "Saved a single-point ambient-light calibration"
+  }
+
+  func clearAmbientLuxCalibration() {
+    ambientLuxCalibration = nil
+    UserDefaults.standard.removeObject(forKey: Self.ambientCalibrationDefaultsKey)
+    reapplyAmbientCalibration()
+    lastActionMessage = "Cleared ambient-light calibration"
+  }
+
   func stopRecording() async {
     guard let activeRecorder = recorder else { return }
     recorder = nil
@@ -222,6 +253,42 @@ final class SensorDashboardModel: ObservableObject {
       if let progress { recordingProgress = progress }
       lastActionMessage = "Recording stopped safely: \(error.localizedDescription)"
     }
+  }
+
+  private func applyingUserDerivations(to snapshot: SensorSnapshot) -> SensorSnapshot {
+    guard snapshot.id == "motion.spu_live" else { return snapshot }
+    var channels = snapshot.channels.filter { $0.id != "ambient_estimated_lux" }
+    if let calibration = ambientLuxCalibration,
+      let rawValue = channels.first(where: { $0.id == "ambient_intensity" })?.value,
+      let estimatedChannel = calibration.estimatedChannel(for: rawValue)
+    {
+      channels.append(estimatedChannel)
+    }
+
+    return SensorSnapshot(
+      id: snapshot.id,
+      name: snapshot.name,
+      category: snapshot.category,
+      summary: snapshot.summary,
+      status: snapshot.status,
+      source: snapshot.source,
+      capability: snapshot.capability,
+      channels: channels,
+      notes: snapshot.notes,
+      timestamp: snapshot.timestamp
+    )
+  }
+
+  private func reapplyAmbientCalibration() {
+    guard let index = snapshots.firstIndex(where: { $0.id == "motion.spu_live" }) else { return }
+    snapshots[index] = applyingUserDerivations(to: snapshots[index])
+  }
+
+  private static func loadAmbientCalibration() -> AmbientLuxCalibration? {
+    guard let data = UserDefaults.standard.data(forKey: ambientCalibrationDefaultsKey) else {
+      return nil
+    }
+    return try? JSONDecoder().decode(AmbientLuxCalibration.self, from: data)
   }
 
   private static func fileTimestamp() -> String {
