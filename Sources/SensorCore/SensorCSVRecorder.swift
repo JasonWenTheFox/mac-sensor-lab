@@ -114,6 +114,12 @@ public actor SensorCSVRecorder {
   private var handle: FileHandle?
   private var rowCount = 0
   private var byteCount: Int
+  private var lastSnapshotMarkers: [String: SnapshotMarker] = [:]
+
+  private struct SnapshotMarker: Equatable {
+    let timestamp: Date
+    let status: SensorStatus
+  }
 
   public init(
     destinationURL: URL,
@@ -153,6 +159,30 @@ public actor SensorCSVRecorder {
     byteCount += data.count
     rowCount += SensorCSVStreamEncoder.rowCount(for: snapshots)
     return progress()
+  }
+
+  /// Appends only provider snapshots that have a new timestamp or status.
+  ///
+  /// The check and write happen inside this actor, so concurrent calls from an initial flush and
+  /// an automatic refresh cannot duplicate the same sample batch.
+  public func appendNewSnapshots(
+    _ snapshots: [SensorSnapshot]
+  ) throws -> SensorCSVRecordingProgress {
+    guard handle != nil else { throw SensorCSVRecorderError.alreadyClosed }
+    let batch = snapshots.filter { snapshot in
+      lastSnapshotMarkers[snapshot.id]
+        != SnapshotMarker(timestamp: snapshot.timestamp, status: snapshot.status)
+    }
+    guard !batch.isEmpty else { return progress() }
+
+    let updatedProgress = try append(batch)
+    for snapshot in batch {
+      lastSnapshotMarkers[snapshot.id] = SnapshotMarker(
+        timestamp: snapshot.timestamp,
+        status: snapshot.status
+      )
+    }
+    return updatedProgress
   }
 
   public func finish() throws -> SensorCSVRecordingProgress {

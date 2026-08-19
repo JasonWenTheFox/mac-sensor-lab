@@ -154,6 +154,40 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertLessThanOrEqual(progress.byteCount, limit)
   }
 
+  func testCSVRecorderDeduplicatesConcurrentSnapshotFlushes() async throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
+      UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let destination = directory.appendingPathComponent("deduplicated.csv")
+    let recorder = try SensorCSVRecorder(destinationURL: destination)
+    let timestamp = Date(timeIntervalSince1970: 1_000)
+    let snapshot = makeSPUSnapshot(
+      status: .available,
+      channels: [
+        SensorChannel(
+          id: "ambient_intensity", label: "Ambient intensity", value: 12,
+          formattedValue: "12")
+      ],
+      timestamp: timestamp
+    )
+
+    async let first = recorder.appendNewSnapshots([snapshot])
+    async let second = recorder.appendNewSnapshots([snapshot])
+    _ = try await (first, second)
+    let statusChange = makeSPUSnapshot(
+      status: .degraded,
+      channels: snapshot.channels,
+      timestamp: timestamp
+    )
+    _ = try await recorder.appendNewSnapshots([statusChange])
+    let progress = try await recorder.finish()
+
+    XCTAssertEqual(progress.rowCount, 2)
+    let text = try String(contentsOf: destination, encoding: .utf8)
+    XCTAssertEqual(text.components(separatedBy: "\n").filter { !$0.isEmpty }.count, 3)
+  }
+
   func testSensorSeriesStatisticsIgnoreNonFiniteValues() throws {
     let statistics = try XCTUnwrap(
       SensorSeriesStatistics(values: [10, .nan, 20, .infinity, 30]))

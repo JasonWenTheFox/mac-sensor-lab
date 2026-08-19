@@ -31,6 +31,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ### Fixed
 
+- Concurrent initial and automatic recording flushes no longer duplicate an identical provider snapshot.
 - SPU contention is no longer reported as a privacy permission failure.
 - Recent SPU samples retain their original timestamp and are not duplicated in chart history.
 - Force Touch presence detection no longer unlocks the Trackpad Scale experiment.

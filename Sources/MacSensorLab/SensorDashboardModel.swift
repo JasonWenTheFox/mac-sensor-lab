@@ -69,12 +69,6 @@ final class SensorDashboardModel: ObservableObject {
   private static let ambientCalibrationDefaultsKey = "dev.macsensorlab.ambientLuxCalibration"
   private static let samplingCadenceDefaultsKey = "dev.macsensorlab.samplingCadence"
   private var recorder: SensorCSVRecorder?
-  private var lastRecordedMarkers: [String: RecordingMarker] = [:]
-
-  private struct RecordingMarker: Equatable {
-    let timestamp: Date
-    let status: SensorStatus
-  }
 
   var isRecording: Bool { recordingFileName != nil }
 
@@ -209,7 +203,6 @@ final class SensorDashboardModel: ObservableObject {
       self.recorder = recorder
       recordingFileName = url.lastPathComponent
       recordingProgress = nil
-      lastRecordedMarkers.removeAll(keepingCapacity: true)
       lastActionMessage = "Started recording \(url.lastPathComponent)"
       Task { await appendRecordingBatch() }
     } catch {
@@ -295,7 +288,6 @@ final class SensorDashboardModel: ObservableObject {
     recorder = nil
     let fileName = recordingFileName ?? activeRecorder.destinationURL.lastPathComponent
     recordingFileName = nil
-    lastRecordedMarkers.removeAll(keepingCapacity: true)
 
     do {
       let progress = try await activeRecorder.finish()
@@ -309,25 +301,15 @@ final class SensorDashboardModel: ObservableObject {
 
   private func appendRecordingBatch() async {
     guard let activeRecorder = recorder else { return }
-    let batch = snapshots.filter { snapshot in
-      lastRecordedMarkers[snapshot.id]
-        != RecordingMarker(timestamp: snapshot.timestamp, status: snapshot.status)
-    }
-    guard !batch.isEmpty else { return }
 
     do {
-      let progress = try await activeRecorder.append(batch)
+      let progress = try await activeRecorder.appendNewSnapshots(snapshots)
       guard recorder === activeRecorder else { return }
-      for snapshot in batch {
-        lastRecordedMarkers[snapshot.id] = RecordingMarker(
-          timestamp: snapshot.timestamp, status: snapshot.status)
-      }
       recordingProgress = progress
     } catch {
       guard recorder === activeRecorder else { return }
       recorder = nil
       recordingFileName = nil
-      lastRecordedMarkers.removeAll(keepingCapacity: true)
       let progress = try? await activeRecorder.finish()
       if let progress { recordingProgress = progress }
       lastActionMessage = "Recording stopped safely: \(error.localizedDescription)"
