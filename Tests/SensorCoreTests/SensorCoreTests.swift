@@ -7,6 +7,7 @@ final class SensorCoreTests: XCTestCase {
   func testByteFormattingIsHumanReadable() {
     let value = SensorFormatting.bytes(1_073_741_824)
     XCTAssertTrue(value.contains("GB"))
+    XCTAssertTrue(SensorFormatting.bytesPerSecond(1_024).contains("/s"))
   }
 
   func testCSVScapesUnsafeCells() {
@@ -168,10 +169,33 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertNil(CPUUsageCalculator.percentage(previous: previous, current: previous))
   }
 
+  func testNetworkRateCalculatorUsesMonotonicDeltas() throws {
+    let previous = NetworkCounterSample(
+      receivedBytes: 1_000,
+      sentBytes: 2_000,
+      receivedPackets: 10,
+      sentPackets: 20,
+      timestamp: 100
+    )
+    let current = NetworkCounterSample(
+      receivedBytes: 3_000,
+      sentBytes: 3_000,
+      receivedPackets: 30,
+      sentPackets: 30,
+      timestamp: 102
+    )
+    let rates = try XCTUnwrap(NetworkRateCalculator.rates(previous: previous, current: current))
+    XCTAssertEqual(rates.receivedBytesPerSecond, 1_000)
+    XCTAssertEqual(rates.sentBytesPerSecond, 500)
+    XCTAssertEqual(rates.receivedPacketsPerSecond, 10)
+    XCTAssertEqual(rates.sentPacketsPerSecond, 5)
+    XCTAssertNil(NetworkRateCalculator.rates(previous: current, current: previous))
+  }
+
   func testRegistryHasStableUniqueProviderIDs() {
     let ids = SensorProviderRegistry.providers().map(\.metadata.id)
     XCTAssertEqual(Set(ids).count, ids.count)
-    XCTAssertGreaterThanOrEqual(ids.count, 11)
+    XCTAssertGreaterThanOrEqual(ids.count, 12)
   }
 
   func testSPUVectorReportDecoding() {

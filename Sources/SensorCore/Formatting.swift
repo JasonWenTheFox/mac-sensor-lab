@@ -5,6 +5,11 @@ public enum SensorFormatting {
     ByteCountFormatter.string(fromByteCount: Int64(clamping: value), countStyle: .memory)
   }
 
+  public static func bytesPerSecond(_ value: Double) -> String {
+    guard value.isFinite, value >= 0 else { return "Unavailable" }
+    return "\(bytes(UInt64(value.rounded())))/s"
+  }
+
   public static func decimal(_ value: Double, fractionDigits: Int = 1) -> String {
     value.formatted(.number.precision(.fractionLength(0...fractionDigits)))
   }

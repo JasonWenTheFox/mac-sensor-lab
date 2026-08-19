@@ -14,8 +14,8 @@ struct SensorLabSelfTest {
     if Set(providerIDs).count != providerIDs.count {
       failures.append("provider IDs are not unique")
     }
-    if providers.count < 11 {
-      failures.append("expected at least 11 providers, found \(providers.count)")
+    if providers.count < 12 {
+      failures.append("expected at least 12 providers, found \(providers.count)")
     }
 
     let snapshots = await SensorProviderRegistry.readAll()
@@ -77,6 +77,14 @@ struct SensorLabSelfTest {
       let performance = await performanceProvider.read()
       if performance.channels.first(where: { $0.id == "cpu_utilization" })?.value == nil {
         failures.append("performance provider did not produce CPU utilization after a baseline")
+      }
+
+      let networkProvider = NetworkThroughputProvider()
+      _ = await networkProvider.read()
+      try? await Task.sleep(for: .milliseconds(150))
+      let network = await networkProvider.read()
+      if network.channels.first(where: { $0.id == "network_receive_rate" })?.value == nil {
+        failures.append("network provider did not produce throughput after a baseline")
       }
     }
 

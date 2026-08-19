@@ -131,7 +131,8 @@ private struct SensorCard: View {
 
   private var chartChannel: SensorChannel? {
     let liveChannelIDs = [
-      "cpu_utilization", "cpu_hotspot", "system_power", "charge", "angle", "ambient_intensity",
+      "cpu_utilization", "network_receive_rate", "cpu_hotspot", "system_power", "charge", "angle",
+      "ambient_intensity",
     ]
     return liveChannelIDs.lazy.compactMap { id in
       snapshot.channels.first(where: { $0.id == id && $0.value != nil })
@@ -302,7 +303,7 @@ private struct RawSensorsView: View {
 }
 
 private func shouldDisplayUnit(_ unit: String, for channel: SensorChannel) -> Bool {
-  guard unit != "bytes" else { return false }
+  guard unit != "bytes", unit != "bytes/s" else { return false }
   return !channel.formattedValue.contains(unit)
 }
 
