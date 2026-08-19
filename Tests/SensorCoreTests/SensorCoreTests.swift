@@ -71,6 +71,92 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertNil(SPUReportDecoder.ambient(from: [0]))
   }
 
+  func testSPUOpenErrorClassificationDistinguishesContentionFromPermission() {
+    XCTAssertEqual(
+      SPUHIDOpenFailure.status(for: [kIOReturnNotPrivileged, kIOReturnNotPermitted]),
+      .permissionRequired
+    )
+    XCTAssertEqual(
+      SPUHIDOpenFailure.status(for: [kIOReturnExclusiveAccess]),
+      .degraded
+    )
+    XCTAssertEqual(
+      SPUHIDOpenFailure.status(for: [kIOReturnBusy, kIOReturnNotPermitted]),
+      .degraded
+    )
+    XCTAssertEqual(SPUHIDOpenFailure.status(for: []), .unavailable)
+  }
+
+  func testSPUStabilizerKeepsRecentDataWithoutFakingFreshTimestamp() {
+    let sampleTime = Date(timeIntervalSince1970: 1_000)
+    let sample = makeSPUSnapshot(
+      status: .available,
+      channels: [
+        SensorChannel(
+          id: "ambient_intensity", label: "Ambient intensity", value: 12,
+          formattedValue: "12")
+      ],
+      timestamp: sampleTime
+    )
+    let temporaryFailure = makeSPUSnapshot(
+      status: .degraded, timestamp: sampleTime.addingTimeInterval(2))
+    var stabilizer = SPUSnapshotStabilizer(graceInterval: 12)
+
+    XCTAssertEqual(stabilizer.resolve(sample, now: sampleTime), sample)
+    let resolved = stabilizer.resolve(
+      temporaryFailure,
+      now: sampleTime.addingTimeInterval(5)
+    )
+
+    XCTAssertEqual(resolved.status, .degraded)
+    XCTAssertEqual(resolved.channels, sample.channels)
+    XCTAssertEqual(resolved.timestamp, sampleTime)
+    XCTAssertTrue(resolved.summary.contains("Recent live data"))
+  }
+
+  func testSPUStabilizerDropsExpiredCache() {
+    let sampleTime = Date(timeIntervalSince1970: 1_000)
+    let sample = makeSPUSnapshot(
+      status: .available,
+      channels: [
+        SensorChannel(
+          id: "ambient_intensity", label: "Ambient intensity", value: 12,
+          formattedValue: "12")
+      ],
+      timestamp: sampleTime
+    )
+    let temporaryFailure = makeSPUSnapshot(
+      status: .degraded, timestamp: sampleTime.addingTimeInterval(20))
+    var stabilizer = SPUSnapshotStabilizer(graceInterval: 12)
+    _ = stabilizer.resolve(sample, now: sampleTime)
+
+    let resolved = stabilizer.resolve(
+      temporaryFailure,
+      now: sampleTime.addingTimeInterval(20)
+    )
+
+    XCTAssertEqual(resolved, temporaryFailure)
+    XCTAssertTrue(resolved.channels.isEmpty)
+  }
+
+  private func makeSPUSnapshot(
+    status: SensorStatus,
+    channels: [SensorChannel] = [],
+    timestamp: Date
+  ) -> SensorSnapshot {
+    SensorSnapshot(
+      id: "motion.spu_live",
+      name: "Motion & Ambient Light",
+      category: .motion,
+      summary: "Fixture",
+      status: status,
+      source: "Fixture",
+      capability: .undocumented,
+      channels: channels,
+      timestamp: timestamp
+    )
+  }
+
   private func writeLittleEndian(_ value: UInt32, to bytes: inout [UInt8], at offset: Int) {
     bytes[offset] = UInt8(truncatingIfNeeded: value)
     bytes[offset + 1] = UInt8(truncatingIfNeeded: value >> 8)

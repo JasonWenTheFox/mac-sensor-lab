@@ -7,6 +7,7 @@ struct SensorLabSelfTest {
   static func main() async {
     var failures: [String] = []
     let portableMode = CommandLine.arguments.contains("--portable")
+    let spuStabilityMode = CommandLine.arguments.contains("--spu-stability")
     let providers = SensorProviderRegistry.providers()
     let providerIDs = providers.map(\.metadata.id)
 
@@ -78,15 +79,60 @@ struct SensorLabSelfTest {
       failures.append("CSV export header is invalid")
     }
 
+    var spuStabilitySummary: String?
+    if spuStabilityMode {
+      let result = await checkSPUStability(attempts: 20)
+      failures += result.failures
+      spuStabilitySummary = result.summary
+    }
+
     if failures.isEmpty {
       let mode = portableMode ? "portable" : "hardware"
       print(
         "PASS (\(mode)): \(snapshots.count) providers; \(snapshots.filter { $0.status == .available }.count) available; JSON/CSV and privacy checks succeeded"
       )
+      if let spuStabilitySummary { print(spuStabilitySummary) }
       exit(EXIT_SUCCESS)
     }
 
     for failure in failures { fputs("FAIL: \(failure)\n", stderr) }
     exit(EXIT_FAILURE)
+  }
+
+  private static func checkSPUStability(attempts: Int) async -> (
+    failures: [String], summary: String
+  ) {
+    let provider = SPULiveProvider()
+    var failures: [String] = []
+    var counts: [String: Int] = [:]
+    var liveSamples = 0
+    var cachedSamples = 0
+
+    for _ in 0..<attempts {
+      let snapshot = await provider.read()
+      counts[snapshot.status.rawValue, default: 0] += 1
+      if snapshot.status == .available { liveSamples += 1 }
+      if snapshot.status == .degraded, !snapshot.channels.isEmpty { cachedSamples += 1 }
+      if snapshot.status == .permissionRequired {
+        failures.append(
+          "SPU access was classified as permission-required during a sequential stability run")
+      }
+      for channel in snapshot.channels {
+        if let value = channel.value, !value.isFinite {
+          failures.append("SPU stability run returned a non-finite value: \(channel.id)")
+        }
+      }
+    }
+
+    if liveSamples == 0 {
+      failures.append("SPU stability run never received a live report")
+    }
+
+    let statuses = counts.keys.sorted().map {
+      "\($0)=\(counts[$0, default: 0])"
+    }.joined(separator: ", ")
+    let summary =
+      "SPU stability: \(attempts) reads; \(liveSamples) live; \(cachedSamples) recent-sample fallbacks; \(statuses)"
+    return (failures, summary)
   }
 }

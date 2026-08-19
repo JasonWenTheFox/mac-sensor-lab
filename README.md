@@ -60,22 +60,24 @@ Mac Sensor Lab 希望填补 macOS 上“原始传感器浏览器 + 面向用户�
 
 ## 本地构建
 
-本机目前已安装 Xcode，但首次许可尚未由用户接受。在此之前，可显式使用 Command Line Tools：
+本机可使用完整 Xcode；如果 Xcode 首次组件仍在安装，也可显式使用 Command Line Tools：
 
 ```bash
-export DEVELOPER_DIR=/Library/Developer/CommandLineTools
-swift build
-swift run sensorlab-selftest
-swift run sensorlab-selftest --portable  # CI/无传感器机器
-swift run sensorlab-probe
+DEVELOPER_DIR=/Library/Developer/CommandLineTools swift build
+DEVELOPER_DIR=/Library/Developer/CommandLineTools swift run sensorlab-selftest
+DEVELOPER_DIR=/Library/Developer/CommandLineTools swift run sensorlab-selftest --spu-stability
+DEVELOPER_DIR=/Library/Developer/CommandLineTools swift run sensorlab-selftest --portable
+DEVELOPER_DIR=/Library/Developer/CommandLineTools swift run sensorlab-probe
 ./scripts/build-app.sh
 open "outputs/Mac Sensor Lab.app"
 ```
 
-Command Line Tools 不包含本项目测试所需的 XCTest 模块，因此 `swift test` 要等完整 Xcode 首次许可完成后执行。许可必须由用户本人阅读和接受：
+Command Line Tools 不包含本项目测试所需的 XCTest 模块。首次安装 Xcode 时，许可和组件初始化必须由用户本人完成；项目本身不会调用 `sudo`：
 
 ```bash
 sudo xcodebuild -license
+sudo xcodebuild -runFirstLaunch
+xcodebuild -checkFirstLaunchStatus
 swift test
 ```
 
@@ -89,7 +91,7 @@ swift test
 | 电池 | 可用 | 固定非识别字段白名单 |
 | SMC 温度、风扇、功耗 | 可用 | 固定 key 白名单；没有写入或风扇控制方法 |
 | 上盖角度 | 可用 | 一次性只读 feature report |
-| 环境光 | 可用时实时读取 | 原始强度与光谱通道，不冒充校准 lux |
+| 环境光 | 可用时实时读取 | 原始强度与光谱通道，不冒充校准 lux；短暂争用时保留原时间戳的最近样本 |
 | 加速度计、陀螺仪 | 条件可用 | 只监听系统已发布报告，不写驱动唤醒状态 |
 | Force Touch | 仅检测存在性 | 未加载私有二进制框架 |
 | 麦克风 | 未启用 | 不主动触发录音权限 |
@@ -105,8 +107,10 @@ swift test
 - [x] 添加 MIT 项目许可证和完整第三方许可证/归属信息。
 - [x] 添加原创 App 图标和本地 `.icns` 打包资源。
 - [x] 添加 macOS 26 / Xcode 26 CI 和 Pull Request 安全检查模板。
-- [ ] 用户确认正式名称后建立公开 GitHub 仓库。
-- [ ] 用户接受 Xcode 许可后运行 XCTest 和正式 Xcode 签名构建。
+- [x] 建立私有 GitHub 仓库并通过首轮 CI。
+- [x] 用户接受 Xcode 许可。
+- [x] 完成 Xcode 首次组件初始化并在本机通过 9 项 XCTest。
+- [ ] 用户确认正式名称后公开 GitHub 仓库。
 
 ## 重要边界
 

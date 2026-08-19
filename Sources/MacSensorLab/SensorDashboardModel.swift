@@ -84,6 +84,7 @@ final class SensorDashboardModel: ObservableObject {
       guard let value = channel.value, value.isFinite else { continue }
       let key = "\(snapshot.id)/\(channel.id)"
       var points = history[key, default: []]
+      guard points.last?.timestamp != snapshot.timestamp else { continue }
       points.append(SensorHistoryPoint(timestamp: snapshot.timestamp, value: value))
       if points.count > 60 { points.removeFirst(points.count - 60) }
       history[key] = points

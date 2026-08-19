@@ -103,6 +103,9 @@ private func spuInputReportCallback(
 /// research projects to wake the SPU. It only listens for reports that macOS is
 /// already publishing, then closes every HID handle it opened.
 public struct SPULiveProvider: SensorProvider {
+  private static let accessLock = NSLock()
+  private static let snapshotCache = SPUSnapshotCache()
+
   public let metadata = SensorProviderMetadata(
     id: "motion.spu_live",
     name: "Motion & Ambient Light",
@@ -114,7 +117,8 @@ public struct SPULiveProvider: SensorProvider {
   public init() {}
 
   public func read() async -> SensorSnapshot {
-    readSynchronously()
+    let candidate = Self.accessLock.withLock { readSynchronously() }
+    return Self.snapshotCache.resolve(candidate)
   }
 
   private func readSynchronously() -> SensorSnapshot {
@@ -127,8 +131,13 @@ public struct SPULiveProvider: SensorProvider {
     ]
     IOHIDManagerSetDeviceMatchingMultiple(manager, matches as CFArray)
 
-    guard IOHIDManagerOpen(manager, noOptions) == kIOReturnSuccess else {
-      return failure(status: .permissionRequired, summary: "SPU HID manager could not be opened")
+    let managerOpenResult = IOHIDManagerOpen(manager, noOptions)
+    guard managerOpenResult == kIOReturnSuccess else {
+      return failure(
+        status: SPUHIDOpenFailure.status(for: [managerOpenResult]),
+        summary: SPUHIDOpenFailure.summary(for: [managerOpenResult]),
+        note: SPUHIDOpenFailure.note(for: [managerOpenResult])
+      )
     }
     defer { IOHIDManagerClose(manager, noOptions) }
 
@@ -169,11 +178,9 @@ public struct SPULiveProvider: SensorProvider {
 
     guard !opened.isEmpty else {
       return failure(
-        status: openErrors.isEmpty ? .unavailable : .permissionRequired,
-        summary: openErrors.isEmpty
-          ? "Compatible SPU interfaces were not exposed"
-          : "SPU interfaces were detected but could not be opened",
-        note: openErrors.first.map { "IOReturn \($0)" }
+        status: SPUHIDOpenFailure.status(for: openErrors),
+        summary: SPUHIDOpenFailure.summary(for: openErrors),
+        note: SPUHIDOpenFailure.note(for: openErrors)
       )
     }
 
