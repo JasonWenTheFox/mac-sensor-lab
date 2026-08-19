@@ -12,6 +12,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - Ambient-light rolling raw statistics and optional single-point, user-referenced estimated lux.
 - Exportable `ambient_estimated_lux` channel clearly marked as `Estimated`.
 - Lid-angle reference capture and signed relative change.
+- Aggregate CPU utilization, load averages, raw Mach memory categories, and swap telemetry without collecting a process list.
 
 ### Fixed
 

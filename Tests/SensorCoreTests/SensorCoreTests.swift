@@ -156,10 +156,22 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertNil(RelativeAngleMeasurement(current: .nan, reference: 90))
   }
 
+  func testCPUUsageCalculatorUsesTickDeltas() throws {
+    let previous = CPUTickSample(user: 100, system: 50, idle: 850, nice: 0)
+    let current = CPUTickSample(user: 130, system: 70, idle: 900, nice: 0)
+    XCTAssertEqual(
+      try XCTUnwrap(CPUUsageCalculator.percentage(previous: previous, current: current)),
+      50,
+      accuracy: 0.000_001
+    )
+    XCTAssertNil(CPUUsageCalculator.percentage(previous: current, current: previous))
+    XCTAssertNil(CPUUsageCalculator.percentage(previous: previous, current: previous))
+  }
+
   func testRegistryHasStableUniqueProviderIDs() {
     let ids = SensorProviderRegistry.providers().map(\.metadata.id)
     XCTAssertEqual(Set(ids).count, ids.count)
-    XCTAssertGreaterThanOrEqual(ids.count, 10)
+    XCTAssertGreaterThanOrEqual(ids.count, 11)
   }
 
   func testSPUVectorReportDecoding() {

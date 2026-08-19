@@ -14,8 +14,8 @@ struct SensorLabSelfTest {
     if Set(providerIDs).count != providerIDs.count {
       failures.append("provider IDs are not unique")
     }
-    if providers.count < 9 {
-      failures.append("expected at least 9 providers, found \(providers.count)")
+    if providers.count < 11 {
+      failures.append("expected at least 11 providers, found \(providers.count)")
     }
 
     let snapshots = await SensorProviderRegistry.readAll()
@@ -64,6 +64,19 @@ struct SensorLabSelfTest {
         !(-180...180).contains(value)
       {
         failures.append("derived angle is out of range: \(channel.id)=\(value)")
+      }
+      if channel.id == "cpu_utilization", let value = channel.value, !(0...100).contains(value) {
+        failures.append("CPU utilization is out of range: \(value)")
+      }
+    }
+
+    if !portableMode {
+      let performanceProvider = SystemPerformanceProvider()
+      _ = await performanceProvider.read()
+      try? await Task.sleep(for: .milliseconds(150))
+      let performance = await performanceProvider.read()
+      if performance.channels.first(where: { $0.id == "cpu_utilization" })?.value == nil {
+        failures.append("performance provider did not produce CPU utilization after a baseline")
       }
     }
 

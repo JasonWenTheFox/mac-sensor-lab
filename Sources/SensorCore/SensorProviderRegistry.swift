@@ -4,6 +4,7 @@ public enum SensorProviderRegistry {
   public static func providers() -> [any SensorProvider] {
     [
       SystemInfoProvider(),
+      SystemPerformanceProvider(),
       BatteryProvider(),
       ThermalProvider(),
       SMCSensorProvider(),
@@ -17,8 +18,11 @@ public enum SensorProviderRegistry {
   }
 
   public static func readAll() async -> [SensorSnapshot] {
-    await withTaskGroup(of: SensorSnapshot.self) { group in
-      for provider in providers() {
+    let providers = providers()
+    let order = Dictionary(
+      uniqueKeysWithValues: providers.enumerated().map { ($0.element.metadata.id, $0.offset) })
+    return await withTaskGroup(of: SensorSnapshot.self) { group in
+      for provider in providers {
         group.addTask { await provider.read() }
       }
       var snapshots: [SensorSnapshot] = []
@@ -26,9 +30,7 @@ public enum SensorProviderRegistry {
         snapshots.append(snapshot)
       }
       return snapshots.sorted { lhs, rhs in
-        let leftIndex = providers().firstIndex { $0.metadata.id == lhs.id } ?? .max
-        let rightIndex = providers().firstIndex { $0.metadata.id == rhs.id } ?? .max
-        return leftIndex < rightIndex
+        (order[lhs.id] ?? .max) < (order[rhs.id] ?? .max)
       }
     }
   }
