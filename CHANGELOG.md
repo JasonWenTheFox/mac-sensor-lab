@@ -30,6 +30,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - A privacy-safe compatibility issue form and anonymous cross-model contribution guide enforced by the release audit.
 - Value-free sampling health diagnostics with refresh counts/duration, per-provider status transitions, and consecutive issue counts.
 - Provider contract cardinality/text bounds plus blank-label, duplicate-note, loading-state, and empty-available consistency checks.
+- Separate Diagnostics counts and guidance for loading, permission-required, unavailable, and error provider states.
 
 ### Changed
 
@@ -41,6 +42,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ### Fixed
 
+- Settings no longer claims that existing automatically sampled read-only HID providers are opt-in.
 - Corrupt or extreme counters can no longer overflow CPU totals, network/disk/GPU aggregation, memory page conversion, fan-count conversion, sampling duration, or byte-rate formatting.
 - Continuous CSV recording now preflights the complete batch size and then encodes/writes one row at a time instead of retaining a second full-batch copy in memory.
 - Duplicate provider IDs no longer trap while constructing read or dashboard ordering; they remain visible to the contract audit.

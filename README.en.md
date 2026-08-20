@@ -78,6 +78,9 @@ The Overview, Raw Sensors, Experiments, and Diagnostics screens share the same n
   status transitions, and consecutive issue samples. An explicitly exported privacy-safe support
   report may include those counters and stable channel metadata, but no readings, summaries, notes,
   source strings, snapshot timestamps, machine identifiers, or file paths.
+- Diagnostics keeps permission-required, unavailable, error, limited, and loading counts separate.
+  Live providers may attempt ordinary read-only access during sampling; denial is reported without
+  administrator escalation, driver changes, or a privacy-control bypass.
 
 Nothing records automatically, and the app contains no upload client.
 
@@ -132,7 +135,7 @@ rejects tracked build output, absolute user paths, common secret signatures, pro
 keys that this release does not implement, forbidden mutation/privilege APIs, missing release
 documents, or a privacy manifest inconsistent with the current offline behavior.
 
-GitHub Actions repeats formatting, audit, build, 38 XCTest cases, portable self-test, and app-bundle
+GitHub Actions repeats formatting, audit, build, 39 XCTest cases, portable self-test, and app-bundle
 assembly on `macos-26`.
 
 ## Repository layout

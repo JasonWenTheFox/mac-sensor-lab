@@ -816,6 +816,31 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertGreaterThanOrEqual(ids.count, 14)
   }
 
+  func testStatusCountsKeepPermissionUnavailableAndErrorsSeparate() {
+    let statuses: [SensorStatus] = [
+      .loading, .available, .available, .degraded, .permissionRequired, .unavailable, .error,
+    ]
+    let snapshots = statuses.enumerated().map { index, status in
+      SensorSnapshot(
+        id: "test.status_\(index)",
+        name: "Fixture \(index)",
+        category: .diagnostics,
+        summary: "Fixture",
+        status: status,
+        source: "Fixture",
+        capability: .publicAPI
+      )
+    }
+    let counts = SensorStatusCounts(snapshots: snapshots)
+
+    XCTAssertEqual(counts.loading, 1)
+    XCTAssertEqual(counts.available, 2)
+    XCTAssertEqual(counts.degraded, 1)
+    XCTAssertEqual(counts.permissionRequired, 1)
+    XCTAssertEqual(counts.unavailable, 1)
+    XCTAssertEqual(counts.error, 1)
+  }
+
   func testDemoPreferenceKeysAreIsolatedFromLiveMode() {
     let liveKeys = Set([
       SensorPreferenceKeys.samplingCadence(isDemoMode: false),

@@ -46,6 +46,42 @@ public enum SensorStatus: String, Codable, Sendable {
   }
 }
 
+public struct SensorStatusCounts: Equatable, Sendable {
+  public let loading: Int
+  public let available: Int
+  public let degraded: Int
+  public let permissionRequired: Int
+  public let unavailable: Int
+  public let error: Int
+
+  public init(snapshots: [SensorSnapshot]) {
+    var loading = 0
+    var available = 0
+    var degraded = 0
+    var permissionRequired = 0
+    var unavailable = 0
+    var error = 0
+
+    for snapshot in snapshots {
+      switch snapshot.status {
+      case .loading: loading += 1
+      case .available: available += 1
+      case .degraded: degraded += 1
+      case .permissionRequired: permissionRequired += 1
+      case .unavailable: unavailable += 1
+      case .error: error += 1
+      }
+    }
+
+    self.loading = loading
+    self.available = available
+    self.degraded = degraded
+    self.permissionRequired = permissionRequired
+    self.unavailable = unavailable
+    self.error = error
+  }
+}
+
 public enum SensorValueKind: String, Codable, Sendable {
   case raw
   case derived

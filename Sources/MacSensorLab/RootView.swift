@@ -731,6 +731,10 @@ private struct DiagnosticsView: View {
   let message: String?
   let onExportDiagnostics: () -> Void
 
+  private var statusCounts: SensorStatusCounts {
+    SensorStatusCounts(snapshots: snapshots)
+  }
+
   var body: some View {
     Form {
       Section("Build") {
@@ -741,13 +745,14 @@ private struct DiagnosticsView: View {
         LabeledContent("Privacy manifest", value: AppBuildInfo.privacyManifestStatus)
       }
       Section("Provider health") {
-        LabeledContent("Available", value: "\(snapshots.filter { $0.status == .available }.count)")
-        LabeledContent("Limited", value: "\(snapshots.filter { $0.status == .degraded }.count)")
-        LabeledContent(
-          "Unavailable",
-          value:
-            "\(snapshots.filter { [.unavailable, .permissionRequired, .error].contains($0.status) }.count)"
-        )
+        LabeledContent("Available", value: "\(statusCounts.available)")
+        LabeledContent("Limited", value: "\(statusCounts.degraded)")
+        LabeledContent("Permission required", value: "\(statusCounts.permissionRequired)")
+        LabeledContent("Unavailable", value: "\(statusCounts.unavailable)")
+        LabeledContent("Errors", value: "\(statusCounts.error)")
+        if statusCounts.loading > 0 {
+          LabeledContent("Loading", value: "\(statusCounts.loading)")
+        }
         LabeledContent(
           "Status changes this launch",
           value: "\(samplingHealth.totalStatusTransitionCount)"
@@ -759,6 +764,17 @@ private struct DiagnosticsView: View {
             provider.providerID,
             value: "\(provider.statusTransitionCount) changes"
           )
+        }
+      }
+      if statusCounts.permissionRequired > 0 {
+        Section("Permission handling") {
+          Text(
+            "macOS denied ordinary read access for \(statusCounts.permissionRequired) provider(s). Raw Sensors shows the provider-specific reason."
+          )
+          Text(
+            "Mac Sensor Lab does not request administrator access, change driver state, or bypass macOS privacy controls."
+          )
+          .foregroundStyle(.secondary)
         }
       }
       Section("Sampling & recording") {

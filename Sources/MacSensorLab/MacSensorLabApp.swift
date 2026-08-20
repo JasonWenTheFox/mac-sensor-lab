@@ -58,7 +58,7 @@ private struct SettingsView: View {
           "Mac Sensor Lab reads sensors locally and does not request administrator access in this build."
         )
         Text(
-          "Permission-gated providers are opt-in and will explain their purpose before requesting access."
+          "Live sampling attempts ordinary read-only access. If macOS denies an interface, its provider reports Permission required; this app does not request administrator access or bypass privacy controls."
         )
       }
     }
