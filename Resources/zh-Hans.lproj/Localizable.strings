@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>%@ experiment trend</key>
+	<string>%@ 实验趋势</string>
+	<key>%@ trend with %lld samples</key>
+	<string>%@ 趋势，共 %lld 个样本</string>
+	<key>%@ • recent samples</key>
+	<string>%@ • 最近样本</string>
+	<key>%lld changes</key>
+	<string>%lld 次变化</string>
+	<key>%lld rows • %@</key>
+	<string>%lld 行 • %@</string>
+	<key>50 MB safety limit</key>
+	<string>50 MB 安全上限</string>
+	<key>Acceleration</key>
+	<string>加速度</string>
+	<key>Acceleration magnitude</key>
+	<string>加速度模长</string>
+	<key>Active displays</key>
+	<string>活动显示器</string>
+	<key>Active non-loopback interfaces</key>
+	<string>活动的非回环接口</string>
+	<key>Active processors</key>
+	<string>活动处理器</string>
+	<key>Add Calibration Point</key>
+	<string>添加校准点</string>
+	<key>Aggregated block devices</key>
+	<string>汇总块设备</string>
+	<key>All readings stay on this Mac unless you explicitly export a snapshot, recording, calibration, or diagnostics file.</key>
+	<string>所有读数都保留在这台 Mac 上，除非你主动导出快照、记录、校准或诊断文件。</string>
+	<key>Ambient intensity</key>
+	<string>环境光强度</string>
+	<key>Angular velocity</key>
+	<string>角速度</string>
+	<key>Apple SPU Sensors</key>
+	<string>Apple SPU 传感器</string>
+	<key>Architecture</key>
+	<string>架构</string>
+	<key>Automatic sampling</key>
+	<string>自动采样</string>
+	<key>Automatic sampling interval</key>
+	<string>自动采样间隔</string>
+	<key>Automatic sampling paused</key>
+	<string>已暂停自动采样</string>
+	<key>Automatic sampling resumed</key>
+	<string>已恢复自动采样</string>
+	<key>Available</key>
+	<string>可用</string>
+	<key>Average</key>
+	<string>平均</string>
+	<key>Battery current</key>
+	<string>电池电流</string>
+	<key>Battery temperature</key>
+	<string>电池温度</string>
+	<key>Battery voltage</key>
+	<string>电池电压</string>
+	<key>Battery-side power</key>
+	<string>电池侧功率</string>
+	<key>Build</key>
+	<string>构建</string>
+	<key>Built-in demo fixtures</key>
+	<string>内置演示样本</string>
+	<key>CPU average</key>
+	<string>CPU 平均温度</string>
+	<key>CPU hotspot</key>
+	<string>CPU 热点</string>
+	<key>CPU utilization</key>
+	<string>CPU 利用率</string>
+	<key>CSV Channels</key>
+	<string>CSV 通道</string>
+	<key>Calculated from %lld dashboard samples. The 1–10 second cadence cannot measure vibration frequency.</key>
+	<string>根据 %lld 个仪表盘样本计算。1–10 秒的采样间隔无法测量振动频率。</string>
+	<key>Calibrate at Current Raw</key>
+	<string>以当前原始值校准</string>
+	<key>Calibrated</key>
+	<string>已校准</string>
+	<key>Calibration export failed: %@</key>
+	<string>校准导出失败：%@</string>
+	<key>Calibration import failed: %@</key>
+	<string>校准导入失败：%@</string>
+	<key>Calibration point was invalid, non-monotonic, or exceeded the eight-point limit</key>
+	<string>校准点无效、不单调，或超过了 8 点上限</string>
+	<key>Capacity</key>
+	<string>容量</string>
+	<key>Charge</key>
+	<string>电量</string>
+	<key>Charging</key>
+	<string>正在充电</string>
+	<key>Chart history stays in memory only and can be cleared from the toolbar.</key>
+	<string>图表历史仅保留在内存中，可从工具栏清除。</string>
+	<key>Checking data source</key>
+	<string>正在检查数据源</string>
+	<key>Clear</key>
+	<string>清除</string>
+	<key>Clear All</key>
+	<string>全部清除</string>
+	<key>Clear Chart History</key>
+	<string>清除图表历史</string>
+	<key>Cleared ambient-light calibration</key>
+	<string>已清除环境光校准</string>
+	<key>Cleared in-memory chart history</key>
+	<string>已清除内存中的图表历史</string>
+	<key>Closed from reference</key>
+	<string>相对参考角度已合上</string>
+	<key>Completed refreshes</key>
+	<string>已完成刷新</string>
+	<key>Continuous recording</key>
+	<string>连续记录</string>
+	<key>Could not start recording: %@</key>
+	<string>无法开始记录：%@</string>
+	<key>Create an ambient-light calibration before exporting it</key>
+	<string>请先创建环境光校准再导出</string>
+	<key>Cycle count</key>
+	<string>循环计数</string>
+	<key>Data mode</key>
+	<string>数据模式</string>
+	<key>Data source limited</key>
+	<string>数据源受限</string>
+	<key>Data source ready</key>
+	<string>数据源已就绪</string>
+	<key>Data source unavailable</key>
+	<string>数据源不可用</string>
+	<key>Demo data — no hardware is being read</key>
+	<string>演示数据 — 未读取硬件</string>
+	<key>Demo data — not live sensor readings</key>
+	<string>演示数据 — 不是实时传感器读数</string>
+	<key>Derived</key>
+	<string>派生</string>
+	<key>Derived tools unlock only when their data source is verified.</key>
+	<string>只有数据源经过验证后，派生工具才会解锁。</string>
+	<key>Design capacity</key>
+	<string>设计容量</string>
+	<key>Deterministic fixture readings for screenshots and UI review.</key>
+	<string>用于截图和界面审查的确定性演示读数。</string>
+	<key>Development</key>
+	<string>开发版</string>
+	<key>Development executable</key>
+	<string>开发用可执行文件</string>
+	<key>Diagnostics</key>
+	<string>诊断</string>
+	<key>Diagnostics export failed: %@</key>
+	<string>诊断导出失败：%@</string>
+	<key>Disk Activity</key>
+	<string>磁盘活动</string>
+	<key>Display</key>
+	<string>显示器</string>
+	<key>Error</key>
+	<string>错误</string>
+	<key>Errors</key>
+	<string>错误</string>
+	<key>Estimated</key>
+	<string>估算</string>
+	<key>Estimated illuminance</key>
+	<string>估算照度</string>
+	<key>Estimated pitch</key>
+	<string>估算俯仰角</string>
+	<key>Estimated roll</key>
+	<string>估算横滚角</string>
+	<key>Estimated time remaining</key>
+	<string>估算剩余时间</string>
+	<key>Estimated time to full</key>
+	<string>估算充满时间</string>
+	<key>Every %lld seconds</key>
+	<string>每 %lld 秒</string>
+	<key>Every 1 second</key>
+	<string>每 1 秒</string>
+	<key>Experimental Hardware</key>
+	<string>实验性硬件</string>
+	<key>Experimental readings are not medical, legal, safety, or calibrated metrology data.</key>
+	<string>实验性读数不属于医疗、法律、安全或经校准的计量数据。</string>
+	<key>Experiments</key>
+	<string>实验</string>
+	<key>Export</key>
+	<string>导出</string>
+	<key>Export Ambient-Light Calibration</key>
+	<string>导出环境光校准</string>
+	<key>Export Calibration…</key>
+	<string>导出校准…</string>
+	<key>Export Privacy-Safe Diagnostics</key>
+	<string>导出隐私安全诊断</string>
+	<key>Export Privacy-Safe Diagnostics…</key>
+	<string>导出隐私安全诊断…</string>
+	<key>Export Sensor Snapshot</key>
+	<string>导出传感器快照</string>
+	<key>Export failed: %@</key>
+	<string>导出失败：%@</string>
+	<key>Exported %@</key>
+	<string>已导出 %@</string>
+	<key>Exported light calibration %@</key>
+	<string>已导出光照校准 %@</string>
+	<key>Exported privacy-safe diagnostics %@</key>
+	<string>已导出隐私安全诊断 %@</string>
+	<key>Four uncalibrated ambient spectral channels</key>
+	<string>4 个未校准的环境光谱通道</string>
+	<key>Fully charged</key>
+	<string>已充满</string>
+	<key>GPU Performance</key>
+	<string>GPU 性能</string>
+	<key>GPU average</key>
+	<string>GPU 平均温度</string>
+	<key>GPU driver instances</key>
+	<string>GPU 驱动实例</string>
+	<key>GPU hotspot</key>
+	<string>GPU 热点</string>
+	<key>Hardware detected • measurement provider pending</key>
+	<string>已检测到硬件 • 等待测量 Provider</string>
+	<key>Import Ambient-Light Calibration</key>
+	<string>导入环境光校准</string>
+	<key>Import Calibration…</key>
+	<string>导入校准…</string>
+	<key>Imported light calibration %@</key>
+	<string>已导入光照校准 %@</string>
+	<key>Included</key>
+	<string>已包含</string>
+	<key>Includes provider status and stable channel metadata, but no sensor readings or machine identifiers.</key>
+	<string>包含 Provider 状态和稳定的通道元数据，但不包含传感器读数或机器标识。</string>
+	<key>JSON Snapshot</key>
+	<string>JSON 快照</string>
+	<key>Last action</key>
+	<string>上一操作</string>
+	<key>Last refresh</key>
+	<string>上次刷新</string>
+	<key>Last refresh duration</key>
+	<string>上次刷新耗时</string>
+	<key>Level</key>
+	<string>水平仪</string>
+	<key>Lid Angle</key>
+	<string>上盖角度</string>
+	<key>Lid Protractor</key>
+	<string>上盖量角器</string>
+	<key>Lid angle</key>
+	<string>上盖角度</string>
+	<key>Light Meter</key>
+	<string>照度计</string>
+	<key>Limited</key>
+	<string>受限</string>
+	<key>Linear fit from %lld points • RMSE %@ lux.</key>
+	<string>由 %lld 个点线性拟合 • RMSE %@ lux。</string>
+	<key>Live hardware</key>
+	<string>实时硬件</string>
+	<key>Live local readings, with source and confidence kept visible.</key>
+	<string>实时本地读数，始终显示数据源和可信度。</string>
+	<key>Live sampling attempts ordinary read-only access. If macOS denies an interface, its provider reports Permission required; this app does not request administrator access or bypass privacy controls.</key>
+	<string>实时采样只尝试普通的只读访问。如果 macOS 拒绝某个接口，对应 Provider 会报告“需要权限”；本 App 不请求管理员权限，也不绕过隐私控制。</string>
+	<key>Loading</key>
+	<string>加载中</string>
+	<key>Logical processors</key>
+	<string>逻辑处理器</string>
+	<key>Low Power Mode</key>
+	<string>低电量模式</string>
+	<key>Low-rate acceleration variation; not a vibration spectrum analyzer</key>
+	<string>低速率加速度变化；不是振动频谱分析仪</string>
+	<key>Mac Sensor Lab does not request administrator access, change driver state, or bypass macOS privacy controls.</key>
+	<string>Mac Sensor Lab 不请求管理员权限、不改变驱动状态，也不绕过 macOS 隐私控制。</string>
+	<key>Mac Sensor Lab reads sensors locally and does not request administrator access in this build.</key>
+	<string>Mac Sensor Lab 在本机读取传感器，此构建不请求管理员权限。</string>
+	<key>Main display (logical)</key>
+	<string>主显示器（逻辑分辨率）</string>
+	<key>Max</key>
+	<string>最大</string>
+	<key>Microphone access will be opt-in</key>
+	<string>麦克风访问将始终需要主动选择</string>
+	<key>Min</key>
+	<string>最小</string>
+	<key>Motion &amp; Ambient Light</key>
+	<string>运动与环境光</string>
+	<key>Motion Trend</key>
+	<string>运动趋势</string>
+	<key>Network Throughput</key>
+	<string>网络吞吐量</string>
+	<key>No Sensors Found</key>
+	<string>未找到传感器</string>
+	<key>No serial number, hardware UUID, UDID, host name, user name, location, process list, SSID or audio recording is collected by this build.</key>
+	<string>此构建不采集序列号、硬件 UUID、UDID、主机名、用户名、位置、进程列表、SSID 或录音。</string>
+	<key>Not implemented • provider pending</key>
+	<string>尚未实现 • 等待 Provider</string>
+	<key>Off</key>
+	<string>已关闭</string>
+	<key>Opened from reference</key>
+	<string>相对参考角度已张开</string>
+	<key>Opening angle</key>
+	<string>张开角度</string>
+	<key>Original sample time: %@</key>
+	<string>原始采样时间：%@</string>
+	<key>Overview</key>
+	<string>概览</string>
+	<key>Pause Automatic Sampling</key>
+	<string>暂停自动采样</string>
+	<key>Paused</key>
+	<string>已暂停</string>
+	<key>Peak-to-peak</key>
+	<string>峰峰值</string>
+	<key>Performance</key>
+	<string>性能</string>
+	<key>Permission handling</key>
+	<string>权限处理</string>
+	<key>Permission required</key>
+	<string>需要权限</string>
+	<key>Physical memory</key>
+	<string>物理内存</string>
+	<key>Pitch %@°</key>
+	<string>俯仰 %@°</string>
+	<key>Position in observed raw range</key>
+	<string>在已观测原始范围中的位置</string>
+	<key>Power &amp; Battery</key>
+	<string>电源与电池</string>
+	<key>Power source</key>
+	<string>电源</string>
+	<key>Privacy</key>
+	<string>隐私</string>
+	<key>Privacy manifest</key>
+	<string>隐私清单</string>
+	<key>Privileged</key>
+	<string>需特权</string>
+	<key>Provider error</key>
+	<string>Provider 错误</string>
+	<key>Provider health</key>
+	<string>Provider 健康状态</string>
+	<key>Provider, channel, source, status, or ID</key>
+	<string>Provider、通道、来源、状态或 ID</string>
+	<key>Public API</key>
+	<string>公开 API</string>
+	<key>Public API + permission</key>
+	<string>公开 API + 权限</string>
+	<key>RMS variation</key>
+	<string>RMS 变化</string>
+	<key>Raw</key>
+	<string>原始</string>
+	<key>Raw Sensors</key>
+	<string>原始传感器</string>
+	<key>Read errors</key>
+	<string>读取错误</string>
+	<key>Read operation rate</key>
+	<string>读操作速率</string>
+	<key>Read operations</key>
+	<string>读操作</string>
+	<key>Receive packet rate</key>
+	<string>接收包速率</string>
+	<key>Recent data • source limited</key>
+	<string>最近数据 • 数据源受限</string>
+	<key>Recording</key>
+	<string>正在记录</string>
+	<key>Recording is local, append-only, and stops automatically at 50 MB.</key>
+	<string>记录仅保存在本地、只追加写入，并会在 50 MB 时自动停止。</string>
+	<key>Recording stop failed: %@</key>
+	<string>停止记录失败：%@</string>
+	<key>Recording stopped safely: %@</key>
+	<string>记录已安全停止：%@</string>
+	<key>Reference</key>
+	<string>参考值</string>
+	<key>Reference lux</key>
+	<string>参考 lux</string>
+	<key>Refresh</key>
+	<string>刷新</string>
+	<key>Refresh interval</key>
+	<string>刷新间隔</string>
+	<key>Refresh rate</key>
+	<string>刷新率</string>
+	<key>Relative change</key>
+	<string>相对变化</string>
+	<key>Relative change is derived from the raw lid angle and does not alter the sensor.</key>
+	<string>相对变化由原始上盖角度派生，不会更改传感器。</string>
+	<key>Removed the last ambient-light calibration point</key>
+	<string>已移除最后一个环境光校准点</string>
+	<key>Reported capacity ratio</key>
+	<string>报告容量比</string>
+	<key>Reported full-charge capacity</key>
+	<string>报告满充容量</string>
+	<key>Required measurement channel unavailable</key>
+	<string>所需测量通道不可用</string>
+	<key>Requires a future raw Force Touch provider and calibration</key>
+	<string>需要未来的 Force Touch 原始 Provider 和校准</string>
+	<key>Requires an external lux reference. Add up to eight strictly increasing points; every result remains an estimate, not a certified meter.</key>
+	<string>需要外部 lux 参考。最多添加 8 个严格递增的点；所有结果仍是估算，不是认证照度计。</string>
+	<key>Resume Automatic Sampling</key>
+	<string>恢复自动采样</string>
+	<key>Roll %@°</key>
+	<string>横滚 %@°</string>
+	<key>SMC Sensors</key>
+	<string>SMC 传感器</string>
+	<key>Safety</key>
+	<string>安全</string>
+	<key>Sampling</key>
+	<string>采样</string>
+	<key>Sampling &amp; recording</key>
+	<string>采样与记录</string>
+	<key>Sampling controls</key>
+	<string>采样控制</string>
+	<key>Saved ambient-light calibration point %lld</key>
+	<string>已保存环境光校准点 %lld</string>
+	<key>Send packet rate</key>
+	<string>发送包速率</string>
+	<key>Sensor providers</key>
+	<string>传感器 Provider</string>
+	<key>Set Current as Reference</key>
+	<string>将当前值设为参考</string>
+	<key>Shows raw light first; lux requires model-specific calibration</key>
+	<string>先显示原始光照值；lux 需要特定机型的校准</string>
+	<key>Single-point scale: %@ lux at raw %@.</key>
+	<string>单点缩放：%@ lux（原始值 %@）。</string>
+	<key>Sound Lab</key>
+	<string>声音实验室</string>
+	<key>Source: %@</key>
+	<string>来源：%@</string>
+	<key>Start Continuous CSV Recording…</key>
+	<string>开始连续 CSV 记录…</string>
+	<key>Start Continuous Sensor Recording</key>
+	<string>开始连续传感器记录</string>
+	<key>Started recording %@</key>
+	<string>已开始记录 %@</string>
+	<key>Status changes this launch</key>
+	<string>本次启动的状态变化</string>
+	<key>Stop Continuous Recording</key>
+	<string>停止连续记录</string>
+	<key>Stop Recording</key>
+	<string>停止记录</string>
+	<key>Stop continuous CSV recording</key>
+	<string>停止连续 CSV 记录</string>
+	<key>Stopped %@ after %lld rows (%@)</key>
+	<string>已停止 %@，共 %lld 行（%@）</string>
+	<key>Storage</key>
+	<string>存储</string>
+	<key>Support</key>
+	<string>支持</string>
+	<key>Swap encrypted</key>
+	<string>Swap 已加密</string>
+	<key>System</key>
+	<string>系统</string>
+	<key>System uptime</key>
+	<string>系统运行时间</string>
+	<key>The interval is remembered. Pause state is intentionally reset on every launch.</key>
+	<string>采样间隔会被记住；每次启动时会有意重置暂停状态。</string>
+	<key>The support report contains provider status and stable channel metadata, never sensor readings, notes, source strings, machine identifiers, or file paths.</key>
+	<string>支持报告只包含 Provider 状态和稳定的通道元数据，不包含传感器读数、备注、来源字符串、机器标识或文件路径。</string>
+	<key>Thermal pressure</key>
+	<string>热压力</string>
+	<key>Thermals</key>
+	<string>散热状态</string>
+	<key>This build never runs as root, changes fan settings, writes SMC values, or modifies Apple SPU driver state.</key>
+	<string>此构建绝不以 root 身份运行，不改变风扇设置、不写入 SMC 值，也不修改 Apple SPU 驱动状态。</string>
+	<key>Trackpad Scale</key>
+	<string>触控板秤</string>
+	<key>Try a provider, channel, source, status, or stable ID.</key>
+	<string>尝试搜索 Provider、通道、来源、状态或稳定 ID。</string>
+	<key>Unavailable</key>
+	<string>不可用</string>
+	<key>Undo Last Point</key>
+	<string>撤销最后一点</string>
+	<key>Undocumented</key>
+	<string>未文档化</string>
+	<key>Unsupported</key>
+	<string>不支持</string>
+	<key>Update Reference</key>
+	<string>更新参考值</string>
+	<key>Updated </key>
+	<string>更新于 </string>
+	<key>Updated %@ • Source: %@ • %@</key>
+	<string>更新于 %@ • 来源：%@ • %@</string>
+	<key>Used</key>
+	<string>已使用</string>
+	<key>Uses gravity-derived roll and pitch when live acceleration is available</key>
+	<string>实时加速度可用时，使用由重力派生的横滚和俯仰角</string>
+	<key>Uses the undocumented lid-angle sensor</key>
+	<string>使用未文档化的上盖角度传感器</string>
+	<key>Version</key>
+	<string>版本</string>
+	<key>Write errors</key>
+	<string>写入错误</string>
+	<key>Write operation rate</key>
+	<string>写操作速率</string>
+	<key>Write operations</key>
+	<string>写操作</string>
+	<key>macOS</key>
+	<string>macOS</string>
+	<key>macOS denied ordinary read access for %lld provider(s). Raw Sensors shows the provider-specific reason.</key>
+	<string>macOS 拒绝了 %lld 个 Provider 的普通只读访问。“原始传感器”会显示各 Provider 的具体原因。</string>
+</dict>
+</plist>

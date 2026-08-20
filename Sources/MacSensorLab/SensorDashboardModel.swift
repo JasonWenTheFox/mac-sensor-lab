@@ -11,6 +11,7 @@ enum DashboardSection: String, CaseIterable, Identifiable {
   case diagnostics = "Diagnostics"
 
   var id: String { rawValue }
+  var displayName: String { L10n.text(rawValue) }
 
   var symbol: String {
     switch self {
@@ -31,7 +32,9 @@ enum SamplingCadence: Double, CaseIterable, Identifiable {
   var id: Double { rawValue }
   var duration: Duration { .seconds(rawValue) }
   var displayName: String {
-    rawValue == 1 ? "Every 1 second" : "Every \(Int(rawValue)) seconds"
+    rawValue == 1
+      ? L10n.text("Every 1 second")
+      : L10n.format("Every %lld seconds", Int64(rawValue))
   }
   var shortLabel: String { "\(Int(rawValue)) s" }
 }
@@ -104,7 +107,7 @@ final class SensorDashboardModel: ObservableObject {
   func toggleSampling() {
     isSamplingPaused.toggle()
     lastActionMessage =
-      isSamplingPaused ? "Automatic sampling paused" : "Automatic sampling resumed"
+      L10n.text(isSamplingPaused ? "Automatic sampling paused" : "Automatic sampling resumed")
     if !isSamplingPaused {
       Task { await refresh() }
     }
@@ -112,7 +115,7 @@ final class SensorDashboardModel: ObservableObject {
 
   func clearHistory() {
     history.removeAll(keepingCapacity: true)
-    lastActionMessage = "Cleared in-memory chart history"
+    lastActionMessage = L10n.text("Cleared in-memory chart history")
   }
 
   func refresh() async {
@@ -153,7 +156,7 @@ final class SensorDashboardModel: ObservableObject {
 
   func export(_ format: ExportFormat) {
     let panel = NSSavePanel()
-    panel.title = "Export Sensor Snapshot"
+    panel.title = L10n.text("Export Sensor Snapshot")
     panel.nameFieldStringValue = "mac-sensor-lab-snapshot.\(format.fileExtension)"
     panel.allowedContentTypes = [format.contentType]
     guard panel.runModal() == .OK, let url = panel.url else { return }
@@ -164,17 +167,19 @@ final class SensorDashboardModel: ObservableObject {
         case .csv: SensorExportService.csvData(snapshots)
         }
       try SensorPrivateFileWriter.write(data, to: url)
-      lastActionMessage = "Exported \(url.lastPathComponent)"
+      lastActionMessage = L10n.format("Exported %@", url.lastPathComponent)
     } catch {
-      lastActionMessage = "Export failed: \(error.localizedDescription)"
+      lastActionMessage = L10n.format("Export failed: %@", error.localizedDescription)
     }
   }
 
   func exportDiagnostics() {
     let panel = NSSavePanel()
-    panel.title = "Export Privacy-Safe Diagnostics"
+    panel.title = L10n.text("Export Privacy-Safe Diagnostics")
     panel.message =
-      "Includes provider status and stable channel metadata, but no sensor readings or machine identifiers."
+      L10n.text(
+        "Includes provider status and stable channel metadata, but no sensor readings or machine identifiers."
+      )
     panel.nameFieldStringValue = "mac-sensor-lab-diagnostics-\(Self.fileTimestamp()).json"
     panel.allowedContentTypes = [.json]
     guard panel.runModal() == .OK, let url = panel.url else { return }
@@ -186,17 +191,25 @@ final class SensorDashboardModel: ObservableObject {
         samplingHealth: samplingHealth
       )
       try SensorPrivateFileWriter.write(data, to: url)
-      lastActionMessage = "Exported privacy-safe diagnostics \(url.lastPathComponent)"
+      lastActionMessage = L10n.format(
+        "Exported privacy-safe diagnostics %@",
+        url.lastPathComponent
+      )
     } catch {
-      lastActionMessage = "Diagnostics export failed: \(error.localizedDescription)"
+      lastActionMessage = L10n.format(
+        "Diagnostics export failed: %@",
+        error.localizedDescription
+      )
     }
   }
 
   func startRecording() {
     guard recorder == nil else { return }
     let panel = NSSavePanel()
-    panel.title = "Start Continuous Sensor Recording"
-    panel.message = "Recording is local, append-only, and stops automatically at 50 MB."
+    panel.title = L10n.text("Start Continuous Sensor Recording")
+    panel.message = L10n.text(
+      "Recording is local, append-only, and stops automatically at 50 MB."
+    )
     panel.nameFieldStringValue = "mac-sensor-lab-recording-\(Self.fileTimestamp()).csv"
     panel.allowedContentTypes = [.commaSeparatedText]
     panel.canCreateDirectories = true
@@ -207,10 +220,13 @@ final class SensorDashboardModel: ObservableObject {
       self.recorder = recorder
       recordingFileName = url.lastPathComponent
       recordingProgress = nil
-      lastActionMessage = "Started recording \(url.lastPathComponent)"
+      lastActionMessage = L10n.format("Started recording %@", url.lastPathComponent)
       Task { await appendRecordingBatch() }
     } catch {
-      lastActionMessage = "Could not start recording: \(error.localizedDescription)"
+      lastActionMessage = L10n.format(
+        "Could not start recording: %@",
+        error.localizedDescription
+      )
     }
   }
 
@@ -230,11 +246,16 @@ final class SensorDashboardModel: ObservableObject {
     guard let calibration
     else {
       lastActionMessage =
-        "Calibration point was invalid, non-monotonic, or exceeded the eight-point limit"
+        L10n.text(
+          "Calibration point was invalid, non-monotonic, or exceeded the eight-point limit"
+        )
       return
     }
     saveAmbientCalibration(calibration)
-    lastActionMessage = "Saved ambient-light calibration point \(calibration.pointCount)"
+    lastActionMessage = L10n.format(
+      "Saved ambient-light calibration point %lld",
+      Int64(calibration.pointCount)
+    )
   }
 
   func undoLastAmbientLuxCalibrationPoint() {
@@ -244,23 +265,23 @@ final class SensorDashboardModel: ObservableObject {
       return
     }
     saveAmbientCalibration(calibration)
-    lastActionMessage = "Removed the last ambient-light calibration point"
+    lastActionMessage = L10n.text("Removed the last ambient-light calibration point")
   }
 
   func clearAmbientLuxCalibration() {
     ambientLuxCalibration = nil
     UserDefaults.standard.removeObject(forKey: ambientCalibrationDefaultsKey)
     reapplyAmbientCalibration()
-    lastActionMessage = "Cleared ambient-light calibration"
+    lastActionMessage = L10n.text("Cleared ambient-light calibration")
   }
 
   func exportAmbientLuxCalibration() {
     guard let ambientLuxCalibration else {
-      lastActionMessage = "Create an ambient-light calibration before exporting it"
+      lastActionMessage = L10n.text("Create an ambient-light calibration before exporting it")
       return
     }
     let panel = NSSavePanel()
-    panel.title = "Export Ambient-Light Calibration"
+    panel.title = L10n.text("Export Ambient-Light Calibration")
     panel.nameFieldStringValue = "mac-sensor-lab-light-calibration.json"
     panel.allowedContentTypes = [.json]
     guard panel.runModal() == .OK, let url = panel.url else { return }
@@ -270,15 +291,18 @@ final class SensorDashboardModel: ObservableObject {
         AmbientLuxCalibrationFileService.data(for: ambientLuxCalibration),
         to: url
       )
-      lastActionMessage = "Exported light calibration \(url.lastPathComponent)"
+      lastActionMessage = L10n.format("Exported light calibration %@", url.lastPathComponent)
     } catch {
-      lastActionMessage = "Calibration export failed: \(error.localizedDescription)"
+      lastActionMessage = L10n.format(
+        "Calibration export failed: %@",
+        error.localizedDescription
+      )
     }
   }
 
   func importAmbientLuxCalibration() {
     let panel = NSOpenPanel()
-    panel.title = "Import Ambient-Light Calibration"
+    panel.title = L10n.text("Import Ambient-Light Calibration")
     panel.allowedContentTypes = [.json]
     panel.allowsMultipleSelection = false
     panel.canChooseDirectories = false
@@ -287,9 +311,12 @@ final class SensorDashboardModel: ObservableObject {
     do {
       let calibration = try AmbientLuxCalibrationFileService.read(from: url)
       saveAmbientCalibration(calibration)
-      lastActionMessage = "Imported light calibration \(url.lastPathComponent)"
+      lastActionMessage = L10n.format("Imported light calibration %@", url.lastPathComponent)
     } catch {
-      lastActionMessage = "Calibration import failed: \(error.localizedDescription)"
+      lastActionMessage = L10n.format(
+        "Calibration import failed: %@",
+        error.localizedDescription
+      )
     }
   }
 
@@ -303,9 +330,17 @@ final class SensorDashboardModel: ObservableObject {
       let progress = try await activeRecorder.finish()
       recordingProgress = progress
       lastActionMessage =
-        "Stopped \(fileName) after \(progress.rowCount) rows (\(SensorFormatting.bytes(UInt64(progress.byteCount))))"
+        L10n.format(
+          "Stopped %@ after %lld rows (%@)",
+          fileName,
+          Int64(progress.rowCount),
+          SensorFormatting.bytes(UInt64(progress.byteCount))
+        )
     } catch {
-      lastActionMessage = "Recording stop failed: \(error.localizedDescription)"
+      lastActionMessage = L10n.format(
+        "Recording stop failed: %@",
+        error.localizedDescription
+      )
     }
   }
 
@@ -322,7 +357,10 @@ final class SensorDashboardModel: ObservableObject {
       recordingFileName = nil
       let progress = try? await activeRecorder.finish()
       if let progress { recordingProgress = progress }
-      lastActionMessage = "Recording stopped safely: \(error.localizedDescription)"
+      lastActionMessage = L10n.format(
+        "Recording stopped safely: %@",
+        error.localizedDescription
+      )
     }
   }
 

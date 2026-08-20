@@ -6,6 +6,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ### Added
 
+- Native English and Simplified Chinese UI localization backed by a checked-in String Catalog, generated `.lproj` resources, and catalog/key consistency tests.
 - A reproducible static admission audit for OpenMultitouchSupport 4.0.0, documenting its matching checksum and architecture as well as the privacy and distribution blockers that prevent direct integration.
 - Selectable 1, 2, 5, and 10 second sampling cadence, pause/resume, and in-memory history clearing.
 - User-initiated continuous CSV recording with per-batch synchronization and a 50 MB safety limit.

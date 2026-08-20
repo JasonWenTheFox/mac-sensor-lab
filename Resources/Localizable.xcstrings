@@ -1,0 +1,931 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "50 MB safety limit" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "50 MB 安全上限" } }
+      }
+    },
+    "Add Calibration Point" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "添加校准点" } }
+      }
+    },
+    "All readings stay on this Mac unless you explicitly export a snapshot, recording, calibration, or diagnostics file." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "所有读数都保留在这台 Mac 上，除非你主动导出快照、记录、校准或诊断文件。" } }
+      }
+    },
+    "Automatic sampling" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "自动采样" } }
+      }
+    },
+    "Available" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "可用" } }
+      }
+    },
+    "Average" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "平均" } }
+      }
+    },
+    "Build" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "构建" } }
+      }
+    },
+    "Built-in demo fixtures" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "内置演示样本" } }
+      }
+    },
+    "Calibrate at Current Raw" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "以当前原始值校准" } }
+      }
+    },
+    "Calibrated" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已校准" } }
+      }
+    },
+    "Chart history stays in memory only and can be cleared from the toolbar." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "图表历史仅保留在内存中，可从工具栏清除。" } }
+      }
+    },
+    "Checking data source" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在检查数据源" } }
+      }
+    },
+    "Clear" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "清除" } }
+      }
+    },
+    "Clear All" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "全部清除" } }
+      }
+    },
+    "Clear Chart History" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "清除图表历史" } }
+      }
+    },
+    "Closed from reference" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "相对参考角度已合上" } }
+      }
+    },
+    "Completed refreshes" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已完成刷新" } }
+      }
+    },
+    "Continuous recording" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "连续记录" } }
+      }
+    },
+    "CSV Channels" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "CSV 通道" } }
+      }
+    },
+    "Data mode" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "数据模式" } }
+      }
+    },
+    "Data source limited" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "数据源受限" } }
+      }
+    },
+    "Data source ready" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "数据源已就绪" } }
+      }
+    },
+    "Data source unavailable" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "数据源不可用" } }
+      }
+    },
+    "Demo data — no hardware is being read" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "演示数据 — 未读取硬件" } }
+      }
+    },
+    "Demo data — not live sensor readings" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "演示数据 — 不是实时传感器读数" } }
+      }
+    },
+    "Derived" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "派生" } }
+      }
+    },
+    "Derived tools unlock only when their data source is verified." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "只有数据源经过验证后，派生工具才会解锁。" } }
+      }
+    },
+    "Deterministic fixture readings for screenshots and UI review." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "用于截图和界面审查的确定性演示读数。" } }
+      }
+    },
+    "Development" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "开发版" } }
+      }
+    },
+    "Development executable" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "开发用可执行文件" } }
+      }
+    },
+    "Diagnostics" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "诊断" } }
+      }
+    },
+    "Error" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "错误" } }
+      }
+    },
+    "Errors" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "错误" } }
+      }
+    },
+    "Estimated" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "估算" } }
+      }
+    },
+    "Estimated illuminance" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "估算照度" } }
+      }
+    },
+    "Every 1 second" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "每 1 秒" } }
+      }
+    },
+    "Every %lld seconds" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "每 %lld 秒" } }
+      }
+    },
+    "Experiments" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "实验" } }
+      }
+    },
+    "Export" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "导出" } }
+      }
+    },
+    "Export Calibration…" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "导出校准…" } }
+      }
+    },
+    "Export Privacy-Safe Diagnostics…" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "导出隐私安全诊断…" } }
+      }
+    },
+    "Hardware detected • measurement provider pending" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已检测到硬件 • 等待测量 Provider" } }
+      }
+    },
+    "Import Calibration…" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "导入校准…" } }
+      }
+    },
+    "Included" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已包含" } }
+      }
+    },
+    "JSON Snapshot" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "JSON 快照" } }
+      }
+    },
+    "Last action" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "上一操作" } }
+      }
+    },
+    "Last refresh" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "上次刷新" } }
+      }
+    },
+    "Last refresh duration" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "上次刷新耗时" } }
+      }
+    },
+    "Level" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "水平仪" } }
+      }
+    },
+    "Lid angle" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "上盖角度" } }
+      }
+    },
+    "Lid Protractor" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "上盖量角器" } }
+      }
+    },
+    "Light Meter" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "照度计" } }
+      }
+    },
+    "Limited" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "受限" } }
+      }
+    },
+    "Live hardware" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "实时硬件" } }
+      }
+    },
+    "Live local readings, with source and confidence kept visible." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "实时本地读数，始终显示数据源和可信度。" } }
+      }
+    },
+    "Loading" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "加载中" } }
+      }
+    },
+    "Mac Sensor Lab does not request administrator access, change driver state, or bypass macOS privacy controls." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Mac Sensor Lab 不请求管理员权限、不改变驱动状态，也不绕过 macOS 隐私控制。" } }
+      }
+    },
+    "Max" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "最大" } }
+      }
+    },
+    "Microphone access will be opt-in" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "麦克风访问将始终需要主动选择" } }
+      }
+    },
+    "Min" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "最小" } }
+      }
+    },
+    "Motion Trend" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "运动趋势" } }
+      }
+    },
+    "No Sensors Found" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "未找到传感器" } }
+      }
+    },
+    "No serial number, hardware UUID, UDID, host name, user name, location, process list, SSID or audio recording is collected by this build." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "此构建不采集序列号、硬件 UUID、UDID、主机名、用户名、位置、进程列表、SSID 或录音。" } }
+      }
+    },
+    "Not implemented • provider pending" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "尚未实现 • 等待 Provider" } }
+      }
+    },
+    "Off" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已关闭" } }
+      }
+    },
+    "Opened from reference" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "相对参考角度已张开" } }
+      }
+    },
+    "Overview" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "概览" } }
+      }
+    },
+    "Paused" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已暂停" } }
+      }
+    },
+    "Pause Automatic Sampling" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "暂停自动采样" } }
+      }
+    },
+    "Peak-to-peak" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "峰峰值" } }
+      }
+    },
+    "Permission handling" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "权限处理" } }
+      }
+    },
+    "Permission required" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "需要权限" } }
+      }
+    },
+    "Position in observed raw range" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "在已观测原始范围中的位置" } }
+      }
+    },
+    "Privacy" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "隐私" } }
+      }
+    },
+    "Privileged" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "需特权" } }
+      }
+    },
+    "Privacy manifest" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "隐私清单" } }
+      }
+    },
+    "Provider error" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Provider 错误" } }
+      }
+    },
+    "Provider health" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Provider 健康状态" } }
+      }
+    },
+    "Public API" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "公开 API" } }
+      }
+    },
+    "Public API + permission" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "公开 API + 权限" } }
+      }
+    },
+    "Raw" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "原始" } }
+      }
+    },
+    "Raw Sensors" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "原始传感器" } }
+      }
+    },
+    "Recent data • source limited" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "最近数据 • 数据源受限" } }
+      }
+    },
+    "Recording" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在记录" } }
+      }
+    },
+    "Reference" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "参考值" } }
+      }
+    },
+    "Reference lux" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "参考 lux" } }
+      }
+    },
+    "Refresh" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "刷新" } }
+      }
+    },
+    "Refresh interval" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "刷新间隔" } }
+      }
+    },
+    "Relative change" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "相对变化" } }
+      }
+    },
+    "Required measurement channel unavailable" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "所需测量通道不可用" } }
+      }
+    },
+    "Resume Automatic Sampling" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "恢复自动采样" } }
+      }
+    },
+    "RMS variation" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "RMS 变化" } }
+      }
+    },
+    "Safety" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "安全" } }
+      }
+    },
+    "Sampling" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "采样" } }
+      }
+    },
+    "Sampling & recording" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "采样与记录" } }
+      }
+    },
+    "Sampling controls" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "采样控制" } }
+      }
+    },
+    "Sensor providers" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "传感器 Provider" } }
+      }
+    },
+    "Set Current as Reference" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "将当前值设为参考" } }
+      }
+    },
+    "Sound Lab" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "声音实验室" } }
+      }
+    },
+    "Start Continuous CSV Recording…" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "开始连续 CSV 记录…" } }
+      }
+    },
+    "Status changes this launch" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "本次启动的状态变化" } }
+      }
+    },
+    "Stop Continuous Recording" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "停止连续记录" } }
+      }
+    },
+    "Stop Recording" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "停止记录" } }
+      }
+    },
+    "Stop continuous CSV recording" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "停止连续 CSV 记录" } }
+      }
+    },
+    "Support" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "支持" } }
+      }
+    },
+    "The support report contains provider status and stable channel metadata, never sensor readings, notes, source strings, machine identifiers, or file paths." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "支持报告只包含 Provider 状态和稳定的通道元数据，不包含传感器读数、备注、来源字符串、机器标识或文件路径。" } }
+      }
+    },
+    "This build never runs as root, changes fan settings, writes SMC values, or modifies Apple SPU driver state." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "此构建绝不以 root 身份运行，不改变风扇设置、不写入 SMC 值，也不修改 Apple SPU 驱动状态。" } }
+      }
+    },
+    "Trackpad Scale" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "触控板秤" } }
+      }
+    },
+    "Try a provider, channel, source, status, or stable ID." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "尝试搜索 Provider、通道、来源、状态或稳定 ID。" } }
+      }
+    },
+    "Unavailable" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "不可用" } }
+      }
+    },
+    "Undocumented" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "未文档化" } }
+      }
+    },
+    "Undo Last Point" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "撤销最后一点" } }
+      }
+    },
+    "Unsupported" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "不支持" } }
+      }
+    },
+    "Update Reference" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "更新参考值" } }
+      }
+    },
+    "Automatic sampling interval" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "自动采样间隔" } }
+      }
+    },
+    "The interval is remembered. Pause state is intentionally reset on every launch." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "采样间隔会被记住；每次启动时会有意重置暂停状态。" } }
+      }
+    },
+    "Mac Sensor Lab reads sensors locally and does not request administrator access in this build." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Mac Sensor Lab 在本机读取传感器，此构建不请求管理员权限。" } }
+      }
+    },
+    "Live sampling attempts ordinary read-only access. If macOS denies an interface, its provider reports Permission required; this app does not request administrator access or bypass privacy controls." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "实时采样只尝试普通的只读访问。如果 macOS 拒绝某个接口，对应 Provider 会报告“需要权限”；本 App 不请求管理员权限，也不绕过隐私控制。" } }
+      }
+    },
+    "Automatic sampling paused" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已暂停自动采样" } }
+      }
+    },
+    "Automatic sampling resumed" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已恢复自动采样" } }
+      }
+    },
+    "Cleared in-memory chart history" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已清除内存中的图表历史" } }
+      }
+    },
+    "Export Sensor Snapshot" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "导出传感器快照" } }
+      }
+    },
+    "Exported %@" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已导出 %@" } }
+      }
+    },
+    "Export failed: %@" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "导出失败：%@" } }
+      }
+    },
+    "Export Privacy-Safe Diagnostics" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "导出隐私安全诊断" } }
+      }
+    },
+    "Includes provider status and stable channel metadata, but no sensor readings or machine identifiers." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "包含 Provider 状态和稳定的通道元数据，但不包含传感器读数或机器标识。" } }
+      }
+    },
+    "Exported privacy-safe diagnostics %@" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已导出隐私安全诊断 %@" } }
+      }
+    },
+    "Diagnostics export failed: %@" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "诊断导出失败：%@" } }
+      }
+    },
+    "Start Continuous Sensor Recording" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "开始连续传感器记录" } }
+      }
+    },
+    "Recording is local, append-only, and stops automatically at 50 MB." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "记录仅保存在本地、只追加写入，并会在 50 MB 时自动停止。" } }
+      }
+    },
+    "Started recording %@" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已开始记录 %@" } }
+      }
+    },
+    "Could not start recording: %@" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无法开始记录：%@" } }
+      }
+    },
+    "Calibration point was invalid, non-monotonic, or exceeded the eight-point limit" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "校准点无效、不单调，或超过了 8 点上限" } }
+      }
+    },
+    "Saved ambient-light calibration point %lld" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已保存环境光校准点 %lld" } }
+      }
+    },
+    "Removed the last ambient-light calibration point" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已移除最后一个环境光校准点" } }
+      }
+    },
+    "Cleared ambient-light calibration" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已清除环境光校准" } }
+      }
+    },
+    "Create an ambient-light calibration before exporting it" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请先创建环境光校准再导出" } }
+      }
+    },
+    "Export Ambient-Light Calibration" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "导出环境光校准" } }
+      }
+    },
+    "Exported light calibration %@" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已导出光照校准 %@" } }
+      }
+    },
+    "Calibration export failed: %@" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "校准导出失败：%@" } }
+      }
+    },
+    "Import Ambient-Light Calibration" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "导入环境光校准" } }
+      }
+    },
+    "Imported light calibration %@" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已导入光照校准 %@" } }
+      }
+    },
+    "Calibration import failed: %@" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "校准导入失败：%@" } }
+      }
+    },
+    "Stopped %@ after %lld rows (%@)" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已停止 %@，共 %lld 行（%@）" } }
+      }
+    },
+    "Recording stop failed: %@" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "停止记录失败：%@" } }
+      }
+    },
+    "Recording stopped safely: %@" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "记录已安全停止：%@" } }
+      }
+    },
+    "%@ experiment trend" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%@ 实验趋势" } }
+      }
+    },
+    "%@ trend with %lld samples" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%@ 趋势，共 %lld 个样本" } }
+      }
+    },
+    "%@ • recent samples" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%@ • 最近样本" } }
+      }
+    },
+    "%lld changes" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%lld 次变化" } }
+      }
+    },
+    "%lld rows • %@" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%lld 行 • %@" } }
+      }
+    },
+    "Calculated from %lld dashboard samples. The 1–10 second cadence cannot measure vibration frequency." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "根据 %lld 个仪表盘样本计算。1–10 秒的采样间隔无法测量振动频率。" } }
+      }
+    },
+    "Experimental readings are not medical, legal, safety, or calibrated metrology data." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "实验性读数不属于医疗、法律、安全或经校准的计量数据。" } }
+      }
+    },
+    "Four uncalibrated ambient spectral channels" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "4 个未校准的环境光谱通道" } }
+      }
+    },
+    "Linear fit from %lld points • RMSE %@ lux." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "由 %lld 个点线性拟合 • RMSE %@ lux。" } }
+      }
+    },
+    "Low-rate acceleration variation; not a vibration spectrum analyzer" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "低速率加速度变化；不是振动频谱分析仪" } }
+      }
+    },
+    "Original sample time: %@" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "原始采样时间：%@" } }
+      }
+    },
+    "Pitch %@°" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "俯仰 %@°" } }
+      }
+    },
+    "Provider, channel, source, status, or ID" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Provider、通道、来源、状态或 ID" } }
+      }
+    },
+    "Relative change is derived from the raw lid angle and does not alter the sensor." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "相对变化由原始上盖角度派生，不会更改传感器。" } }
+      }
+    },
+    "Requires a future raw Force Touch provider and calibration" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "需要未来的 Force Touch 原始 Provider 和校准" } }
+      }
+    },
+    "Requires an external lux reference. Add up to eight strictly increasing points; every result remains an estimate, not a certified meter." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "需要外部 lux 参考。最多添加 8 个严格递增的点；所有结果仍是估算，不是认证照度计。" } }
+      }
+    },
+    "Roll %@°" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "横滚 %@°" } }
+      }
+    },
+    "Shows raw light first; lux requires model-specific calibration" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "先显示原始光照值；lux 需要特定机型的校准" } }
+      }
+    },
+    "Single-point scale: %@ lux at raw %@." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "单点缩放：%@ lux（原始值 %@）。" } }
+      }
+    },
+    "Source: %@" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "来源：%@" } }
+      }
+    },
+    "Updated " : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "更新于 " } }
+      }
+    },
+    "Updated %@ • Source: %@ • %@" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "更新于 %@ • 来源：%@ • %@" } }
+      }
+    },
+    "Uses gravity-derived roll and pitch when live acceleration is available" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "实时加速度可用时，使用由重力派生的横滚和俯仰角" } }
+      }
+    },
+    "Uses the undocumented lid-angle sensor" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "使用未文档化的上盖角度传感器" } }
+      }
+    },
+    "macOS denied ordinary read access for %lld provider(s). Raw Sensors shows the provider-specific reason." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "macOS 拒绝了 %lld 个 Provider 的普通只读访问。“原始传感器”会显示各 Provider 的具体原因。" } }
+      }
+    },
+    "Acceleration" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "加速度" } } } },
+    "Acceleration magnitude" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "加速度模长" } } } },
+    "Active displays" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "活动显示器" } } } },
+    "Active non-loopback interfaces" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "活动的非回环接口" } } } },
+    "Active processors" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "活动处理器" } } } },
+    "Aggregated block devices" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "汇总块设备" } } } },
+    "Ambient intensity" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "环境光强度" } } } },
+    "Angular velocity" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "角速度" } } } },
+    "Apple SPU Sensors" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Apple SPU 传感器" } } } },
+    "Architecture" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "架构" } } } },
+    "Battery current" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "电池电流" } } } },
+    "Battery temperature" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "电池温度" } } } },
+    "Battery voltage" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "电池电压" } } } },
+    "Battery-side power" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "电池侧功率" } } } },
+    "CPU average" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "CPU 平均温度" } } } },
+    "CPU hotspot" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "CPU 热点" } } } },
+    "CPU utilization" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "CPU 利用率" } } } },
+    "Capacity" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "容量" } } } },
+    "Charge" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "电量" } } } },
+    "Charging" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在充电" } } } },
+    "Cycle count" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "循环计数" } } } },
+    "Design capacity" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "设计容量" } } } },
+    "Disk Activity" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "磁盘活动" } } } },
+    "Display" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "显示器" } } } },
+    "Estimated pitch" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "估算俯仰角" } } } },
+    "Estimated roll" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "估算横滚角" } } } },
+    "Estimated time remaining" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "估算剩余时间" } } } },
+    "Estimated time to full" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "估算充满时间" } } } },
+    "Experimental Hardware" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "实验性硬件" } } } },
+    "Fully charged" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已充满" } } } },
+    "GPU Performance" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "GPU 性能" } } } },
+    "GPU average" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "GPU 平均温度" } } } },
+    "GPU driver instances" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "GPU 驱动实例" } } } },
+    "GPU hotspot" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "GPU 热点" } } } },
+    "Lid Angle" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "上盖角度" } } } },
+    "Logical processors" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "逻辑处理器" } } } },
+    "Low Power Mode" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "低电量模式" } } } },
+    "Main display (logical)" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "主显示器（逻辑分辨率）" } } } },
+    "Motion & Ambient Light" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "运动与环境光" } } } },
+    "Network Throughput" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "网络吞吐量" } } } },
+    "Opening angle" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "张开角度" } } } },
+    "Performance" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "性能" } } } },
+    "Physical memory" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "物理内存" } } } },
+    "Power & Battery" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "电源与电池" } } } },
+    "Power source" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "电源" } } } },
+    "Read errors" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "读取错误" } } } },
+    "Read operation rate" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "读操作速率" } } } },
+    "Read operations" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "读操作" } } } },
+    "Receive packet rate" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "接收包速率" } } } },
+    "Refresh rate" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "刷新率" } } } },
+    "Reported capacity ratio" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "报告容量比" } } } },
+    "Reported full-charge capacity" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "报告满充容量" } } } },
+    "SMC Sensors" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "SMC 传感器" } } } },
+    "Send packet rate" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "发送包速率" } } } },
+    "Storage" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "存储" } } } },
+    "Swap encrypted" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Swap 已加密" } } } },
+    "System" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "系统" } } } },
+    "System uptime" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "系统运行时间" } } } },
+    "Thermal pressure" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "热压力" } } } },
+    "Thermals" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "散热状态" } } } },
+    "Used" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已使用" } } } },
+    "Write errors" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "写入错误" } } } },
+    "Write operation rate" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "写操作速率" } } } },
+    "Write operations" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "写操作" } } } },
+    "macOS" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "macOS" } } } },
+    "Version" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "版本" } }
+      }
+    }
+  },
+  "version": "1.0"
+}

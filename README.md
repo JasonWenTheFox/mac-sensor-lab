@@ -41,7 +41,8 @@ Mac Sensor Lab 希望填补 macOS 上“原始传感器浏览器 + 面向用户�
 6. AppleSMC 的 M1–M5 分代固定白名单温度、风扇转速与功耗只读通道；
 7. 上盖角度 feature report 和派生量角器数据源；
 8. 原始值/解释值区分、JSON/CSV 快照导出、受大小保护的连续 CSV 记录、Provider 数据契约审计和 CLI 自检；
-9. 对缺失、权限不足、超时和未校准提供清楚的降级状态。
+9. 英文/简体中文原生界面本地化，并保持导出中的稳定 ID 和原始数据不变；
+10. 对缺失、权限不足、超时和未校准提供清楚的降级状态。
 
 加速度计/陀螺仪仅在 macOS 已经发布 HID 报告时读取；首版不会写入 Apple SPU 驱动属性来强制唤醒。触摸板原始压力与麦克风会按独立 Provider 逐步接入。当前阶段不安装特权 Helper，不让 App 以 root 运行。
 
@@ -57,6 +58,7 @@ Mac Sensor Lab 希望填补 macOS 上“原始传感器浏览器 + 面向用户�
 │   ├── MacSensorLab/
 │   ├── SensorLabProbe/
 │   └── SensorLabSelfTest/
+├── Resources/        App 元数据、图标、隐私清单和本地化资源
 ├── Tests/
 ├── docs/
 ├── references/
@@ -94,9 +96,11 @@ xcodebuild -checkFirstLaunchStatus
 swift test
 ```
 
-`scripts/build-app.sh` 会在 Xcode 尚不可用时自动回退到 Command Line Tools，生成并临时签名本地 Debug `.app`；传入 `release` 会从优化后的 Release 可执行文件组装 App。两种模式都不会修改全局开发者目录，CI 使用 Release 模式复验。
+`scripts/build-app.sh` 会在 Xcode 尚不可用时自动回退到 Command Line Tools，生成并临时签名本地 Debug `.app`；传入 `release` 会从优化后的 Release 可执行文件组装 App。打包时会校验 String Catalog 与生成的简体中文 `.lproj` 一致，并拒绝在 Release 可执行文件中留下开发机的绝对用户目录构建路径。两种模式都不会修改全局开发者目录，CI 使用 Release 模式复验。
 
-`scripts/release-audit.sh` 只检查本仓库的已跟踪文件和发布资源：阻止构建产物、绝对用户路径、密钥特征、未实现的受保护权限、危险写入 API 或与当前离线行为不一致的 Privacy Manifest 进入发布分支。
+`scripts/release-audit.sh` 只检查本仓库的已跟踪文件和发布资源：阻止构建产物、绝对用户路径、密钥特征、未实现的受保护权限、危险写入 API、失配的本地化产物或与当前离线行为不一致的 Privacy Manifest 进入发布分支。
+
+原生 UI 当前支持英文和简体中文，跟随 macOS 的 App 语言设置。界面本地化只作用于显示层；Provider/Channel 稳定 ID、JSON/CSV 字段与原始传感器数据不会随语言变化。
 
 显式 `--demo` 启动参数使用 14 个内置、确定性且无机器标识的 Provider fixture。全界面会显示 Demo 横幅，并使用独立的采样、光照校准和上盖参考偏好键，适合截图、UI 回归和无对应硬件的演示；它绝不会伪装成实时读数。
 
@@ -121,7 +125,7 @@ Dashboard 还会在每个 Provider 结果进入 UI、历史或记录前执行同
 - App 不会自动开始记录，不会上传数据，也不会把用户选择的记录文件加入仓库。
 - Dashboard 使用单一原生窗口，避免多个窗口为同一硬件启动互相争用的采样循环；关闭窗口时会安全结束仍在进行的连续记录。
 - Overview 卡片显示 Snapshot 原始时间戳的动态相对时间；SPU 短暂缺报时保留的降级样本不会看起来像刚刚采集的新值。
-- Raw Sensors 支持按 Provider、通道、来源、状态或稳定 ID 做本地即时搜索；通道命中时只收窄显示，不改变底层采样或导出内容。
+- Raw Sensors 支持按 Provider、通道、来源、状态或稳定 ID 做本地即时搜索，也可匹配当前界面语言中的已本地化名称；通道命中时只收窄显示，不改变底层采样或导出内容。
 - Raw Sensors 的每个 Provider 页脚显示该 Snapshot 的实际时间戳；最近样本降级不会伪装成新的更新时间。
 - Diagnostics 分开显示加载中、受限、权限不足、不可用和错误，避免把权限拒绝笼统算作“不可用”；同时显示本次启动内的刷新次数、最近耗时和 Provider 状态切换计数。用户主动导出的隐私安全支持报告可包含这些纯计数及稳定通道元数据，但不含传感器读数、自由文本、机器标识、Snapshot 时间戳或文件路径。
 
@@ -155,7 +159,7 @@ Dashboard 还会在每个 Provider 结果进入 UI、历史或记录前执行同
 - [x] 添加 macOS 26 / Xcode 26 CI 和 Pull Request 安全检查模板。
 - [x] 建立私有 GitHub 仓库并通过首轮 CI。
 - [x] 用户接受 Xcode 许可。
-- [x] 完成 Xcode 首次组件初始化并在本机通过 56 项 XCTest。
+- [x] 完成 Xcode 首次组件初始化并在本机通过 57 项 XCTest。
 - [x] 加入可调采样、暂停/恢复、历史清空和 50 MB 上限的连续 CSV 记录。
 - [x] 加入环境光滚动统计、可选 Estimated lux 和上盖相对角度实验。
 - [x] 加入严格校验且不含设备标识的 1–8 点光照拟合、RMSE、撤销，以及兼容旧单点格式的 JSON 导入/导出。
@@ -177,6 +181,7 @@ Dashboard 还会在每个 Provider 结果进入 UI、历史或记录前执行同
 - [x] 对极端 CPU/网络/磁盘/GPU/内存/SMC 数值使用检查式算术，损坏计数不会触发整数转换或溢出崩溃。
 - [x] 将 SMC 温度白名单按 M1–M5 代际分层，并用不含真实读数的各代 fixture 验证选表、通用键与未知代际降级。
 - [x] 完成 OpenMultitouchSupport 4.0.0 静态准入审计；因现成二进制读取/日志输出设备标识、依赖私有框架、要求关闭 Sandbox 且发布边界未完成，当前明确不接入。
+- [x] 建立英文/简体中文 String Catalog、中央本地化入口、键覆盖测试和 App Bundle `.lproj` 校验。
 - [ ] 用户确认正式名称后公开 GitHub 仓库。
 
 ## 重要边界

@@ -4,6 +4,101 @@ import XCTest
 @testable import SensorCore
 
 final class SensorCoreTests: XCTestCase {
+  func testLocalizationCatalogCoversStaticAppKeysAndGeneratedChineseStrings() throws {
+    let projectRoot = URL(fileURLWithPath: #filePath)
+      .deletingLastPathComponent()
+      .deletingLastPathComponent()
+      .deletingLastPathComponent()
+    let catalogURL = projectRoot.appendingPathComponent("Resources/Localizable.xcstrings")
+    let generatedURL = projectRoot.appendingPathComponent(
+      "Resources/zh-Hans.lproj/Localizable.strings"
+    )
+
+    let catalogObject = try JSONSerialization.jsonObject(with: Data(contentsOf: catalogURL))
+    let catalog = try XCTUnwrap(catalogObject as? [String: Any])
+    let catalogStrings = try XCTUnwrap(catalog["strings"] as? [String: Any])
+    let catalogKeys = Set(catalogStrings.keys)
+
+    let generatedObject = try PropertyListSerialization.propertyList(
+      from: Data(contentsOf: generatedURL),
+      format: nil
+    )
+    let generatedStrings = try XCTUnwrap(generatedObject as? [String: String])
+    XCTAssertEqual(Set(generatedStrings.keys), catalogKeys)
+    XCTAssertEqual(generatedStrings["Overview"], "概览")
+    XCTAssertEqual(generatedStrings["Every %lld seconds"], "每 %lld 秒")
+    let formatExpression = try NSRegularExpression(pattern: "%(?:lld|@)")
+    func formatTokens(in value: String) -> [String] {
+      let range = NSRange(value.startIndex..<value.endIndex, in: value)
+      return formatExpression.matches(in: value, range: range).compactMap { match in
+        guard let tokenRange = Range(match.range, in: value) else { return nil }
+        return String(value[tokenRange])
+      }
+    }
+    for (key, value) in generatedStrings {
+      XCTAssertEqual(
+        formatTokens(in: value),
+        formatTokens(in: key),
+        "Localization changed format arguments for key: \(key)"
+      )
+    }
+
+    let appSourceDirectory = projectRoot.appendingPathComponent(
+      "Sources/MacSensorLab",
+      isDirectory: true
+    )
+    let sourceURLs = try FileManager.default.contentsOfDirectory(
+      at: appSourceDirectory,
+      includingPropertiesForKeys: nil
+    ).filter { $0.pathExtension == "swift" }
+    let source = try sourceURLs.map { try String(contentsOf: $0, encoding: .utf8) }
+      .joined(separator: "\n")
+    let expression = try NSRegularExpression(
+      pattern: #"L10n\.(?:text|format)\(\s*\"([^\"]+)\""#
+    )
+    let sourceRange = NSRange(source.startIndex..<source.endIndex, in: source)
+    let usedKeys: Set<String> = Set(
+      expression.matches(in: source, range: sourceRange).compactMap { match in
+        guard let range = Range(match.range(at: 1), in: source) else { return nil }
+        return String(source[range])
+      }
+    )
+    XCTAssertTrue(
+      usedKeys.isSubset(of: catalogKeys),
+      "Missing localization keys: \(usedKeys.subtracting(catalogKeys).sorted())"
+    )
+
+    let sensorCoreSourceDirectory = projectRoot.appendingPathComponent(
+      "Sources/SensorCore",
+      isDirectory: true
+    )
+    let sensorCoreSourceURLs = try FileManager.default.contentsOfDirectory(
+      at: sensorCoreSourceDirectory,
+      includingPropertiesForKeys: nil
+    ).filter { $0.pathExtension == "swift" }
+    let sensorCoreSource = try sensorCoreSourceURLs.map {
+      try String(contentsOf: $0, encoding: .utf8)
+    }.joined(separator: "\n")
+    let displayExpression = try NSRegularExpression(
+      pattern: #"(?:name|label):\s*\"([^\"]+)\""#
+    )
+    let sensorCoreRange = NSRange(
+      sensorCoreSource.startIndex..<sensorCoreSource.endIndex,
+      in: sensorCoreSource
+    )
+    let sensorDisplayKeys: Set<String> = Set(
+      displayExpression.matches(in: sensorCoreSource, range: sensorCoreRange).compactMap { match in
+        guard let range = Range(match.range(at: 1), in: sensorCoreSource) else { return nil }
+        let key = String(sensorCoreSource[range])
+        return key.contains("\\(") ? nil : key
+      }
+    )
+    XCTAssertTrue(
+      sensorDisplayKeys.isSubset(of: catalogKeys),
+      "Missing sensor display translations: \(sensorDisplayKeys.subtracting(catalogKeys).sorted())"
+    )
+  }
+
   func testByteFormattingIsHumanReadable() {
     let value = SensorFormatting.bytes(1_073_741_824)
     XCTAssertTrue(value.contains("GB"))
@@ -1202,6 +1297,26 @@ final class SensorCoreTests: XCTestCase {
     let channelMatch = try XCTUnwrap(
       SensorSnapshotSearch.filter([snapshot], query: "write_rate").first)
     XCTAssertEqual(channelMatch.channels.map(\.id), ["disk_write_rate"])
+    let localizedText = [
+      "Disk Activity": "磁盘活动",
+      "Write rate": "写入速率",
+    ]
+    let localizedProviderMatch = try XCTUnwrap(
+      SensorSnapshotSearch.filter(
+        [snapshot],
+        query: "磁盘活动",
+        localizedDisplayText: { localizedText[$0] ?? $0 }
+      ).first
+    )
+    XCTAssertEqual(localizedProviderMatch.channels.count, 2)
+    let localizedChannelMatch = try XCTUnwrap(
+      SensorSnapshotSearch.filter(
+        [snapshot],
+        query: "写入速率",
+        localizedDisplayText: { localizedText[$0] ?? $0 }
+      ).first
+    )
+    XCTAssertEqual(localizedChannelMatch.channels.map(\.id), ["disk_write_rate"])
     XCTAssertTrue(SensorSnapshotSearch.filter([snapshot], query: "microphone").isEmpty)
     XCTAssertEqual(SensorSnapshotSearch.filter([snapshot], query: "   "), [snapshot])
   }

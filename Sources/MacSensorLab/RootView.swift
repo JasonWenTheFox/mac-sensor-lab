@@ -8,7 +8,7 @@ struct RootView: View {
   var body: some View {
     NavigationSplitView {
       List(DashboardSection.allCases, selection: $model.selection) { section in
-        Label(section.rawValue, systemImage: section.symbol)
+        Label(section.displayName, systemImage: section.symbol)
           .tag(section)
       }
       .navigationTitle("Mac Sensor Lab")
@@ -16,7 +16,7 @@ struct RootView: View {
     } detail: {
       VStack(spacing: 0) {
         if model.isDemoMode {
-          Label("Demo data — not live sensor readings", systemImage: "testtube.2")
+          Label(L10n.text("Demo data — not live sensor readings"), systemImage: "testtube.2")
             .font(.callout.weight(.semibold))
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 18)
@@ -65,53 +65,57 @@ struct RootView: View {
       .toolbar {
         ToolbarItemGroup {
           Menu {
-            Picker("Refresh interval", selection: $model.samplingCadence) {
+            Picker(L10n.text("Refresh interval"), selection: $model.samplingCadence) {
               ForEach(SamplingCadence.allCases) { cadence in
                 Text(cadence.displayName).tag(cadence)
               }
             }
             Divider()
             Button(
-              model.isSamplingPaused ? "Resume Automatic Sampling" : "Pause Automatic Sampling"
+              L10n.text(
+                model.isSamplingPaused
+                  ? "Resume Automatic Sampling" : "Pause Automatic Sampling"
+              )
             ) {
               model.toggleSampling()
             }
-            Button("Clear Chart History") { model.clearHistory() }
+            Button(L10n.text("Clear Chart History")) { model.clearHistory() }
           } label: {
             Label(
-              model.isSamplingPaused ? "Paused" : model.samplingCadence.shortLabel,
+              model.isSamplingPaused
+                ? L10n.text("Paused") : model.samplingCadence.shortLabel,
               systemImage: model.isSamplingPaused ? "pause.circle" : "timer")
           }
-          .help("Sampling controls")
+          .help(L10n.text("Sampling controls"))
 
           if model.isRecording {
             Button {
               Task { await model.stopRecording() }
             } label: {
-              Label("Stop Recording", systemImage: "record.circle.fill")
+              Label(L10n.text("Stop Recording"), systemImage: "record.circle.fill")
                 .foregroundStyle(.red)
             }
-            .help("Stop continuous CSV recording")
+            .help(L10n.text("Stop continuous CSV recording"))
           }
 
           Menu {
-            Button("JSON Snapshot") { model.export(.json) }
-            Button("CSV Channels") { model.export(.csv) }
+            Button(L10n.text("JSON Snapshot")) { model.export(.json) }
+            Button(L10n.text("CSV Channels")) { model.export(.csv) }
             Divider()
             if model.isRecording {
-              Button("Stop Continuous Recording") {
+              Button(L10n.text("Stop Continuous Recording")) {
                 Task { await model.stopRecording() }
               }
             } else {
-              Button("Start Continuous CSV Recording…") { model.startRecording() }
+              Button(L10n.text("Start Continuous CSV Recording…")) { model.startRecording() }
             }
           } label: {
-            Label("Export", systemImage: "square.and.arrow.up")
+            Label(L10n.text("Export"), systemImage: "square.and.arrow.up")
           }
           Button {
             Task { await model.refresh() }
           } label: {
-            Label("Refresh", systemImage: "arrow.clockwise")
+            Label(L10n.text("Refresh"), systemImage: "arrow.clockwise")
           }
           .disabled(model.isRefreshing)
         }
@@ -129,12 +133,14 @@ private struct OverviewView: View {
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 8) {
-        Text("Overview")
+        Text(L10n.text("Overview"))
           .font(.largeTitle.bold())
         Text(
-          isDemoMode
-            ? "Deterministic fixture readings for screenshots and UI review."
-            : "Live local readings, with source and confidence kept visible."
+          L10n.text(
+            isDemoMode
+              ? "Deterministic fixture readings for screenshots and UI review."
+              : "Live local readings, with source and confidence kept visible."
+          )
         )
         .foregroundStyle(.secondary)
       }
@@ -148,7 +154,7 @@ private struct OverviewView: View {
       }
     }
     .padding(24)
-    .navigationTitle("Overview")
+    .navigationTitle(L10n.text("Overview"))
   }
 }
 
@@ -171,9 +177,9 @@ private struct SensorCard: View {
     VStack(alignment: .leading, spacing: 14) {
       HStack(alignment: .top) {
         VStack(alignment: .leading, spacing: 5) {
-          Text(snapshot.name)
+          Text(L10n.text(snapshot.name))
             .font(.headline)
-          Text(snapshot.summary)
+          Text(L10n.text(snapshot.summary))
             .font(.title3.weight(.semibold))
             .lineLimit(2)
         }
@@ -187,7 +193,7 @@ private struct SensorCard: View {
       } else {
         ForEach(snapshot.channels.prefix(4)) { channel in
           HStack(alignment: .firstTextBaseline) {
-            Text(channel.label)
+            Text(L10n.text(channel.label))
               .foregroundStyle(.secondary)
             Spacer()
             Text(channel.formattedValue)
@@ -202,7 +208,7 @@ private struct SensorCard: View {
 
       if let channel = chartChannel, chartPoints.count >= 2 {
         VStack(alignment: .leading, spacing: 4) {
-          Text("\(channel.label) • recent samples")
+          Text(L10n.format("%@ • recent samples", L10n.text(channel.label)))
             .font(.caption2)
             .foregroundStyle(.secondary)
           Chart(chartPoints) { point in
@@ -228,26 +234,35 @@ private struct SensorCard: View {
           .chartYAxis(.hidden)
           .frame(height: 44)
         }
-        .accessibilityLabel("\(channel.label) trend with \(chartPoints.count) samples")
+        .accessibilityLabel(
+          L10n.format(
+            "%@ trend with %lld samples",
+            L10n.text(channel.label),
+            Int64(chartPoints.count)
+          )
+        )
       }
 
       Divider()
       HStack(spacing: 8) {
         Label {
-          Text("Updated ") + Text(snapshot.timestamp, style: .relative)
+          Text(L10n.text("Updated ")) + Text(snapshot.timestamp, style: .relative)
         } icon: {
           Image(systemName: "clock")
         }
         .help(
-          "Original sample time: \(snapshot.timestamp.formatted(date: .abbreviated, time: .standard))"
+          L10n.format(
+            "Original sample time: %@",
+            snapshot.timestamp.formatted(date: .abbreviated, time: .standard)
+          )
         )
         Spacer()
-        Text(snapshot.capability.displayName)
+        Text(L10n.text(snapshot.capability.displayName))
       }
       .font(.caption)
       .foregroundStyle(.tertiary)
 
-      Text("Source: \(snapshot.source)")
+      Text(L10n.format("Source: %@", snapshot.source))
         .font(.caption)
         .foregroundStyle(.tertiary)
         .lineLimit(1)
@@ -279,7 +294,7 @@ private struct StatusPill: View {
   var body: some View {
     HStack(spacing: 6) {
       Circle().fill(color).frame(width: 7, height: 7)
-      Text(status.displayName)
+      Text(L10n.text(status.displayName))
     }
     .font(.caption.weight(.medium))
     .padding(.horizontal, 9)
@@ -293,16 +308,22 @@ private struct RawSensorsView: View {
   @State private var query = ""
 
   private var filteredSnapshots: [SensorSnapshot] {
-    SensorSnapshotSearch.filter(snapshots, query: query)
+    SensorSnapshotSearch.filter(
+      snapshots,
+      query: query,
+      localizedDisplayText: L10n.text
+    )
   }
 
   var body: some View {
     List {
       if filteredSnapshots.isEmpty {
         ContentUnavailableView(
-          "No Sensors Found",
+          L10n.text("No Sensors Found"),
           systemImage: "magnifyingglass",
-          description: Text("Try a provider, channel, source, status, or stable ID.")
+          description: Text(
+            L10n.text("Try a provider, channel, source, status, or stable ID.")
+          )
         )
       }
       ForEach(filteredSnapshots) { snapshot in
@@ -310,7 +331,7 @@ private struct RawSensorsView: View {
           ForEach(snapshot.channels) { channel in
             VStack(alignment: .leading, spacing: 5) {
               HStack(alignment: .firstTextBaseline) {
-                Text(channel.label)
+                Text(L10n.text(channel.label))
                 Spacer()
                 Text(channel.formattedValue).monospacedDigit()
                 if let unit = channel.unit, shouldDisplayUnit(unit, for: channel) {
@@ -319,8 +340,8 @@ private struct RawSensorsView: View {
               }
               HStack(spacing: 8) {
                 Text(channel.id).monospaced()
-                Text(channel.kind.displayName)
-                if let note = channel.note { Text(note) }
+                Text(L10n.text(channel.kind.displayName))
+                if let note = channel.note { Text(L10n.text(note)) }
               }
               .font(.caption)
               .foregroundStyle(.secondary)
@@ -328,28 +349,36 @@ private struct RawSensorsView: View {
             .padding(.vertical, 3)
           }
           if snapshot.channels.isEmpty {
-            Text(snapshot.summary).foregroundStyle(.secondary)
+            Text(L10n.text(snapshot.summary)).foregroundStyle(.secondary)
           }
           ForEach(snapshot.notes, id: \.self) { note in
-            Label(note, systemImage: "info.circle")
+            Label(L10n.text(note), systemImage: "info.circle")
               .font(.caption)
               .foregroundStyle(.secondary)
           }
         } header: {
           HStack {
-            Text(snapshot.name)
+            Text(L10n.text(snapshot.name))
             Spacer()
             StatusPill(status: snapshot.status)
           }
         } footer: {
           Text(
-            "Updated \(snapshot.timestamp.formatted(date: .omitted, time: .standard)) • Source: \(snapshot.source) • \(snapshot.capability.displayName)"
+            L10n.format(
+              "Updated %@ • Source: %@ • %@",
+              snapshot.timestamp.formatted(date: .omitted, time: .standard),
+              snapshot.source,
+              L10n.text(snapshot.capability.displayName)
+            )
           )
         }
       }
     }
-    .navigationTitle("Raw Sensors")
-    .searchable(text: $query, prompt: "Provider, channel, source, status, or ID")
+    .navigationTitle(L10n.text("Raw Sensors"))
+    .searchable(
+      text: $query,
+      prompt: L10n.text("Provider, channel, source, status, or ID")
+    )
   }
 }
 
@@ -379,33 +408,42 @@ private struct ExperimentsView: View {
 
   private let experiments = [
     Experiment(
-      name: "Level", symbol: "level", providerID: "motion.spu_live", channelID: "level_roll",
-      description: "Uses gravity-derived roll and pitch when live acceleration is available"),
+      name: L10n.text("Level"), symbol: "level", providerID: "motion.spu_live",
+      channelID: "level_roll",
+      description: L10n.text(
+        "Uses gravity-derived roll and pitch when live acceleration is available"
+      )),
     Experiment(
-      name: "Lid Protractor", symbol: "angle", providerID: "motion.lid_angle", channelID: "angle",
-      description: "Uses the undocumented lid-angle sensor"),
+      name: L10n.text("Lid Protractor"), symbol: "angle", providerID: "motion.lid_angle",
+      channelID: "angle",
+      description: L10n.text("Uses the undocumented lid-angle sensor")),
     Experiment(
-      name: "Trackpad Scale", symbol: "scalemass", providerID: "diagnostics.hardware_capabilities",
+      name: L10n.text("Trackpad Scale"), symbol: "scalemass",
+      providerID: "diagnostics.hardware_capabilities",
       channelID: "force_touch",
-      description: "Requires a future raw Force Touch provider and calibration"),
+      description: L10n.text("Requires a future raw Force Touch provider and calibration")),
     Experiment(
-      name: "Motion Trend", symbol: "waveform.path", providerID: "motion.spu_live",
+      name: L10n.text("Motion Trend"), symbol: "waveform.path", providerID: "motion.spu_live",
       channelID: "acceleration_magnitude",
-      description: "Low-rate acceleration variation; not a vibration spectrum analyzer"),
+      description: L10n.text(
+        "Low-rate acceleration variation; not a vibration spectrum analyzer"
+      )),
     Experiment(
-      name: "Light Meter", symbol: "sun.max", providerID: "motion.spu_live",
+      name: L10n.text("Light Meter"), symbol: "sun.max", providerID: "motion.spu_live",
       channelID: "ambient_intensity",
-      description: "Shows raw light first; lux requires model-specific calibration"),
+      description: L10n.text(
+        "Shows raw light first; lux requires model-specific calibration"
+      )),
     Experiment(
-      name: "Sound Lab", symbol: "waveform", providerID: nil, channelID: nil,
-      description: "Microphone access will be opt-in"),
+      name: L10n.text("Sound Lab"), symbol: "waveform", providerID: nil, channelID: nil,
+      description: L10n.text("Microphone access will be opt-in")),
   ]
 
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 8) {
-        Text("Experiments").font(.largeTitle.bold())
-        Text("Derived tools unlock only when their data source is verified.")
+        Text(L10n.text("Experiments")).font(.largeTitle.bold())
+        Text(L10n.text("Derived tools unlock only when their data source is verified."))
           .foregroundStyle(.secondary)
       }
       .frame(maxWidth: .infinity, alignment: .leading)
@@ -436,7 +474,7 @@ private struct ExperimentsView: View {
       .padding(.top, 18)
     }
     .padding(24)
-    .navigationTitle("Experiments")
+    .navigationTitle(L10n.text("Experiments"))
   }
 
   private func isReady(_ experiment: Experiment, snapshot: SensorSnapshot?) -> Bool {
@@ -450,21 +488,23 @@ private struct ExperimentsView: View {
 
   private func sourceState(isReady: Bool, snapshot: SensorSnapshot?) -> String {
     if isReady {
-      return snapshot?.status == .degraded ? "Recent data • source limited" : "Data source ready"
+      return L10n.text(
+        snapshot?.status == .degraded ? "Recent data • source limited" : "Data source ready"
+      )
     }
-    guard let snapshot else { return "Not implemented • provider pending" }
+    guard let snapshot else { return L10n.text("Not implemented • provider pending") }
     if snapshot.id == "diagnostics.hardware_capabilities",
       snapshot.channels.contains(where: { ($0.value ?? 0) > 0 })
     {
-      return "Hardware detected • measurement provider pending"
+      return L10n.text("Hardware detected • measurement provider pending")
     }
     return switch snapshot.status {
-    case .loading: "Checking data source"
-    case .permissionRequired: "Permission required"
-    case .unavailable: "Data source unavailable"
-    case .error: "Provider error"
-    case .degraded: "Data source limited"
-    case .available: "Required measurement channel unavailable"
+    case .loading: L10n.text("Checking data source")
+    case .permissionRequired: L10n.text("Permission required")
+    case .unavailable: L10n.text("Data source unavailable")
+    case .error: L10n.text("Provider error")
+    case .degraded: L10n.text("Data source limited")
+    case .available: L10n.text("Required measurement channel unavailable")
     }
   }
 
@@ -482,14 +522,14 @@ private struct ExperimentsView: View {
           Text(unit).foregroundStyle(.secondary)
         }
         Spacer()
-        Text(channel.kind.displayName)
+        Text(L10n.text(channel.kind.displayName))
           .font(.caption)
           .foregroundStyle(.secondary)
       }
 
       if channelID == "angle", let value = channel.value {
         Gauge(value: min(max(value, 0), 180), in: 0...180) {
-          Text("Lid angle")
+          Text(L10n.text("Lid angle"))
         } currentValueLabel: {
           Text("0° — 180°").font(.caption2)
         }
@@ -501,9 +541,15 @@ private struct ExperimentsView: View {
         let pitch = snapshot.channels.first(where: { $0.id == "level_pitch" })
       {
         HStack {
-          Label("Roll \(channel.formattedValue)°", systemImage: "arrow.left.and.right")
+          Label(
+            L10n.format("Roll %@°", channel.formattedValue),
+            systemImage: "arrow.left.and.right"
+          )
           Spacer()
-          Label("Pitch \(pitch.formattedValue)°", systemImage: "arrow.up.and.down")
+          Label(
+            L10n.format("Pitch %@°", pitch.formattedValue),
+            systemImage: "arrow.up.and.down"
+          )
         }
         .font(.caption)
         .monospacedDigit()
@@ -530,14 +576,17 @@ private struct ExperimentsView: View {
       {
         HStack(spacing: 8) {
           ExperimentMetric(
-            label: "RMS variation",
+            label: L10n.text("RMS variation"),
             value: "\(SensorFormatting.decimal(statistics.rmsDeviation, fractionDigits: 4)) g")
           ExperimentMetric(
-            label: "Peak-to-peak",
+            label: L10n.text("Peak-to-peak"),
             value: "\(SensorFormatting.decimal(statistics.peakToPeak, fractionDigits: 4)) g")
         }
         Text(
-          "Calculated from \(statistics.sampleCount) dashboard samples. The 1–10 second cadence cannot measure vibration frequency."
+          L10n.format(
+            "Calculated from %lld dashboard samples. The 1–10 second cadence cannot measure vibration frequency.",
+            Int64(statistics.sampleCount)
+          )
         )
         .font(.caption2)
         .foregroundStyle(.secondary)
@@ -552,7 +601,9 @@ private struct ExperimentsView: View {
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
         .frame(height: 34)
-        .accessibilityLabel("\(channel.label) experiment trend")
+        .accessibilityLabel(
+          L10n.format("%@ experiment trend", L10n.text(channel.label))
+        )
       }
     }
   }
@@ -576,7 +627,7 @@ private struct ExperimentsView: View {
       }
       .frame(height: 44, alignment: .bottom)
       .accessibilityElement(children: .ignore)
-      .accessibilityLabel("Four uncalibrated ambient spectral channels")
+      .accessibilityLabel(L10n.text("Four uncalibrated ambient spectral channels"))
     }
   }
 }
@@ -614,13 +665,13 @@ private struct AmbientLightInterpretationPanel: View {
     VStack(alignment: .leading, spacing: 10) {
       if let statistics {
         HStack(spacing: 8) {
-          ExperimentMetric(label: "Min", value: formatted(statistics.minimum))
-          ExperimentMetric(label: "Average", value: formatted(statistics.average))
-          ExperimentMetric(label: "Max", value: formatted(statistics.maximum))
+          ExperimentMetric(label: L10n.text("Min"), value: formatted(statistics.minimum))
+          ExperimentMetric(label: L10n.text("Average"), value: formatted(statistics.average))
+          ExperimentMetric(label: L10n.text("Max"), value: formatted(statistics.maximum))
         }
         if let position = statistics.relativePosition {
           ProgressView(value: position) {
-            Text("Position in observed raw range")
+            Text(L10n.text("Position in observed raw range"))
           } currentValueLabel: {
             Text(position.formatted(.percent.precision(.fractionLength(0))))
           }
@@ -634,7 +685,7 @@ private struct AmbientLightInterpretationPanel: View {
       {
         HStack(alignment: .firstTextBaseline) {
           VStack(alignment: .leading, spacing: 2) {
-            Text("Estimated illuminance")
+            Text(L10n.text("Estimated illuminance"))
               .font(.caption)
               .foregroundStyle(.secondary)
             Text("\(SensorFormatting.decimal(estimate, fractionDigits: 1)) lux")
@@ -642,7 +693,7 @@ private struct AmbientLightInterpretationPanel: View {
               .monospacedDigit()
           }
           Spacer()
-          Text("Estimated")
+          Text(L10n.text("Estimated"))
             .font(.caption.weight(.medium))
             .foregroundStyle(.orange)
         }
@@ -652,28 +703,34 @@ private struct AmbientLightInterpretationPanel: View {
       }
 
       HStack {
-        TextField("Reference lux", text: $referenceLuxText)
+        TextField(L10n.text("Reference lux"), text: $referenceLuxText)
           .textFieldStyle(.roundedBorder)
           .frame(width: 110)
-        Button(calibration == nil ? "Calibrate at Current Raw" : "Add Calibration Point") {
+        Button(
+          L10n.text(
+            calibration == nil ? "Calibrate at Current Raw" : "Add Calibration Point"
+          )
+        ) {
           captureCalibration()
         }
         .disabled(candidateCalibration == nil)
         if calibration != nil {
           if calibration?.pointCount ?? 0 > 1 {
-            Button("Undo Last Point") { onUndoCalibrationPoint() }
+            Button(L10n.text("Undo Last Point")) { onUndoCalibrationPoint() }
           }
-          Button("Clear All") { clearCalibration() }
+          Button(L10n.text("Clear All")) { clearCalibration() }
         }
       }
       HStack {
-        Button("Import Calibration…") { onImportCalibration() }
+        Button(L10n.text("Import Calibration…")) { onImportCalibration() }
         if calibration != nil {
-          Button("Export Calibration…") { onExportCalibration() }
+          Button(L10n.text("Export Calibration…")) { onExportCalibration() }
         }
       }
       Text(
-        "Requires an external lux reference. Add up to eight strictly increasing points; every result remains an estimate, not a certified meter."
+        L10n.text(
+          "Requires an external lux reference. Add up to eight strictly increasing points; every result remains an estimate, not a certified meter."
+        )
       )
       .font(.caption2)
       .foregroundStyle(.secondary)
@@ -698,10 +755,18 @@ private struct AmbientLightInterpretationPanel: View {
   private func calibrationDescription(_ calibration: AmbientLuxCalibration) -> String {
     if calibration.pointCount == 1 {
       return
-        "Single-point scale: \(SensorFormatting.decimal(calibration.luxReference, fractionDigits: 1)) lux at raw \(SensorFormatting.decimal(calibration.rawReference, fractionDigits: 3))."
+        L10n.format(
+          "Single-point scale: %@ lux at raw %@.",
+          SensorFormatting.decimal(calibration.luxReference, fractionDigits: 1),
+          SensorFormatting.decimal(calibration.rawReference, fractionDigits: 3)
+        )
     }
     return
-      "Linear fit from \(calibration.pointCount) points • RMSE \(SensorFormatting.decimal(calibration.rootMeanSquareError, fractionDigits: 1)) lux."
+      L10n.format(
+        "Linear fit from %lld points • RMSE %@ lux.",
+        Int64(calibration.pointCount),
+        SensorFormatting.decimal(calibration.rootMeanSquareError, fractionDigits: 1)
+      )
   }
 }
 
@@ -733,28 +798,38 @@ private struct LidReferencePanel: View {
       if let measurement {
         HStack(spacing: 8) {
           ExperimentMetric(
-            label: "Reference",
+            label: L10n.text("Reference"),
             value: "\(SensorFormatting.decimal(measurement.reference, fractionDigits: 1))°")
           ExperimentMetric(
-            label: "Relative change",
+            label: L10n.text("Relative change"),
             value: "\(signed(measurement.delta))°")
         }
-        Text(measurement.delta >= 0 ? "Opened from reference" : "Closed from reference")
-          .font(.caption2)
-          .foregroundStyle(.secondary)
+        Text(
+          L10n.text(
+            measurement.delta >= 0 ? "Opened from reference" : "Closed from reference"
+          )
+        )
+        .font(.caption2)
+        .foregroundStyle(.secondary)
       }
       HStack {
-        Button(hasReference ? "Update Reference" : "Set Current as Reference") {
+        Button(
+          L10n.text(hasReference ? "Update Reference" : "Set Current as Reference")
+        ) {
           referenceAngle = currentAngle
           hasReference = true
         }
         if hasReference {
-          Button("Clear") { hasReference = false }
+          Button(L10n.text("Clear")) { hasReference = false }
         }
       }
-      Text("Relative change is derived from the raw lid angle and does not alter the sensor.")
-        .font(.caption2)
-        .foregroundStyle(.secondary)
+      Text(
+        L10n.text(
+          "Relative change is derived from the raw lid angle and does not alter the sensor."
+        )
+      )
+      .font(.caption2)
+      .foregroundStyle(.secondary)
     }
     .padding(.top, 4)
   }
@@ -801,24 +876,32 @@ private struct DiagnosticsView: View {
 
   var body: some View {
     Form {
-      Section("Build") {
-        LabeledContent("Version", value: AppBuildInfo.version)
+      Section(L10n.text("Build")) {
+        LabeledContent(L10n.text("Version"), value: AppBuildInfo.version)
         LabeledContent(
-          "Data mode", value: isDemoMode ? "Built-in demo fixtures" : "Live hardware")
-        LabeledContent("Sensor providers", value: "\(snapshots.count)")
-        LabeledContent("Privacy manifest", value: AppBuildInfo.privacyManifestStatus)
+          L10n.text("Data mode"),
+          value: L10n.text(isDemoMode ? "Built-in demo fixtures" : "Live hardware")
+        )
+        LabeledContent(L10n.text("Sensor providers"), value: "\(snapshots.count)")
+        LabeledContent(
+          L10n.text("Privacy manifest"),
+          value: AppBuildInfo.privacyManifestStatus
+        )
       }
-      Section("Provider health") {
-        LabeledContent("Available", value: "\(statusCounts.available)")
-        LabeledContent("Limited", value: "\(statusCounts.degraded)")
-        LabeledContent("Permission required", value: "\(statusCounts.permissionRequired)")
-        LabeledContent("Unavailable", value: "\(statusCounts.unavailable)")
-        LabeledContent("Errors", value: "\(statusCounts.error)")
+      Section(L10n.text("Provider health")) {
+        LabeledContent(L10n.text("Available"), value: "\(statusCounts.available)")
+        LabeledContent(L10n.text("Limited"), value: "\(statusCounts.degraded)")
+        LabeledContent(
+          L10n.text("Permission required"),
+          value: "\(statusCounts.permissionRequired)"
+        )
+        LabeledContent(L10n.text("Unavailable"), value: "\(statusCounts.unavailable)")
+        LabeledContent(L10n.text("Errors"), value: "\(statusCounts.error)")
         if statusCounts.loading > 0 {
-          LabeledContent("Loading", value: "\(statusCounts.loading)")
+          LabeledContent(L10n.text("Loading"), value: "\(statusCounts.loading)")
         }
         LabeledContent(
-          "Status changes this launch",
+          L10n.text("Status changes this launch"),
           value: "\(samplingHealth.totalStatusTransitionCount)"
         )
         ForEach(
@@ -826,80 +909,107 @@ private struct DiagnosticsView: View {
         ) { provider in
           LabeledContent(
             provider.providerID,
-            value: "\(provider.statusTransitionCount) changes"
+            value: L10n.format("%lld changes", Int64(provider.statusTransitionCount))
           )
         }
       }
       if statusCounts.permissionRequired > 0 {
-        Section("Permission handling") {
+        Section(L10n.text("Permission handling")) {
           Text(
-            "macOS denied ordinary read access for \(statusCounts.permissionRequired) provider(s). Raw Sensors shows the provider-specific reason."
+            L10n.format(
+              "macOS denied ordinary read access for %lld provider(s). Raw Sensors shows the provider-specific reason.",
+              Int64(statusCounts.permissionRequired)
+            )
           )
           Text(
-            "Mac Sensor Lab does not request administrator access, change driver state, or bypass macOS privacy controls."
+            L10n.text(
+              "Mac Sensor Lab does not request administrator access, change driver state, or bypass macOS privacy controls."
+            )
           )
           .foregroundStyle(.secondary)
         }
       }
-      Section("Sampling & recording") {
+      Section(L10n.text("Sampling & recording")) {
         LabeledContent(
-          "Automatic sampling",
-          value: isSamplingPaused ? "Paused" : samplingCadence.displayName)
+          L10n.text("Automatic sampling"),
+          value: isSamplingPaused ? L10n.text("Paused") : samplingCadence.displayName
+        )
         if let lastRefreshDate {
           LabeledContent(
-            "Last refresh", value: lastRefreshDate.formatted(date: .omitted, time: .standard))
+            L10n.text("Last refresh"),
+            value: lastRefreshDate.formatted(date: .omitted, time: .standard)
+          )
         }
-        LabeledContent("Completed refreshes", value: "\(samplingHealth.completedCycleCount)")
+        LabeledContent(
+          L10n.text("Completed refreshes"),
+          value: "\(samplingHealth.completedCycleCount)"
+        )
         if let milliseconds = samplingHealth.lastCycleDurationMilliseconds {
           LabeledContent(
-            "Last refresh duration",
+            L10n.text("Last refresh duration"),
             value: "\(SensorFormatting.decimal(Double(milliseconds) / 1_000, fractionDigits: 3)) s"
           )
         }
         if let recordingFileName {
-          LabeledContent("Recording", value: recordingFileName)
+          LabeledContent(L10n.text("Recording"), value: recordingFileName)
           if let recordingProgress {
             ProgressView(value: recordingProgress.fractionUsed) {
-              Text("50 MB safety limit")
+              Text(L10n.text("50 MB safety limit"))
             } currentValueLabel: {
               Text(
-                "\(recordingProgress.rowCount) rows • \(SensorFormatting.bytes(UInt64(recordingProgress.byteCount)))"
+                L10n.format(
+                  "%lld rows • %@",
+                  Int64(recordingProgress.rowCount),
+                  SensorFormatting.bytes(UInt64(recordingProgress.byteCount))
+                )
               )
             }
           }
         } else {
-          LabeledContent("Continuous recording", value: "Off")
+          LabeledContent(L10n.text("Continuous recording"), value: L10n.text("Off"))
         }
-        Text("Chart history stays in memory only and can be cleared from the toolbar.")
+        Text(L10n.text("Chart history stays in memory only and can be cleared from the toolbar."))
           .foregroundStyle(.secondary)
       }
-      Section("Privacy") {
+      Section(L10n.text("Privacy")) {
         Text(
-          "No serial number, hardware UUID, UDID, host name, user name, location, process list, SSID or audio recording is collected by this build."
+          L10n.text(
+            "No serial number, hardware UUID, UDID, host name, user name, location, process list, SSID or audio recording is collected by this build."
+          )
         )
         Text(
-          "All readings stay on this Mac unless you explicitly export a snapshot, recording, calibration, or diagnostics file."
+          L10n.text(
+            "All readings stay on this Mac unless you explicitly export a snapshot, recording, calibration, or diagnostics file."
+          )
         )
       }
-      Section("Support") {
-        Button("Export Privacy-Safe Diagnostics…") { onExportDiagnostics() }
+      Section(L10n.text("Support")) {
+        Button(L10n.text("Export Privacy-Safe Diagnostics…")) { onExportDiagnostics() }
         Text(
-          "The support report contains provider status and stable channel metadata, never sensor readings, notes, source strings, machine identifiers, or file paths."
+          L10n.text(
+            "The support report contains provider status and stable channel metadata, never sensor readings, notes, source strings, machine identifiers, or file paths."
+          )
         )
         .foregroundStyle(.secondary)
       }
-      Section("Safety") {
+      Section(L10n.text("Safety")) {
         Text(
-          "This build never runs as root, changes fan settings, writes SMC values, or modifies Apple SPU driver state."
+          L10n.text(
+            "This build never runs as root, changes fan settings, writes SMC values, or modifies Apple SPU driver state."
+          )
         )
-        Text("Experimental readings are not medical, legal, safety, or calibrated metrology data.")
+        Text(
+          L10n.text(
+            "Experimental readings are not medical, legal, safety, or calibrated metrology data."
+          )
+        )
       }
       if let message {
-        Section("Last action") { Text(message) }
+        Section(L10n.text("Last action")) { Text(message) }
       }
     }
     .formStyle(.grouped)
-    .navigationTitle("Diagnostics")
+    .navigationTitle(L10n.text("Diagnostics"))
   }
 }
 
@@ -910,11 +1020,11 @@ enum AppBuildInfo {
     return switch (version, build) {
     case (.some(let version), .some(let build)): "\(version) (\(build))"
     case (.some(let version), .none): version
-    default: "Development"
+    default: L10n.text("Development")
     }
   }()
 
   static let privacyManifestStatus =
     Bundle.main.url(forResource: "PrivacyInfo", withExtension: "xcprivacy") == nil
-    ? "Development executable" : "Included"
+    ? L10n.text("Development executable") : L10n.text("Included")
 }

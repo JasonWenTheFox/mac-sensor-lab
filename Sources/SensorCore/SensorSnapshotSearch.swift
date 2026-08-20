@@ -1,7 +1,11 @@
 import Foundation
 
 public enum SensorSnapshotSearch {
-  public static func filter(_ snapshots: [SensorSnapshot], query: String) -> [SensorSnapshot] {
+  public static func filter(
+    _ snapshots: [SensorSnapshot],
+    query: String,
+    localizedDisplayText: (String) -> String = { $0 }
+  ) -> [SensorSnapshot] {
     let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !query.isEmpty else { return snapshots }
 
@@ -16,7 +20,10 @@ public enum SensorSnapshotSearch {
           snapshot.capability.displayName,
           snapshot.summary,
         ] + snapshot.notes
-      if providerFields.contains(where: { matches($0, query: query) }) {
+      if providerFields.contains(where: {
+        matches($0, query: query)
+          || matches(localizedDisplayText($0), query: query)
+      }) {
         return snapshot
       }
 
@@ -28,7 +35,10 @@ public enum SensorSnapshotSearch {
           channel.unit,
           channel.kind.displayName,
           channel.note,
-        ].compactMap { $0 }.contains(where: { matches($0, query: query) })
+        ].compactMap { $0 }.contains(where: {
+          matches($0, query: query)
+            || matches(localizedDisplayText($0), query: query)
+        })
       }
       guard !channels.isEmpty else { return nil }
       return SensorSnapshot(

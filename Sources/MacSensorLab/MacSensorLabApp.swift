@@ -39,26 +39,34 @@ private struct SettingsView: View {
   var body: some View {
     Form {
       if model.isDemoMode {
-        Section("Data mode") {
-          Label("Demo data — no hardware is being read", systemImage: "testtube.2")
+        Section(L10n.text("Data mode")) {
+          Label(L10n.text("Demo data — no hardware is being read"), systemImage: "testtube.2")
             .foregroundStyle(.orange)
         }
       }
-      Section("Sampling") {
-        Picker("Automatic sampling interval", selection: $model.samplingCadence) {
+      Section(L10n.text("Sampling")) {
+        Picker(L10n.text("Automatic sampling interval"), selection: $model.samplingCadence) {
           ForEach(SamplingCadence.allCases) { cadence in
             Text(cadence.displayName).tag(cadence)
           }
         }
-        Text("The interval is remembered. Pause state is intentionally reset on every launch.")
-          .foregroundStyle(.secondary)
-      }
-      Section("Safety") {
         Text(
-          "Mac Sensor Lab reads sensors locally and does not request administrator access in this build."
+          L10n.text(
+            "The interval is remembered. Pause state is intentionally reset on every launch."
+          )
+        )
+        .foregroundStyle(.secondary)
+      }
+      Section(L10n.text("Safety")) {
+        Text(
+          L10n.text(
+            "Mac Sensor Lab reads sensors locally and does not request administrator access in this build."
+          )
         )
         Text(
-          "Live sampling attempts ordinary read-only access. If macOS denies an interface, its provider reports Permission required; this app does not request administrator access or bypass privacy controls."
+          L10n.text(
+            "Live sampling attempts ordinary read-only access. If macOS denies an interface, its provider reports Permission required; this app does not request administrator access or bypass privacy controls."
+          )
         )
       }
     }

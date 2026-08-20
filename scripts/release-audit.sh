@@ -40,6 +40,7 @@ fi
 
 /usr/bin/plutil -lint Resources/Info.plist >/dev/null
 /usr/bin/plutil -lint Resources/PrivacyInfo.xcprivacy >/dev/null
+./scripts/check-localizations.sh >/dev/null
 
 [[ "$(/usr/bin/plutil -extract NSPrivacyTracking raw -o - Resources/PrivacyInfo.xcprivacy)" == "false" ]] \
   || fail "privacy manifest must declare tracking disabled"

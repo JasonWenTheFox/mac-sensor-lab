@@ -55,6 +55,10 @@ The current build has 14 providers:
 The Overview, Raw Sensors, Experiments, and Diagnostics screens share the same normalized
 `SensorSnapshot` and `SensorChannel` model.
 
+The native UI follows the macOS per-app language setting and currently includes English and
+Simplified Chinese. Localization is display-only: stable provider/channel IDs, JSON/CSV fields,
+and raw sensor payloads do not change with the selected language.
+
 ## Sampling, experiments, and export
 
 - Choose a 1, 2, 5, or 10 second automatic interval, pause/resume, refresh manually, or clear the
@@ -71,8 +75,8 @@ The Overview, Raw Sensors, Experiments, and Diagnostics screens share the same n
   actor-isolated duplicate suppression, a fresh end-of-file/size check before every batch, full
   snapshot-contract validation, batch-size preflight followed by row-at-a-time encoding/writes,
   256 cross-batch provider markers, final file-end recounting, and a 50 MB hard limit.
-- Search Raw Sensors by provider, channel, source, status, or stable ID without mutating sampling,
-  history, or export data.
+- Search Raw Sensors by provider, channel, source, status, stable ID, or translated display name
+  without mutating sampling, history, or export data.
 - Overview cards show each snapshot's original timestamp as a live relative age, so a retained
   degraded SPU sample cannot look newly collected.
 - Use rolling raw ambient-light statistics. A lux value appears only after an explicit external
@@ -150,7 +154,7 @@ rejects tracked build output, absolute user paths, common secret signatures, pro
 keys that this release does not implement, forbidden mutation/privilege APIs, missing release
 documents, or a privacy manifest inconsistent with the current offline behavior.
 
-GitHub Actions repeats formatting, audit, build, 56 XCTest cases, portable self-test, and app-bundle
+GitHub Actions repeats formatting, audit, build, 57 XCTest cases, portable self-test, and app-bundle
 assembly on `macos-26`.
 
 ## Repository layout
@@ -163,7 +167,7 @@ assembly on `macos-26`.
 │   ├── SensorLabProbe/   JSON probe CLI
 │   └── SensorLabSelfTest/
 ├── Tests/
-├── Resources/            Info.plist, icon, and privacy manifest
+├── Resources/            metadata, icon, privacy manifest, and localization catalog
 ├── docs/                 product, privacy, architecture, and release notes (Chinese)
 ├── references/           pinned upstream research ledger
 ├── LICENSES/             third-party license texts
