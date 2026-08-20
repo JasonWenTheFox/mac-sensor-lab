@@ -8,6 +8,29 @@ final class SensorCoreTests: XCTestCase {
     let value = SensorFormatting.bytes(1_073_741_824)
     XCTAssertTrue(value.contains("GB"))
     XCTAssertTrue(SensorFormatting.bytesPerSecond(1_024).contains("/s"))
+    XCTAssertEqual(SensorFormatting.bytesPerSecond(Double(UInt64.max)), "Unavailable")
+  }
+
+  func testNumericSafetyRejectsOverflowingCountersAndConversions() {
+    XCTAssertEqual(SensorNumericSafety.sum(40, 2), 42)
+    XCTAssertNil(SensorNumericSafety.sum(.max, 1))
+    XCTAssertEqual(SensorNumericSafety.product(21, 2), 42)
+    XCTAssertNil(SensorNumericSafety.product(.max, 2))
+    XCTAssertEqual(SensorNumericSafety.uint64(42.9), 42)
+    XCTAssertNil(SensorNumericSafety.uint64(-1))
+    XCTAssertNil(SensorNumericSafety.uint64(Double(UInt64.max)))
+    XCTAssertEqual(SensorNumericSafety.boundedNonnegativeInteger(99, maximum: 4), 4)
+    XCTAssertNil(SensorNumericSafety.boundedNonnegativeInteger(.infinity, maximum: 4))
+
+    var counter = OptionalUInt64CounterAccumulator()
+    counter.add(10)
+    counter.add(20)
+    XCTAssertEqual(counter.value, 30)
+    counter.add(.max)
+    XCTAssertNil(counter.value)
+    XCTAssertTrue(counter.didOverflow)
+    counter.add(1)
+    XCTAssertNil(counter.value)
   }
 
   func testCSVEscapesStructureAndSpreadsheetFormulas() {
@@ -185,6 +208,11 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertEqual(secondCycle.providers.first?.observationCount, 2)
     XCTAssertEqual(secondCycle.providers.first?.statusTransitionCount, 1)
     XCTAssertEqual(secondCycle.providers.first?.consecutiveIssueCount, 0)
+    let unrepresentableDuration = tracker.observe(
+      snapshots: [duplicate],
+      cycleDuration: Double(UInt64.max) / 1_000
+    )
+    XCTAssertNil(unrepresentableDuration.lastCycleDurationMilliseconds)
   }
 
   func testDiagnosticsExportRefusesUnsafeOrDuplicateIdentifiers() {
@@ -524,6 +552,8 @@ final class SensorCoreTests: XCTestCase {
     )
     XCTAssertNil(CPUUsageCalculator.percentage(previous: current, current: previous))
     XCTAssertNil(CPUUsageCalculator.percentage(previous: previous, current: previous))
+    let overflowing = CPUTickSample(user: .max, system: 1, idle: 0, nice: 0)
+    XCTAssertNil(CPUUsageCalculator.percentage(previous: previous, current: overflowing))
   }
 
   func testNetworkRateCalculatorUsesMonotonicDeltas() throws {
@@ -706,6 +736,9 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertNil(BatteryMeasurements.electricalPower(voltage: nil, current: 1))
     XCTAssertNil(
       BatteryMeasurements.electricalPower(voltage: .greatestFiniteMagnitude, current: 2))
+    XCTAssertEqual(BatteryMeasurements.capacity(5_000), 5_000)
+    XCTAssertNil(BatteryMeasurements.capacity(-1))
+    XCTAssertNil(BatteryMeasurements.capacity(.infinity))
   }
 
   func testGPUPerformanceValueRejectsInvalidPercentages() {

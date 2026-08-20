@@ -40,6 +40,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ### Fixed
 
+- Corrupt or extreme counters can no longer overflow CPU totals, network/disk/GPU aggregation, memory page conversion, fan-count conversion, sampling duration, or byte-rate formatting.
 - Duplicate provider IDs no longer trap while constructing read or dashboard ordering; they remain visible to the contract audit.
 - Network and disk rate baselines now reset when aggregate interface/device counts change or elapsed time is non-finite, preventing topology changes from becoming false throughput spikes.
 - Missing battery booleans remain unknown instead of becoming false, while invalid charge percentages and non-finite electrical derivations are omitted.

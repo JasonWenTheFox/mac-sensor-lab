@@ -43,8 +43,8 @@ public struct SPUDiscoveryProvider: SensorProvider {
     var found: [SensorChannel] = []
     var service = IOIteratorNext(iterator)
     while service != 0 {
-      let page = Int(IOKitHelpers.number(service, key: "PrimaryUsagePage") ?? -1)
-      let usage = Int(IOKitHelpers.number(service, key: "PrimaryUsage") ?? -1)
+      let page = IOKitHelpers.integer(service, key: "PrimaryUsagePage") ?? -1
+      let usage = IOKitHelpers.integer(service, key: "PrimaryUsage") ?? -1
       if let mapped = known["\(page):\(usage)"], !found.contains(where: { $0.id == mapped.0 }) {
         found.append(
           SensorChannel(

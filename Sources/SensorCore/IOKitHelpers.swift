@@ -45,6 +45,20 @@ enum IOKitHelpers {
     return (value as? NSNumber)?.doubleValue
   }
 
+  static func integer(_ service: io_registry_entry_t, key: String) -> Int? {
+    guard service != 0,
+      let unmanaged = IORegistryEntryCreateCFProperty(
+        service,
+        key as CFString,
+        kCFAllocatorDefault,
+        0
+      )
+    else {
+      return nil
+    }
+    return (unmanaged.takeRetainedValue() as? NSNumber)?.intValue
+  }
+
   static func bool(_ service: io_registry_entry_t, key: String) -> Bool? {
     guard service != 0,
       let unmanaged = IORegistryEntryCreateCFProperty(

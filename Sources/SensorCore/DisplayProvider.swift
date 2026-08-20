@@ -39,7 +39,7 @@ public struct DisplayProvider: SensorProvider {
         id: "main_resolution", label: "Main display (logical)",
         formattedValue: "\(width) × \(height)", unit: "pixels"),
     ]
-    if refresh > 0 {
+    if refresh.isFinite, refresh > 0 {
       channels.append(
         SensorChannel(
           id: "refresh_rate", label: "Refresh rate", value: refresh,

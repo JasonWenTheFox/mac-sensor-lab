@@ -212,26 +212,31 @@ public final class DiskIOProvider: SensorProvider, @unchecked Sendable {
         let writeOperations = (statistics["Operations (Write)"] as? NSNumber)?.uint64Value
       else { continue }
 
+      guard
+        let nextBytesRead = SensorNumericSafety.sum(aggregate.bytesRead, bytesRead),
+        let nextBytesWritten = SensorNumericSafety.sum(aggregate.bytesWritten, bytesWritten),
+        let nextReadOperations = SensorNumericSafety.sum(
+          aggregate.readOperations, readOperations),
+        let nextWriteOperations = SensorNumericSafety.sum(
+          aggregate.writeOperations, writeOperations),
+        let nextReadErrors = SensorNumericSafety.sum(
+          aggregate.readErrors,
+          (statistics["Errors (Read)"] as? NSNumber)?.uint64Value ?? 0
+        ),
+        let nextWriteErrors = SensorNumericSafety.sum(
+          aggregate.writeErrors,
+          (statistics["Errors (Write)"] as? NSNumber)?.uint64Value ?? 0
+        )
+      else { return nil }
       aggregate.deviceCount += 1
-      aggregate.bytesRead = saturatingSum(aggregate.bytesRead, bytesRead)
-      aggregate.bytesWritten = saturatingSum(aggregate.bytesWritten, bytesWritten)
-      aggregate.readOperations = saturatingSum(aggregate.readOperations, readOperations)
-      aggregate.writeOperations = saturatingSum(aggregate.writeOperations, writeOperations)
-      aggregate.readErrors = saturatingSum(
-        aggregate.readErrors,
-        (statistics["Errors (Read)"] as? NSNumber)?.uint64Value ?? 0
-      )
-      aggregate.writeErrors = saturatingSum(
-        aggregate.writeErrors,
-        (statistics["Errors (Write)"] as? NSNumber)?.uint64Value ?? 0
-      )
+      aggregate.bytesRead = nextBytesRead
+      aggregate.bytesWritten = nextBytesWritten
+      aggregate.readOperations = nextReadOperations
+      aggregate.writeOperations = nextWriteOperations
+      aggregate.readErrors = nextReadErrors
+      aggregate.writeErrors = nextWriteErrors
     }
     return aggregate
-  }
-
-  private static func saturatingSum(_ lhs: UInt64, _ rhs: UInt64) -> UInt64 {
-    let result = lhs.addingReportingOverflow(rhs)
-    return result.overflow ? .max : result.partialValue
   }
 
   private static func byteChannel(_ id: String, _ label: String, _ value: UInt64) -> SensorChannel {

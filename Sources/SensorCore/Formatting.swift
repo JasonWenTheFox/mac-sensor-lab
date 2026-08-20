@@ -6,8 +6,8 @@ public enum SensorFormatting {
   }
 
   public static func bytesPerSecond(_ value: Double) -> String {
-    guard value.isFinite, value >= 0 else { return "Unavailable" }
-    return "\(bytes(UInt64(value.rounded())))/s"
+    guard let bytes = SensorNumericSafety.uint64(value.rounded()) else { return "Unavailable" }
+    return "\(self.bytes(bytes))/s"
   }
 
   public static func decimal(_ value: Double, fractionDigits: Int = 1) -> String {

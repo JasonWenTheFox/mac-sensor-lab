@@ -101,7 +101,7 @@ public struct SensorSamplingHealthTracker: Sendable {
   private static func milliseconds(_ duration: TimeInterval) -> UInt64? {
     guard duration.isFinite, duration >= 0 else { return nil }
     let milliseconds = duration * 1_000
-    guard milliseconds.isFinite, milliseconds <= Double(UInt64.max) else { return nil }
+    guard milliseconds.isFinite, milliseconds < Double(UInt64.max) else { return nil }
     return UInt64(milliseconds.rounded())
   }
 

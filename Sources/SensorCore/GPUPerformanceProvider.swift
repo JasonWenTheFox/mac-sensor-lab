@@ -57,10 +57,10 @@ public struct GPUPerformanceProvider: SensorProvider {
       channels.append(
         Self.percentageChannel("gpu_tiler_utilization", "Tiler utilization", utilization))
     }
-    if let bytes = statistics.memoryInUse {
+    if let bytes = statistics.memoryInUse.value {
       channels.append(Self.byteChannel("gpu_memory_in_use", "GPU memory in use", bytes))
     }
-    if let bytes = statistics.memoryAllocated {
+    if let bytes = statistics.memoryAllocated.value {
       channels.append(Self.byteChannel("gpu_memory_allocated", "GPU memory allocated", bytes))
     }
 
@@ -90,8 +90,8 @@ public struct GPUPerformanceProvider: SensorProvider {
     var deviceUtilization: Double?
     var rendererUtilization: Double?
     var tilerUtilization: Double?
-    var memoryInUse: UInt64?
-    var memoryAllocated: UInt64?
+    var memoryInUse = OptionalUInt64CounterAccumulator()
+    var memoryAllocated = OptionalUInt64CounterAccumulator()
   }
 
   private static func readStatistics() -> Statistics? {
@@ -145,16 +145,10 @@ public struct GPUPerformanceProvider: SensorProvider {
       if let tiler {
         result.tilerUtilization = max(result.tilerUtilization ?? tiler, tiler)
       }
-      result.memoryInUse = saturatingOptionalSum(result.memoryInUse, memoryInUse)
-      result.memoryAllocated = saturatingOptionalSum(result.memoryAllocated, memoryAllocated)
+      result.memoryInUse.add(memoryInUse)
+      result.memoryAllocated.add(memoryAllocated)
     }
     return result
-  }
-
-  private static func saturatingOptionalSum(_ lhs: UInt64?, _ rhs: UInt64?) -> UInt64? {
-    guard lhs != nil || rhs != nil else { return nil }
-    let result = (lhs ?? 0).addingReportingOverflow(rhs ?? 0)
-    return result.overflow ? .max : result.partialValue
   }
 
   private static func percentageChannel(

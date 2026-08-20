@@ -7,15 +7,25 @@ struct CPUTickSample: Equatable {
   let idle: UInt64
   let nice: UInt64
 
-  var active: UInt64 { user + system + nice }
-  var total: UInt64 { active + idle }
+  var active: UInt64? {
+    SensorNumericSafety.sum(user, system).flatMap {
+      SensorNumericSafety.sum($0, nice)
+    }
+  }
+
+  var total: UInt64? {
+    active.flatMap { SensorNumericSafety.sum($0, idle) }
+  }
 }
 
 enum CPUUsageCalculator {
   static func percentage(previous: CPUTickSample, current: CPUTickSample) -> Double? {
-    guard current.active >= previous.active, current.total >= previous.total else { return nil }
-    let activeDelta = current.active - previous.active
-    let totalDelta = current.total - previous.total
+    guard let previousActive = previous.active, let currentActive = current.active,
+      let previousTotal = previous.total, let currentTotal = current.total,
+      currentActive >= previousActive, currentTotal >= previousTotal
+    else { return nil }
+    let activeDelta = currentActive - previousActive
+    let totalDelta = currentTotal - previousTotal
     guard totalDelta > 0 else { return nil }
     return min(max(Double(activeDelta) / Double(totalDelta) * 100, 0), 100)
   }
@@ -166,21 +176,31 @@ public final class SystemPerformanceProvider: SensorProvider, @unchecked Sendabl
     }
 
     var sample = CPUTickSample(user: 0, system: 0, idle: 0, nice: 0)
+    var overflowed = false
     info.withMemoryRebound(
       to: processor_cpu_load_info_data_t.self,
       capacity: Int(processorCount)
     ) { pointer in
       for index in 0..<Int(processorCount) {
         let ticks = pointer[index].cpu_ticks
+        guard
+          let user = SensorNumericSafety.sum(sample.user, UInt64(ticks.0)),
+          let system = SensorNumericSafety.sum(sample.system, UInt64(ticks.1)),
+          let idle = SensorNumericSafety.sum(sample.idle, UInt64(ticks.2)),
+          let nice = SensorNumericSafety.sum(sample.nice, UInt64(ticks.3))
+        else {
+          overflowed = true
+          break
+        }
         sample = CPUTickSample(
-          user: sample.user + UInt64(ticks.0),
-          system: sample.system + UInt64(ticks.1),
-          idle: sample.idle + UInt64(ticks.2),
-          nice: sample.nice + UInt64(ticks.3)
+          user: user,
+          system: system,
+          idle: idle,
+          nice: nice
         )
       }
     }
-    return sample
+    return overflowed ? nil : sample
   }
 
   private static func readLoadAverages() -> [Double] {
@@ -205,15 +225,21 @@ public final class SystemPerformanceProvider: SensorProvider, @unchecked Sendabl
 
     var pageSize: vm_size_t = 0
     guard host_page_size(mach_host_self(), &pageSize) == KERN_SUCCESS else { return nil }
-    func bytes(_ pages: natural_t) -> UInt64 {
-      UInt64(pages) * UInt64(pageSize)
+    func bytes(_ pages: natural_t) -> UInt64? {
+      SensorNumericSafety.product(UInt64(pages), UInt64(pageSize))
     }
+    guard let free = bytes(statistics.free_count),
+      let active = bytes(statistics.active_count),
+      let inactive = bytes(statistics.inactive_count),
+      let wired = bytes(statistics.wire_count),
+      let compressed = bytes(statistics.compressor_page_count)
+    else { return nil }
     return MemoryStatistics(
-      free: bytes(statistics.free_count),
-      active: bytes(statistics.active_count),
-      inactive: bytes(statistics.inactive_count),
-      wired: bytes(statistics.wire_count),
-      compressed: bytes(statistics.compressor_page_count)
+      free: free,
+      active: active,
+      inactive: inactive,
+      wired: wired,
+      compressed: compressed
     )
   }
 

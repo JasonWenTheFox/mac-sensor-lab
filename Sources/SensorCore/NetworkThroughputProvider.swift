@@ -178,11 +178,19 @@ public final class NetworkThroughputProvider: SensorProvider, @unchecked Sendabl
       let flags = Int32(bitPattern: data.ifmd_flags)
       guard flags & IFF_UP != 0, flags & IFF_LOOPBACK == 0 else { continue }
 
+      guard
+        let nextReceivedBytes = SensorNumericSafety.sum(
+          receivedBytes, data.ifmd_data.ifi_ibytes),
+        let nextSentBytes = SensorNumericSafety.sum(sentBytes, data.ifmd_data.ifi_obytes),
+        let nextReceivedPackets = SensorNumericSafety.sum(
+          receivedPackets, data.ifmd_data.ifi_ipackets),
+        let nextSentPackets = SensorNumericSafety.sum(sentPackets, data.ifmd_data.ifi_opackets)
+      else { return nil }
       activeCount += 1
-      receivedBytes &+= data.ifmd_data.ifi_ibytes
-      sentBytes &+= data.ifmd_data.ifi_obytes
-      receivedPackets &+= data.ifmd_data.ifi_ipackets
-      sentPackets &+= data.ifmd_data.ifi_opackets
+      receivedBytes = nextReceivedBytes
+      sentBytes = nextSentBytes
+      receivedPackets = nextReceivedPackets
+      sentPackets = nextSentPackets
     }
 
     return AggregateCounters(

@@ -27,6 +27,11 @@ enum BatteryMeasurements {
     let power = voltage * current
     return power.isFinite ? power : nil
   }
+
+  static func capacity(_ value: Double?) -> Double? {
+    guard let value, value.isFinite, value >= 0 else { return nil }
+    return value
+  }
 }
 
 public struct BatteryProvider: SensorProvider {
@@ -62,8 +67,10 @@ public struct BatteryProvider: SensorProvider {
     let charging = IOKitHelpers.bool(service, key: "IsCharging")
     let fullyCharged = IOKitHelpers.bool(service, key: "FullyCharged")
     let cycles = IOKitHelpers.number(service, key: "CycleCount")
-    let designCapacity = IOKitHelpers.number(service, key: "DesignCapacity")
-    let nominalCapacity = IOKitHelpers.number(service, key: "NominalChargeCapacity")
+    let designCapacity = BatteryMeasurements.capacity(
+      IOKitHelpers.number(service, key: "DesignCapacity"))
+    let nominalCapacity = BatteryMeasurements.capacity(
+      IOKitHelpers.number(service, key: "NominalChargeCapacity"))
     let timeRemaining = BatteryMeasurements.validMinutes(
       IOKitHelpers.number(service, key: "TimeRemaining"))
     let averageTimeToFull = BatteryMeasurements.validMinutes(

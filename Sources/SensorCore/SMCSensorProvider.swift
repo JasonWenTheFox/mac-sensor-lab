@@ -76,8 +76,10 @@ public struct SMCSensorProvider: SensorProvider {
     channels += gpuValues.map { rawTemperatureChannel(group: "gpu", sensor: $0) }
     channels += auxiliaryValues.map { rawTemperatureChannel(group: "system", sensor: $0) }
 
-    if let fanCount = smc.value(for: "FNum") {
-      for index in 0..<min(Int(fanCount), 4) {
+    if let fanCount = smc.value(for: "FNum").flatMap({
+      SensorNumericSafety.boundedNonnegativeInteger($0, maximum: 4)
+    }) {
+      for index in 0..<fanCount {
         if let rpm = smc.value(for: "F\(index)Ac"), (0...20_000).contains(rpm) {
           channels.append(
             SensorChannel(
