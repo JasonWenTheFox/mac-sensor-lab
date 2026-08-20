@@ -39,7 +39,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ### Changed
 
-- CI now avoids duplicate feature-branch `push` runs when a pull request already validates the same commit, and cancels stale runs for an updated pull request.
+- CI now avoids duplicate feature-branch `push` runs, cancels stale pull-request runs, and defers the macOS runner while a pull request remains a draft; marking it ready requests one complete validation.
 - Optimized Release app bundles now enable and verify Hardened Runtime even under local ad-hoc signing; the deterministic Demo also passes a local launch-survival smoke test.
 - Existing ambient-light calibration now accepts up to eight strictly monotonic reference points, supports undoing the last point, and preserves legacy single-point JSON/UserDefaults compatibility.
 - SMC temperature lookup now selects fixed M1, M2, M3, M4, or M5 key catalogs, keeps generation detection out of exports, and safely falls back to generation-neutral keys.
