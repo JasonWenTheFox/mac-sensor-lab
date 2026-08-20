@@ -93,6 +93,8 @@ reference preferences use separate keys, so they do not change live-mode prefere
 
 The probe CLI also accepts `--demo`. Add `--diagnostics` to output only the privacy-safe provider
 metadata report; without options it retains the original live, full-snapshot behavior.
+Diagnostics export refuses invalid, duplicate, or identifying provider/channel IDs instead of
+creating a report that violates its privacy-safe contract.
 
 `sensorlab-selftest` applies a reusable structural contract audit to registered metadata and live
 snapshots. It checks stable and unique provider/channel IDs, registry metadata consistency, finite
@@ -127,7 +129,7 @@ rejects tracked build output, absolute user paths, common secret signatures, pro
 keys that this release does not implement, forbidden mutation/privilege APIs, missing release
 documents, or a privacy manifest inconsistent with the current offline behavior.
 
-GitHub Actions repeats formatting, audit, build, 32 XCTest cases, portable self-test, and app-bundle
+GitHub Actions repeats formatting, audit, build, 33 XCTest cases, portable self-test, and app-bundle
 assembly on `macos-26`.
 
 ## Repository layout

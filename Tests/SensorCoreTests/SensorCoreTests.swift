@@ -101,6 +101,56 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertFalse(text.contains("1000"))
   }
 
+  func testDiagnosticsExportRefusesUnsafeOrDuplicateIdentifiers() {
+    let unsafe = SensorSnapshot(
+      id: "system.device_uuid",
+      name: "Fixture",
+      category: .diagnostics,
+      summary: "Fixture",
+      status: .available,
+      source: "Fixture",
+      capability: .publicAPI,
+      channels: [
+        SensorChannel(id: "value", label: "Value", value: 1, formattedValue: "1")
+      ]
+    )
+    XCTAssertThrowsError(
+      try SensorDiagnosticsExportService.jsonData(
+        [unsafe],
+        applicationVersion: "test"
+      )
+    ) { error in
+      XCTAssertEqual(
+        error as? SensorDiagnosticsExportError,
+        .unsafeMetadata(code: .forbiddenIdentifier, path: "snapshots[0].id")
+      )
+    }
+
+    let safe = SensorSnapshot(
+      id: "test.provider",
+      name: "Fixture",
+      category: .diagnostics,
+      summary: "Fixture",
+      status: .available,
+      source: "Fixture",
+      capability: .publicAPI,
+      channels: [
+        SensorChannel(id: "value", label: "Value", value: 1, formattedValue: "1")
+      ]
+    )
+    XCTAssertThrowsError(
+      try SensorDiagnosticsExportService.jsonData(
+        [safe, safe],
+        applicationVersion: "test"
+      )
+    ) { error in
+      XCTAssertEqual(
+        error as? SensorDiagnosticsExportError,
+        .unsafeMetadata(code: .duplicateProviderIdentifier, path: "snapshots[1].id")
+      )
+    }
+  }
+
   func testCSVExportKeepsRawAndFormattedValuesSeparate() {
     let snapshot = SensorSnapshot(
       id: "test.provider",

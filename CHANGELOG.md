@@ -26,6 +26,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - A complete English project overview alongside the original Chinese planning and implementation documentation.
 - Probe CLI options for deterministic demo snapshots, value-free diagnostics, help, and strict unknown-option rejection.
 - A reusable provider/snapshot contract audit for stable IDs, registry consistency, finite values, complete display metadata, timestamps, and identifying-field exclusions.
+- Runtime diagnostics-export enforcement that rejects invalid, duplicate, or identifying provider/channel IDs.
 
 ### Changed
 

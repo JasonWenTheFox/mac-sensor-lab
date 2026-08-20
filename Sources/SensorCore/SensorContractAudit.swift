@@ -159,6 +159,7 @@ public enum SensorContractAudit {
 
   private static let forbiddenIdentifierFragments = [
     "serial", "uuid", "udid", "username", "hostname", "ssid", "bssid", "mac_address",
+    "device_id", "machine_id", "hardware_id",
   ]
 
   private static func auditIdentifier(
@@ -213,7 +214,7 @@ public enum SensorContractAudit {
 }
 
 public struct SensorContractIssue: Equatable, Sendable, CustomStringConvertible {
-  public enum Code: String, Equatable, Sendable {
+  public enum Code: String, Hashable, Sendable {
     case duplicateProviderIdentifier
     case duplicateChannelIdentifier
     case invalidStableIdentifier

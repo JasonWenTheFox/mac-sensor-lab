@@ -99,7 +99,7 @@ swift test
 
 显式 `--demo` 启动参数使用 14 个内置、确定性且无机器标识的 Provider fixture。全界面会显示 Demo 横幅，并使用独立的采样、光照校准和上盖参考偏好键，适合截图、UI 回归和无对应硬件的演示；它绝不会伪装成实时读数。
 
-`sensorlab-probe` 同样支持 `--demo`；加上 `--diagnostics` 时只输出无传感器读数/自由文本的隐私安全 Provider 元数据。无参数时仍按原行为读取真实 Provider 并在本地标准输出完整快照。
+`sensorlab-probe` 同样支持 `--demo`；加上 `--diagnostics` 时只输出无传感器读数/自由文本的隐私安全 Provider 元数据，并在非法、重复或识别性 ID 出现时拒绝导出。无参数时仍按原行为读取真实 Provider 并在本地标准输出完整快照。
 
 `sensorlab-selftest` 会对注册信息和实际 Snapshot 执行结构化数据契约审计：检查 Provider/通道稳定 ID、唯一性、注册元数据一致性、有限数值、非空显示值/单位、未来时间戳，以及禁止进入 ID 的机器识别字段名。审计不扫描摘要、备注等自由文本，也不会采集额外数据。
 
@@ -149,7 +149,7 @@ swift test
 - [x] 添加 macOS 26 / Xcode 26 CI 和 Pull Request 安全检查模板。
 - [x] 建立私有 GitHub 仓库并通过首轮 CI。
 - [x] 用户接受 Xcode 许可。
-- [x] 完成 Xcode 首次组件初始化并在本机通过 32 项 XCTest。
+- [x] 完成 Xcode 首次组件初始化并在本机通过 33 项 XCTest。
 - [x] 加入可调采样、暂停/恢复、历史清空和 50 MB 上限的连续 CSV 记录。
 - [x] 加入环境光滚动统计、可选 Estimated lux 和上盖相对角度实验。
 - [x] 加入严格校验且不含设备标识的单点光照校准 JSON 导入/导出。

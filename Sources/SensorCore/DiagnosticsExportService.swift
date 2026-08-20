@@ -51,11 +51,23 @@ public struct SensorChannelDiagnostic: Codable, Equatable, Sendable {
 }
 
 public enum SensorDiagnosticsExportService {
+  private static let blockedContractCodes: Set<SensorContractIssue.Code> = [
+    .duplicateProviderIdentifier,
+    .duplicateChannelIdentifier,
+    .invalidStableIdentifier,
+    .forbiddenIdentifier,
+  ]
+
   public static func jsonData(
     _ snapshots: [SensorSnapshot],
     applicationVersion: String,
     generatedAt: Date = .now
   ) throws -> Data {
+    if let issue = SensorContractAudit.issues(for: snapshots).first(where: {
+      blockedContractCodes.contains($0.code)
+    }) {
+      throw SensorDiagnosticsExportError.unsafeMetadata(code: issue.code, path: issue.path)
+    }
     let report = SensorDiagnosticsReport(
       snapshots: snapshots,
       applicationVersion: applicationVersion,
@@ -65,5 +77,16 @@ public enum SensorDiagnosticsExportService {
     encoder.dateEncodingStrategy = .iso8601
     encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
     return try encoder.encode(report)
+  }
+}
+
+public enum SensorDiagnosticsExportError: LocalizedError, Equatable {
+  case unsafeMetadata(code: SensorContractIssue.Code, path: String)
+
+  public var errorDescription: String? {
+    switch self {
+    case .unsafeMetadata(let code, let path):
+      "Privacy-safe diagnostics refused unsafe metadata (\(code.rawValue) at \(path))."
+    }
   }
 }
