@@ -121,21 +121,18 @@ final class SensorDashboardModel: ObservableObject {
     let clock = ContinuousClock()
     let startedAt = clock.now
 
-    let order = SensorProviderRegistry.registrationOrder(for: providers)
-    await withTaskGroup(of: SensorSnapshot.self) { group in
-      for provider in providers {
-        group.addTask { await provider.read() }
+    await withTaskGroup(of: (Int, SensorProviderMetadata, SensorSnapshot).self) { group in
+      for (index, provider) in providers.enumerated() {
+        let metadata = provider.metadata
+        group.addTask { (index, metadata, await provider.read()) }
       }
-      for await snapshot in group {
+      for await (index, metadata, rawSnapshot) in group {
         guard !Task.isCancelled else { break }
-        let snapshotWithDerivations = applyingUserDerivations(to: snapshot)
-        if let index = snapshots.firstIndex(where: { $0.id == snapshotWithDerivations.id }) {
-          snapshots[index] = snapshotWithDerivations
-        } else {
-          snapshots.append(snapshotWithDerivations)
-        }
+        guard snapshots.indices.contains(index) else { continue }
+        let admittedSnapshot = SensorSnapshotGate.admitted(rawSnapshot, for: metadata)
+        let snapshotWithDerivations = applyingUserDerivations(to: admittedSnapshot)
+        snapshots[index] = snapshotWithDerivations
         appendHistory(snapshotWithDerivations)
-        snapshots.sort { (order[$0.id] ?? .max) < (order[$1.id] ?? .max) }
       }
     }
     isRefreshing = false

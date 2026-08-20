@@ -1351,6 +1351,69 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertLessThan(issueText.utf8.count, 16_384)
   }
 
+  func testSnapshotGateFailsClosedWithoutEchoingMalformedProviderOutput() {
+    let metadata = SensorProviderMetadata(
+      id: "test.provider",
+      name: "Fixture provider",
+      category: .diagnostics,
+      source: "Fixture source",
+      capability: .publicAPI
+    )
+    let valid = SensorSnapshot(
+      id: metadata.id,
+      name: metadata.name,
+      category: metadata.category,
+      summary: "Fixture",
+      status: .available,
+      source: metadata.source,
+      capability: metadata.capability,
+      channels: [
+        SensorChannel(id: "value", label: "Value", value: 1, formattedValue: "1")
+      ]
+    )
+    XCTAssertEqual(SensorSnapshotGate.admitted(valid, for: metadata), valid)
+
+    let tailMarker = "SENSITIVE_PROVIDER_TAIL"
+    let malformed = SensorSnapshot(
+      id: String(repeating: "a", count: 10_000) + tailMarker,
+      name: String(repeating: "x", count: 10_000) + tailMarker,
+      category: .diagnostics,
+      summary: tailMarker,
+      status: .available,
+      source: tailMarker,
+      capability: .undocumented,
+      channels: [
+        SensorChannel(
+          id: "value",
+          label: tailMarker,
+          value: .infinity,
+          formattedValue: tailMarker
+        )
+      ],
+      notes: [tailMarker]
+    )
+    let wrongIdentity = SensorSnapshot(
+      id: "test.other",
+      name: metadata.name,
+      category: metadata.category,
+      summary: "Fixture",
+      status: .unavailable,
+      source: metadata.source,
+      capability: metadata.capability
+    )
+
+    for rejectedInput in [malformed, wrongIdentity] {
+      let rejected = SensorSnapshotGate.admitted(rejectedInput, for: metadata)
+      XCTAssertEqual(rejected.id, metadata.id)
+      XCTAssertEqual(rejected.name, metadata.name)
+      XCTAssertEqual(rejected.status, .error)
+      XCTAssertTrue(rejected.channels.isEmpty)
+      XCTAssertFalse(rejected.summary.contains(tailMarker))
+      XCTAssertFalse(rejected.notes.joined().contains(tailMarker))
+      XCTAssertTrue(SensorContractAudit.issues(for: [rejected]).isEmpty)
+    }
+  }
+
   func testSPUVectorReportDecoding() {
     var report = [UInt8](repeating: 0, count: 22)
     writeLittleEndian(UInt32(bitPattern: 65_536), to: &report, at: 6)

@@ -114,6 +114,10 @@ consistency, future timestamps, and identifying field names that must never beco
 does not match free-text summaries or notes against privacy keywords and does not collect additional
 data.
 
+The Dashboard also checks every provider result against that structural contract and its registered
+metadata before the result can reach UI, history, or recording. Malformed output becomes a fixed,
+non-echoing error snapshot at the provider's registered position, so changing IDs cannot grow state.
+
 ## Build and test
 
 Xcode must have completed its first-launch setup. The project never invokes `sudo` itself.
@@ -141,7 +145,7 @@ rejects tracked build output, absolute user paths, common secret signatures, pro
 keys that this release does not implement, forbidden mutation/privilege APIs, missing release
 documents, or a privacy manifest inconsistent with the current offline behavior.
 
-GitHub Actions repeats formatting, audit, build, 44 XCTest cases, portable self-test, and app-bundle
+GitHub Actions repeats formatting, audit, build, 45 XCTest cases, portable self-test, and app-bundle
 assembly on `macos-26`.
 
 ## Repository layout
