@@ -33,7 +33,7 @@ Mac Sensor Lab is designed around a stricter contract:
 
 ## Current capabilities
 
-The current build has 14 providers:
+The current build has 15 providers:
 
 | Area | Current data | Boundary |
 |---|---|---|
@@ -41,7 +41,8 @@ The current build has 14 providers:
 | Performance | aggregate CPU utilization, load averages, Mach memory categories, swap | No process list |
 | GPU | allowlisted AGX device/renderer/tiler utilization and memory counters | Undocumented fixed keys; no registry identity fields |
 | Network | aggregate active-interface bytes, packet rates, and throughput | No interface names, addresses, SSID, BSSID, or MAC address |
-| Battery | charge, source, charging state, cycles, electrical data, temperature, capacities, valid time estimates | Fixed non-identifying AppleSmartBattery key allowlist |
+| System power source | active AC/battery/UPS source, public charge/charging state, and valid OS time estimates | Public `IOPowerSources`; ignores names, IDs, serial numbers, transport details, and adapter metadata |
+| Extended battery | charge, source, charging state, cycles, electrical data, temperature, capacities, valid time estimates | Fixed non-identifying AppleSmartBattery key allowlist |
 | Thermal | public thermal pressure and Low Power Mode | A pressure state is not a temperature |
 | SMC | generation-specific M1–M5 temperatures, fan RPM, and internal power channels | Fixed read-only catalogs; CPU brand is reduced to a generation and never retained/exported; no key writes or fan control |
 | Display | active display count, logical resolution, refresh rate | Public CoreGraphics data |
@@ -110,7 +111,7 @@ Demo mode is intended for screenshots, UI reviews, and machines without the same
 open "outputs/Mac Sensor Lab.app" --args --demo
 ```
 
-It supplies 14 built-in, finite, identity-free provider fixtures. A persistent orange banner and the
+It supplies 15 built-in, finite, identity-free provider fixtures. A persistent orange banner and the
 Diagnostics screen identify the data as synthetic. Demo sampling, light-calibration, and lid-angle
 reference preferences use separate keys, so they do not change live-mode preferences.
 

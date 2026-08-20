@@ -52,6 +52,18 @@ public enum SensorDemoProviderRegistry {
           rate("network_send_rate", "Send rate", 320 * kibibyte),
         ]),
       provider(
+        "power.source", "System Power Source", .power, .publicAPI, "78% • Battery",
+        [
+          text("active_source", "Active power source", "Battery"),
+          percent("battery_charge", "Battery charge (public API)", 78, .derived),
+          text("battery_charging", "Battery charging (public API)", "No", 0),
+          number(
+            "system_time_remaining", "System time remaining", 285, "minutes", .estimated),
+          number(
+            "battery_time_to_empty", "Battery time to empty (public API)", 285, "minutes",
+            .estimated),
+        ]),
+      provider(
         "power.battery", "Power & Battery", .power, .undocumented, "78% • Battery",
         [
           percent("charge", "Charge", 78, .derived),

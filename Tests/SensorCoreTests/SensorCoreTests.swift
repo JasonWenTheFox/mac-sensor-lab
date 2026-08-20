@@ -1356,6 +1356,75 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertNil(BatteryMeasurements.capacity(.infinity))
   }
 
+  func testPublicPowerSourceSnapshotKeepsSupportedFactsSeparate() throws {
+    let snapshot = PublicPowerSourceProvider().snapshot(
+      reading: PublicPowerSourceReading(
+        source: .battery,
+        currentCapacity: 78,
+        maximumCapacity: 100,
+        isCharging: false,
+        timeToEmptyMinutes: 285,
+        timeToFullMinutes: 45,
+        systemTimeRemainingSeconds: 16_800
+      )
+    )
+    let channels = Dictionary(uniqueKeysWithValues: snapshot.channels.map { ($0.id, $0) })
+
+    XCTAssertEqual(snapshot.status, .available)
+    XCTAssertEqual(snapshot.capability, .publicAPI)
+    XCTAssertEqual(channels["active_source"]?.formattedValue, "Battery")
+    XCTAssertEqual(try XCTUnwrap(channels["battery_charge"]?.value), 78, accuracy: 0.001)
+    XCTAssertEqual(channels["battery_charging"]?.formattedValue, "No")
+    XCTAssertEqual(
+      try XCTUnwrap(channels["system_time_remaining"]?.value), 280, accuracy: 0.001)
+    XCTAssertEqual(
+      try XCTUnwrap(channels["battery_time_to_empty"]?.value), 285, accuracy: 0.001)
+    XCTAssertNil(channels["battery_time_to_full"])
+    XCTAssertTrue(snapshot.notes.joined().contains("serial numbers"))
+    XCTAssertTrue(SensorContractAudit.issues(for: [snapshot]).isEmpty)
+  }
+
+  func testPublicPowerSourceSnapshotOmitsSentinelsAndInvalidValues() {
+    let snapshot = PublicPowerSourceProvider().snapshot(
+      reading: PublicPowerSourceReading(
+        source: nil,
+        currentCapacity: .nan,
+        maximumCapacity: 0,
+        isCharging: nil,
+        timeToEmptyMinutes: -1,
+        timeToFullMinutes: .infinity,
+        systemTimeRemainingSeconds: -2
+      )
+    )
+
+    XCTAssertEqual(snapshot.status, .degraded)
+    XCTAssertTrue(snapshot.channels.isEmpty)
+    XCTAssertTrue(SensorContractAudit.issues(for: [snapshot]).isEmpty)
+    XCTAssertNil(PublicPowerSourceKind(systemValue: "Unexpected external value"))
+    XCTAssertNil(PublicPowerSourceMeasurements.validSystemMinutes(seconds: .infinity))
+    XCTAssertNil(PublicPowerSourceMeasurements.chargePercentage(current: 200, maximum: 250))
+  }
+
+  func testPublicPowerSourceShowsChargeTimeOnlyWhileCharging() throws {
+    let snapshot = PublicPowerSourceProvider().snapshot(
+      reading: PublicPowerSourceReading(
+        source: .ac,
+        currentCapacity: 50,
+        maximumCapacity: 100,
+        isCharging: true,
+        timeToEmptyMinutes: 120,
+        timeToFullMinutes: 45,
+        systemTimeRemainingSeconds: -2
+      )
+    )
+    let channels = Dictionary(uniqueKeysWithValues: snapshot.channels.map { ($0.id, $0) })
+
+    XCTAssertEqual(channels["active_source"]?.formattedValue, "AC power")
+    XCTAssertEqual(try XCTUnwrap(channels["battery_time_to_full"]?.value), 45, accuracy: 0.001)
+    XCTAssertNil(channels["battery_time_to_empty"])
+    XCTAssertNil(channels["system_time_remaining"])
+  }
+
   func testGPUPerformanceValueRejectsInvalidPercentages() {
     XCTAssertEqual(GPUPerformanceValue.percentage(64), 64)
     XCTAssertNil(GPUPerformanceValue.percentage(-1))

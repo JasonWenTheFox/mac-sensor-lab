@@ -7,6 +7,7 @@ public enum SensorProviderRegistry {
       SystemPerformanceProvider(),
       GPUPerformanceProvider(),
       NetworkThroughputProvider(),
+      PublicPowerSourceProvider(),
       BatteryProvider(),
       ThermalProvider(),
       SMCSensorProvider(),

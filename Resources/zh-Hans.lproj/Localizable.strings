@@ -48,6 +48,8 @@
 	<string>活动显示器</string>
 	<key>Active non-loopback interfaces</key>
 	<string>活动的非回环接口</string>
+	<key>Active power source</key>
+	<string>当前供电来源</string>
 	<key>Active processors</key>
 	<string>活动处理器</string>
 	<key>Add Calibration Point</key>
@@ -94,18 +96,28 @@
 	<string>系统运行队列中的平均进程数；不是 CPU 百分比。</string>
 	<key>Battery</key>
 	<string>电池</string>
+	<key>Battery charge (public API)</key>
+	<string>电池电量（公开 API）</string>
+	<key>Battery charging (public API)</key>
+	<string>电池充电状态（公开 API）</string>
 	<key>Battery current</key>
 	<string>电池电流</string>
 	<key>Battery telemetry available</key>
 	<string>电池遥测可用</string>
 	<key>Battery temperature</key>
 	<string>电池温度</string>
+	<key>Battery time to empty (public API)</key>
+	<string>电池预计耗尽时间（公开 API）</string>
+	<key>Battery time to full (public API)</key>
+	<string>电池预计充满时间（公开 API）</string>
 	<key>Battery voltage</key>
 	<string>电池电压</string>
 	<key>Battery-side power</key>
 	<string>电池侧功率</string>
 	<key>Battery-side power is not whole-system wall power.</key>
 	<string>电池侧功率并非整机插座侧功率。</string>
+	<key>Battery-specific operating-system estimate; calculating sentinels are omitted.</key>
+	<string>操作系统针对电池的估算值；已省略‘正在计算’哨兵值。</string>
 	<key>Block-storage statistics were unavailable</key>
 	<string>块存储统计不可用</string>
 	<key>Build</key>
@@ -194,6 +206,8 @@
 	<string>请先创建环境光校准再导出</string>
 	<key>Critical</key>
 	<string>严重</string>
+	<key>Current Capacity ÷ Max Capacity from Apple's public power-source API.</key>
+	<string>Apple 公开电源 API 返回的当前容量 ÷ 最大容量。</string>
 	<key>Cycle count</key>
 	<string>循环计数</string>
 	<key>Data mode</key>
@@ -490,6 +504,8 @@
 	<string>电源与电池</string>
 	<key>Power source</key>
 	<string>电源</string>
+	<key>Power-source names, IDs, serial numbers, transport details, and adapter metadata are intentionally ignored.</key>
+	<string>有意忽略电源名称、ID、序列号、传输详情和电源适配器元数据。</string>
 	<key>Presence only; continuous access may require additional permission.</key>
 	<string>仅表示存在；连续访问可能需要额外权限。</string>
 	<key>Privacy</key>
@@ -510,6 +526,12 @@
 	<string>公开 API</string>
 	<key>Public API + permission</key>
 	<string>公开 API + 权限</string>
+	<key>Public power-source information available</key>
+	<string>公开电源信息可用</string>
+	<key>Public power-source information returned no allowlisted values</key>
+	<string>公开电源信息未返回白名单值</string>
+	<key>Public power-source information was unavailable</key>
+	<string>公开电源信息不可用</string>
 	<key>RMS variation</key>
 	<string>RMS 变化</string>
 	<key>Rates need two samples; a counter reset or device change starts a new baseline.</key>
@@ -658,10 +680,16 @@
 	<string>合成演示数据；并非硬件读数。</string>
 	<key>System</key>
 	<string>系统</string>
+	<key>System Power Source</key>
+	<string>系统电源来源</string>
 	<key>System performance counters were unavailable</key>
 	<string>系统性能计数器不可用</string>
+	<key>System time remaining</key>
+	<string>系统估算剩余时间</string>
 	<key>System uptime</key>
 	<string>系统运行时间</string>
+	<key>System-wide IOPowerSources estimate for the active limited power source.</key>
+	<string>IOPowerSources 对当前有限供电来源给出的系统级估算。</string>
 	<key>The App will not request sudo or alter HID driver properties.</key>
 	<string>本 App 不会请求 sudo 或更改 HID 驱动属性。</string>
 	<key>The App will not request sudo or attempt a privileged helper in this build.</key>
@@ -682,12 +710,16 @@
 	<string>散热状态</string>
 	<key>This build never runs as root, changes fan settings, writes SMC values, or modifies Apple SPU driver state.</key>
 	<string>此构建绝不以 root 身份运行，不改变风扇设置、不写入 SMC 值，也不修改 Apple SPU 驱动状态。</string>
+	<key>Time remaining values are operating-system estimates.</key>
+	<string>剩余时间值是操作系统估算。</string>
 	<key>Totals are driver-lifetime counters aggregated across block-storage drivers.</key>
 	<string>总计是跨块存储驱动汇总的驱动生命周期计数器。</string>
 	<key>Trackpad Scale</key>
 	<string>触控板秤</string>
 	<key>Try a provider, channel, source, status, or stable ID.</key>
 	<string>尝试搜索 Provider、通道、来源、状态或稳定 ID。</string>
+	<key>UPS power</key>
+	<string>UPS 电源</string>
 	<key>Unavailable</key>
 	<string>不可用</string>
 	<key>Uncalibrated raw channel.</key>
@@ -716,6 +748,8 @@
 	<string>更新于 %@ • 来源：%@ • %@</string>
 	<key>Used</key>
 	<string>已使用</string>
+	<key>Uses Apple's public IOPowerSources API.</key>
+	<string>使用 Apple 公开的 IOPowerSources API。</string>
 	<key>Uses gravity-derived roll and pitch when live acceleration is available</key>
 	<string>实时加速度可用时，使用由重力派生的横滚和俯仰角</string>
 	<key>Uses the undocumented lid-angle sensor</key>

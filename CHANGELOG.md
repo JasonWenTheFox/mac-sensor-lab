@@ -6,6 +6,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ### Added
 
+- A separate public `IOPowerSources` provider for the active AC/battery/UPS source, public charge/charging state, and valid OS time estimates without reading power-source identity or adapter metadata.
 - Native English and Simplified Chinese UI localization backed by a checked-in String Catalog, generated `.lproj` resources, catalog/key consistency tests, and a bounded display adapter for dynamic summaries, channel labels, enum values, units, and app-owned notes.
 - An Overview provider-health summary with distinct loading, available, limited, permission-required, unavailable, and error counts, a launch-wide status-transition total, and direct Raw Sensors/Diagnostics review actions.
 - A reproducible static admission audit for OpenMultitouchSupport 4.0.0, documenting its matching checksum and architecture as well as the privacy and distribution blockers that prevent direct integration.
@@ -25,7 +26,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - Allowlisted AGX GPU, renderer, and tiler utilization plus GPU memory counters without registry identity fields.
 - User-initiated privacy-safe diagnostics JSON containing provider status and stable channel metadata but no sensor readings or free-text fields.
 - A CI release audit for tracked build output, absolute user paths, secret signatures, undeclared permission expansion, forbidden mutation APIs, licenses, and privacy-manifest consistency.
-- An explicit `--demo` mode with 14 deterministic, identity-free provider fixtures, a persistent on-screen banner, and preferences isolated from live mode.
+- An explicit `--demo` mode with 15 deterministic, identity-free provider fixtures, a persistent on-screen banner, and preferences isolated from live mode.
 - A complete English project overview alongside the original Chinese planning and implementation documentation.
 - Probe CLI options for deterministic demo snapshots, value-free diagnostics, help, and strict unknown-option rejection.
 - A reusable provider/snapshot contract audit for stable IDs, registry consistency, finite values, complete display metadata, timestamps, and identifying-field exclusions.

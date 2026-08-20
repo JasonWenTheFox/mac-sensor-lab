@@ -102,7 +102,7 @@ swift test
 
 原生 UI 当前支持英文和简体中文，跟随 macOS 的 App 语言设置。Provider 名称、动态摘要、通道标签、枚举值、单位和项目自有说明均在白名单展示层中本地化；Provider/Channel 稳定 ID、JSON/CSV 字段与原始传感器数据不会随语言变化。
 
-显式 `--demo` 启动参数使用 14 个内置、确定性且无机器标识的 Provider fixture。全界面会显示 Demo 横幅，并使用独立的采样、光照校准和上盖参考偏好键，适合截图、UI 回归和无对应硬件的演示；它绝不会伪装成实时读数。
+显式 `--demo` 启动参数使用 15 个内置、确定性且无机器标识的 Provider fixture。全界面会显示 Demo 横幅，并使用独立的采样、光照校准和上盖参考偏好键，适合截图、UI 回归和无对应硬件的演示；它绝不会伪装成实时读数。
 
 `sensorlab-probe` 同样支持 `--demo`；加上 `--diagnostics` 时只输出无传感器读数/自由文本的隐私安全 Provider 元数据，并在非法、重复或识别性 ID 出现时拒绝导出。无参数时仍按原行为读取真实 Provider 并在本地标准输出完整快照。
 
@@ -139,6 +139,7 @@ Dashboard 还会在每个 Provider 结果进入 UI、历史或记录前执行同
 | 网络吞吐量 | 可用 | BSD 聚合计数器；只汇总启用的非回环接口，不导出接口名、地址、SSID、BSSID 或 MAC 地址 |
 | 磁盘活动 | 可用 | IOKit 固定统计字段；聚合读写字节、操作数和错误数，不读取设备名、序列号、卷名或文件路径 |
 | 系统、显示、存储、热压力 | 可用 | 公开 API；不导出机器唯一标识 |
+| 系统电源来源 | 可用 | Apple 公开 `IOPowerSources` API；只读取供电类型、公开容量/充电状态和有效时间估算，忽略名称、ID、序列号、传输和适配器元数据 |
 | 电池 | 可用 | 固定非识别字段白名单；含充电、电气、温度、设计/报告容量和有效时的时间估算 |
 | SMC 温度、风扇、功耗 | 可用 | M1–M5 分代与通用固定 key 白名单；只用非唯一 CPU 代际选表且不保留/导出品牌字符串；没有写入或风扇控制方法 |
 | 上盖角度 | 可用 | 一次性只读 feature report |
@@ -160,7 +161,7 @@ Dashboard 还会在每个 Provider 结果进入 UI、历史或记录前执行同
 - [x] 添加 macOS 26 / Xcode 26 CI 和 Pull Request 安全检查模板。
 - [x] 建立私有 GitHub 仓库并通过首轮 CI。
 - [x] 用户接受 Xcode 许可。
-- [x] 完成 Xcode 首次组件初始化并在本机通过 63 项 XCTest。
+- [x] 完成 Xcode 首次组件初始化并在本机通过 66 项 XCTest。
 - [x] 加入可调采样、暂停/恢复、历史清空和 50 MB 上限的连续 CSV 记录。
 - [x] 加入环境光滚动统计、可选 Estimated lux 和上盖相对角度实验。
 - [x] 加入严格校验且不含设备标识的 1–8 点光照拟合、RMSE、撤销，以及兼容旧单点格式的 JSON 导入/导出。
@@ -184,6 +185,7 @@ Dashboard 还会在每个 Provider 结果进入 UI、历史或记录前执行同
 - [x] 完成 OpenMultitouchSupport 4.0.0 静态准入审计；因现成二进制读取/日志输出设备标识、依赖私有框架、要求关闭 Sandbox 且发布边界未完成，当前明确不接入。
 - [x] 建立英文/简体中文 String Catalog、中央本地化入口、键覆盖测试和 App Bundle `.lproj` 校验。
 - [x] 在 Overview 加入 Provider 健康汇总和异常状态的 Raw Sensors 快速入口。
+- [x] 加入独立的公开 `IOPowerSources` Provider，将受支持的供电事实与未文档化的 AppleSmartBattery 扩展遥测分开。
 - [ ] 用户确认正式名称后公开 GitHub 仓库。
 
 ## 重要边界
