@@ -8,17 +8,41 @@ public struct SensorDiagnosticsReport: Codable, Equatable, Sendable {
   public let schemaVersion: Int
   public let generatedAt: Date
   public let applicationVersion: String
+  public let sampling: SensorSamplingDiagnostic?
   public let providers: [SensorProviderDiagnostic]
 
   public init(
     snapshots: [SensorSnapshot],
     applicationVersion: String,
-    generatedAt: Date = .now
+    generatedAt: Date = .now,
+    samplingHealth: SensorSamplingHealth? = nil
   ) {
-    self.schemaVersion = 1
+    self.schemaVersion = 2
     self.generatedAt = generatedAt
     self.applicationVersion = applicationVersion
-    self.providers = snapshots.map(SensorProviderDiagnostic.init(snapshot:))
+    self.sampling = samplingHealth.map(SensorSamplingDiagnostic.init(health:))
+    let healthByProviderID = Dictionary(
+      samplingHealth?.providers.map { ($0.providerID, $0) } ?? [],
+      uniquingKeysWith: { first, _ in first }
+    )
+    self.providers = snapshots.map {
+      SensorProviderDiagnostic(
+        snapshot: $0,
+        samplingHealth: healthByProviderID[$0.id]
+      )
+    }
+  }
+}
+
+public struct SensorSamplingDiagnostic: Codable, Equatable, Sendable {
+  public let completedCycleCount: Int
+  public let lastCycleDurationMilliseconds: UInt64?
+  public let totalStatusTransitionCount: Int
+
+  fileprivate init(health: SensorSamplingHealth) {
+    self.completedCycleCount = health.completedCycleCount
+    self.lastCycleDurationMilliseconds = health.lastCycleDurationMilliseconds
+    self.totalStatusTransitionCount = health.totalStatusTransitionCount
   }
 }
 
@@ -28,13 +52,22 @@ public struct SensorProviderDiagnostic: Codable, Equatable, Sendable {
   public let status: SensorStatus
   public let capability: SensorCapability
   public let channels: [SensorChannelDiagnostic]
+  public let observationCount: Int?
+  public let statusTransitionCount: Int?
+  public let consecutiveIssueCount: Int?
 
-  fileprivate init(snapshot: SensorSnapshot) {
+  fileprivate init(
+    snapshot: SensorSnapshot,
+    samplingHealth: SensorProviderSamplingHealth?
+  ) {
     self.providerID = snapshot.id
     self.category = snapshot.category
     self.status = snapshot.status
     self.capability = snapshot.capability
     self.channels = snapshot.channels.map(SensorChannelDiagnostic.init(channel:))
+    self.observationCount = samplingHealth?.observationCount
+    self.statusTransitionCount = samplingHealth?.statusTransitionCount
+    self.consecutiveIssueCount = samplingHealth?.consecutiveIssueCount
   }
 }
 
@@ -61,7 +94,8 @@ public enum SensorDiagnosticsExportService {
   public static func jsonData(
     _ snapshots: [SensorSnapshot],
     applicationVersion: String,
-    generatedAt: Date = .now
+    generatedAt: Date = .now,
+    samplingHealth: SensorSamplingHealth? = nil
   ) throws -> Data {
     if let issue = SensorContractAudit.issues(for: snapshots).first(where: {
       blockedContractCodes.contains($0.code)
@@ -71,7 +105,8 @@ public enum SensorDiagnosticsExportService {
     let report = SensorDiagnosticsReport(
       snapshots: snapshots,
       applicationVersion: applicationVersion,
-      generatedAt: generatedAt
+      generatedAt: generatedAt,
+      samplingHealth: samplingHealth
     )
     let encoder = JSONEncoder()
     encoder.dateEncodingStrategy = .iso8601

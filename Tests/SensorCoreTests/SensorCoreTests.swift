@@ -92,13 +92,99 @@ final class SensorCoreTests: XCTestCase {
       generatedAt: Date(timeIntervalSince1970: 2_000)
     )
     let report = try JSONDecoder.withISO8601.decode(SensorDiagnosticsReport.self, from: data)
-    XCTAssertEqual(report.schemaVersion, 1)
+    XCTAssertEqual(report.schemaVersion, 2)
     XCTAssertEqual(report.providers.first?.providerID, "test.provider")
     XCTAssertEqual(report.providers.first?.channels.first?.channelID, "ambient_intensity")
     let text = String(decoding: data, as: UTF8.self)
     XCTAssertFalse(text.contains("SENSITIVE_"))
     XCTAssertFalse(text.contains("123456"))
     XCTAssertFalse(text.contains("1000"))
+  }
+
+  func testSamplingHealthTracksTransitionsWithoutReadingsOrTimestamps() throws {
+    func snapshot(_ status: SensorStatus) -> SensorSnapshot {
+      SensorSnapshot(
+        id: "environment.fixture",
+        name: "SENSITIVE_NAME",
+        category: .environment,
+        summary: "SENSITIVE_SUMMARY",
+        status: status,
+        source: "SENSITIVE_SOURCE",
+        capability: .undocumented,
+        channels: [
+          SensorChannel(
+            id: "ambient_intensity",
+            label: "SENSITIVE_LABEL",
+            value: 987_654.321,
+            formattedValue: "SENSITIVE_FORMATTED"
+          )
+        ],
+        timestamp: Date(timeIntervalSince1970: 1_000)
+      )
+    }
+
+    var tracker = SensorSamplingHealthTracker()
+    _ = tracker.observe(snapshots: [snapshot(.available)], cycleDuration: 0.125)
+    _ = tracker.observe(snapshots: [snapshot(.degraded)], cycleDuration: 0.250)
+    let health = tracker.observe(snapshots: [snapshot(.available)], cycleDuration: 0.375)
+
+    XCTAssertEqual(health.completedCycleCount, 3)
+    XCTAssertEqual(health.lastCycleDurationMilliseconds, 375)
+    XCTAssertEqual(health.totalStatusTransitionCount, 2)
+    XCTAssertEqual(health.providers.first?.observationCount, 3)
+    XCTAssertEqual(health.providers.first?.statusTransitionCount, 2)
+    XCTAssertEqual(health.providers.first?.consecutiveIssueCount, 0)
+
+    let data = try SensorDiagnosticsExportService.jsonData(
+      [snapshot(.available)],
+      applicationVersion: "test",
+      generatedAt: Date(timeIntervalSince1970: 2_000),
+      samplingHealth: health
+    )
+    let report = try JSONDecoder.withISO8601.decode(SensorDiagnosticsReport.self, from: data)
+    XCTAssertEqual(report.sampling?.completedCycleCount, 3)
+    XCTAssertEqual(report.sampling?.lastCycleDurationMilliseconds, 375)
+    XCTAssertEqual(report.providers.first?.statusTransitionCount, 2)
+    let text = String(decoding: data, as: UTF8.self)
+    XCTAssertFalse(text.contains("SENSITIVE_"))
+    XCTAssertFalse(text.contains("987654"))
+    XCTAssertFalse(text.contains("\"timestamp\""))
+  }
+
+  func testSamplingHealthHandlesDuplicateIDsAndInvalidDurationsDefensively() {
+    let first = SensorSnapshot(
+      id: "test.provider",
+      name: "Fixture",
+      category: .diagnostics,
+      summary: "Fixture",
+      status: .degraded,
+      source: "Fixture",
+      capability: .publicAPI
+    )
+    let duplicate = SensorSnapshot(
+      id: first.id,
+      name: first.name,
+      category: first.category,
+      summary: first.summary,
+      status: .available,
+      source: first.source,
+      capability: first.capability
+    )
+
+    var tracker = SensorSamplingHealthTracker()
+    let firstCycle = tracker.observe(
+      snapshots: [first, duplicate],
+      cycleDuration: .infinity
+    )
+    XCTAssertNil(firstCycle.lastCycleDurationMilliseconds)
+    XCTAssertEqual(firstCycle.providers.first?.observationCount, 1)
+    XCTAssertEqual(firstCycle.providers.first?.consecutiveIssueCount, 1)
+
+    let secondCycle = tracker.observe(snapshots: [duplicate], cycleDuration: -1)
+    XCTAssertNil(secondCycle.lastCycleDurationMilliseconds)
+    XCTAssertEqual(secondCycle.providers.first?.observationCount, 2)
+    XCTAssertEqual(secondCycle.providers.first?.statusTransitionCount, 1)
+    XCTAssertEqual(secondCycle.providers.first?.consecutiveIssueCount, 0)
   }
 
   func testDiagnosticsExportRefusesUnsafeOrDuplicateIdentifiers() {

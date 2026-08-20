@@ -28,6 +28,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - A reusable provider/snapshot contract audit for stable IDs, registry consistency, finite values, complete display metadata, timestamps, and identifying-field exclusions.
 - Runtime diagnostics-export enforcement that rejects invalid, duplicate, or identifying provider/channel IDs.
 - A privacy-safe compatibility issue form and anonymous cross-model contribution guide enforced by the release audit.
+- Value-free sampling health diagnostics with refresh counts/duration, per-provider status transitions, and consecutive issue counts.
 
 ### Changed
 

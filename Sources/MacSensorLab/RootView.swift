@@ -52,6 +52,7 @@ struct RootView: View {
               isSamplingPaused: model.isSamplingPaused,
               isDemoMode: model.isDemoMode,
               lastRefreshDate: model.lastRefreshDate,
+              samplingHealth: model.samplingHealth,
               recordingFileName: model.recordingFileName,
               recordingProgress: model.recordingProgress,
               message: model.lastActionMessage,
@@ -724,6 +725,7 @@ private struct DiagnosticsView: View {
   let isSamplingPaused: Bool
   let isDemoMode: Bool
   let lastRefreshDate: Date?
+  let samplingHealth: SensorSamplingHealth
   let recordingFileName: String?
   let recordingProgress: SensorCSVRecordingProgress?
   let message: String?
@@ -746,6 +748,18 @@ private struct DiagnosticsView: View {
           value:
             "\(snapshots.filter { [.unavailable, .permissionRequired, .error].contains($0.status) }.count)"
         )
+        LabeledContent(
+          "Status changes this launch",
+          value: "\(samplingHealth.totalStatusTransitionCount)"
+        )
+        ForEach(
+          samplingHealth.providers.filter { $0.statusTransitionCount > 0 }
+        ) { provider in
+          LabeledContent(
+            provider.providerID,
+            value: "\(provider.statusTransitionCount) changes"
+          )
+        }
       }
       Section("Sampling & recording") {
         LabeledContent(
@@ -754,6 +768,13 @@ private struct DiagnosticsView: View {
         if let lastRefreshDate {
           LabeledContent(
             "Last refresh", value: lastRefreshDate.formatted(date: .omitted, time: .standard))
+        }
+        LabeledContent("Completed refreshes", value: "\(samplingHealth.completedCycleCount)")
+        if let milliseconds = samplingHealth.lastCycleDurationMilliseconds {
+          LabeledContent(
+            "Last refresh duration",
+            value: "\(SensorFormatting.decimal(Double(milliseconds) / 1_000, fractionDigits: 3)) s"
+          )
         }
         if let recordingFileName {
           LabeledContent("Recording", value: recordingFileName)

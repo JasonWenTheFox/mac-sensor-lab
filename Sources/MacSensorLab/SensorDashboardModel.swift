@@ -60,6 +60,7 @@ final class SensorDashboardModel: ObservableObject {
   @Published private(set) var isRefreshing = false
   @Published private(set) var isSamplingPaused = false
   @Published private(set) var lastRefreshDate: Date?
+  @Published private(set) var samplingHealth = SensorSamplingHealth.empty
   @Published private(set) var recordingFileName: String?
   @Published private(set) var recordingProgress: SensorCSVRecordingProgress?
   @Published private(set) var ambientLuxCalibration: AmbientLuxCalibration?
@@ -68,6 +69,7 @@ final class SensorDashboardModel: ObservableObject {
   private let providers: [any SensorProvider]
   private let maximumHistoryPoints = 600
   private var recorder: SensorCSVRecorder?
+  private var samplingHealthTracker = SensorSamplingHealthTracker()
 
   var isRecording: Bool { recordingFileName != nil }
 
@@ -123,6 +125,8 @@ final class SensorDashboardModel: ObservableObject {
   func refresh() async {
     guard !isRefreshing else { return }
     isRefreshing = true
+    let clock = ContinuousClock()
+    let startedAt = clock.now
 
     let order = SensorProviderRegistry.registrationOrder(for: providers)
     await withTaskGroup(of: SensorSnapshot.self) { group in
@@ -143,6 +147,13 @@ final class SensorDashboardModel: ObservableObject {
     }
     isRefreshing = false
     lastRefreshDate = .now
+    let elapsed = startedAt.duration(to: clock.now).components
+    let cycleDuration =
+      Double(elapsed.seconds) + Double(elapsed.attoseconds) / 1_000_000_000_000_000_000
+    samplingHealth = samplingHealthTracker.observe(
+      snapshots: snapshots,
+      cycleDuration: cycleDuration
+    )
     await appendRecordingBatch()
   }
 
@@ -191,7 +202,8 @@ final class SensorDashboardModel: ObservableObject {
     do {
       let data = try SensorDiagnosticsExportService.jsonData(
         snapshots,
-        applicationVersion: AppBuildInfo.version + (isDemoMode ? " demo" : "")
+        applicationVersion: AppBuildInfo.version + (isDemoMode ? " demo" : ""),
+        samplingHealth: samplingHealth
       )
       try data.write(to: url, options: .atomic)
       lastActionMessage = "Exported privacy-safe diagnostics \(url.lastPathComponent)"
