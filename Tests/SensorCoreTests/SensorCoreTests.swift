@@ -337,6 +337,15 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertNotNil(history["provider.1/cpu_utilization"])
     XCTAssertNil(history["provider.2/cpu_utilization"])
 
+    var batteryHistory: [String: [SensorHistoryPoint]] = [:]
+    SensorHistoryRetention.append(
+      snapshot(providerID: "power.source", channelID: "battery_charge", value: 78, timestamp: 5),
+      to: &batteryHistory,
+      maximumSeriesCount: 2,
+      maximumPointsPerSeries: 2
+    )
+    XCTAssertEqual(batteryHistory["power.source/battery_charge"]?.map(\.value), [78])
+
     var malformedHistory: [String: [SensorHistoryPoint]] = [:]
     SensorHistoryRetention.append(
       snapshot(providerID: "ignored", channelID: "not_retained", value: 1, timestamp: 5),
@@ -1122,6 +1131,90 @@ final class SensorCoreTests: XCTestCase {
     ) {
       XCTAssertEqual($0 as? AmbientLuxCalibrationFileError, .invalidSource)
     }
+  }
+
+  func testBatteryDischargeEstimateUsesAConservativeObservedWindow() throws {
+    let start = Date(timeIntervalSinceReferenceDate: 1_000)
+    let points = (0..<6).map { index in
+      SensorHistoryPoint(
+        timestamp: start.addingTimeInterval(Double(index) * 60),
+        value: 80 - Double(index) * 0.2
+      )
+    }
+
+    let estimate = try XCTUnwrap(BatteryDischargeEstimate(points: points))
+
+    XCTAssertEqual(estimate.sampleCount, 6)
+    XCTAssertEqual(estimate.duration, 300, accuracy: 0.001)
+    XCTAssertEqual(estimate.chargeDrop, 1, accuracy: 0.001)
+    XCTAssertEqual(estimate.percentPerHour, 12, accuracy: 0.001)
+    XCTAssertEqual(estimate.estimatedHoursToEmpty, 79 / 12, accuracy: 0.001)
+
+    let discharging = PublicPowerSourceProvider().snapshot(
+      reading: PublicPowerSourceReading(
+        source: .battery,
+        batteryWarning: PublicBatteryWarning.none,
+        currentCapacity: 79,
+        maximumCapacity: 100,
+        isCharging: false,
+        timeToEmptyMinutes: nil,
+        timeToFullMinutes: nil,
+        systemTimeRemainingSeconds: nil
+      )
+    )
+    XCTAssertTrue(BatteryDischargeEstimate.isEligible(snapshot: discharging))
+    let charging = PublicPowerSourceProvider().snapshot(
+      reading: PublicPowerSourceReading(
+        source: .battery,
+        batteryWarning: PublicBatteryWarning.none,
+        currentCapacity: 79,
+        maximumCapacity: 100,
+        isCharging: true,
+        timeToEmptyMinutes: nil,
+        timeToFullMinutes: nil,
+        systemTimeRemainingSeconds: nil
+      )
+    )
+    XCTAssertFalse(BatteryDischargeEstimate.isEligible(snapshot: charging))
+  }
+
+  func testBatteryDischargeEstimateRejectsWeakMalformedOrMixedWindows() {
+    let start = Date(timeIntervalSinceReferenceDate: 2_000)
+    func point(_ minute: Double, _ charge: Double) -> SensorHistoryPoint {
+      SensorHistoryPoint(timestamp: start.addingTimeInterval(minute * 60), value: charge)
+    }
+
+    XCTAssertNil(
+      BatteryDischargeEstimate(points: [point(0, 80), point(1, 79.8), point(2, 79.6)])
+    )
+    XCTAssertNil(
+      BatteryDischargeEstimate(
+        points: [point(0, 80), point(2, 79.9), point(4, 79.8), point(5, 79.7)]
+      )
+    )
+    XCTAssertNil(
+      BatteryDischargeEstimate(
+        points: [point(0, 80), point(2, 80.2), point(4, 80.4), point(6, 80.6)]
+      )
+    )
+    XCTAssertNil(
+      BatteryDischargeEstimate(
+        points: [point(0, 80), point(2, 79.8), point(1, 79.6), point(6, 79.4)]
+      )
+    )
+    XCTAssertNil(
+      BatteryDischargeEstimate(
+        points: [point(0, 80), point(2, 79.8), point(4, .nan), point(6, 79.4)]
+      )
+    )
+
+    let mixed = [
+      point(0, 70), point(2, 72), point(4, 72), point(6, 71.8), point(8, 71.6),
+      point(10, 71.4), point(12, 71.2),
+    ]
+    let estimate = BatteryDischargeEstimate(points: mixed)
+    XCTAssertEqual(estimate?.sampleCount, 6)
+    XCTAssertEqual(estimate?.chargeDrop ?? .nan, 0.8, accuracy: 0.001)
   }
 
   func testRelativeAngleMeasurementPreservesDirection() throws {

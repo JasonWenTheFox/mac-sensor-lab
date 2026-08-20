@@ -212,6 +212,17 @@ final class SensorTextLocalizerTests: XCTestCase {
       ),
       "点"
     )
+    XCTAssertEqual(
+      String(
+        format: try XCTUnwrap(
+          strings[
+            "Estimated from %lld samples over %@ minutes; workload changes can invalidate it."]
+        ),
+        locale: Locale(identifier: "zh-Hans"),
+        arguments: [Int64(6), "5"]
+      ),
+      "依据 6 个样本（5 分钟）估算；工作负载变化可能使其失效。"
+    )
 
     let motion = try XCTUnwrap(snapshots["motion.spu_live"])
     XCTAssertEqual(packagedLocalizer.localized(motion.summary), "实时加速度、水平与环境光数据")

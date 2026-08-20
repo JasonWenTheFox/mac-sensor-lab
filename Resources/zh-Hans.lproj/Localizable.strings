@@ -2,12 +2,16 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>%@ %%/hour</key>
+	<string>%@ %%/小时</string>
 	<key>%@ %@</key>
 	<string>%@ %@</string>
 	<key>%@ available</key>
 	<string>可用空间 %@</string>
 	<key>%@ experiment trend</key>
 	<string>%@ 实验趋势</string>
+	<key>%@ h</key>
+	<string>%@ 小时</string>
 	<key>%@ trend with %lld samples</key>
 	<string>%@ 趋势，共 %lld 个样本</string>
 	<key>%@ • %@</key>
@@ -100,6 +104,8 @@
 	<string>缩放倍率</string>
 	<key>Battery</key>
 	<string>电池</string>
+	<key>Battery Trend</key>
+	<string>电池趋势</string>
 	<key>Battery charge (public API)</key>
 	<string>电池电量（公开 API）</string>
 	<key>Battery charging (public API)</key>
@@ -264,6 +270,8 @@
 	<string>错误</string>
 	<key>Estimated</key>
 	<string>估算</string>
+	<key>Estimated from %lld samples over %@ minutes; workload changes can invalidate it.</key>
+	<string>依据 %lld 个样本（%@ 分钟）估算；工作负载变化可能使其失效。</string>
 	<key>Estimated illuminance</key>
 	<string>估算照度</string>
 	<key>Estimated pitch</key>
@@ -474,6 +482,8 @@
 	<string>未检测到</string>
 	<key>Not implemented • provider pending</key>
 	<string>尚未实现 • 等待 Provider</string>
+	<key>Observed drain</key>
+	<string>观察到的耗电速率</string>
 	<key>Off</key>
 	<string>已关闭</string>
 	<key>On</key>
@@ -530,6 +540,8 @@
 	<string>隐私清单</string>
 	<key>Privileged</key>
 	<string>需特权</string>
+	<key>Projected empty</key>
+	<string>预计耗尽</string>
 	<key>Provider error</key>
 	<string>Provider 错误</string>
 	<key>Provider health</key>
@@ -732,6 +744,8 @@
 	<string>总计是跨块存储驱动汇总的驱动生命周期计数器。</string>
 	<key>Trackpad Scale</key>
 	<string>触控板秤</string>
+	<key>Trend estimate pauses while connected to power or charging.</key>
+	<string>连接电源或充电时暂停趋势估算。</string>
 	<key>Try a provider, channel, source, status, or stable ID.</key>
 	<string>尝试搜索 Provider、通道、来源、状态或稳定 ID。</string>
 	<key>UPS power</key>
@@ -768,6 +782,8 @@
 	<string>使用 Apple 公开的 IOPowerSources API。</string>
 	<key>Uses gravity-derived roll and pitch when live acceleration is available</key>
 	<string>实时加速度可用时，使用由重力派生的横滚和俯仰角</string>
+	<key>Uses recent public charge history; shown only while discharging</key>
+	<string>使用最近的公开电量历史；仅在放电时显示</string>
 	<key>Uses the undocumented lid-angle sensor</key>
 	<string>使用未文档化的上盖角度传感器</string>
 	<key>Version</key>
@@ -778,6 +794,8 @@
 	<string>虚拟或隧道路径可能会重复表示同一流量。</string>
 	<key>Voltage × current; not wall-plug power.</key>
 	<string>电压 × 电流；并非插座侧功率。</string>
+	<key>Waiting for at least five minutes and a measurable charge drop.</key>
+	<string>正在等待至少五分钟和可测量的电量下降。</string>
 	<key>Write errors</key>
 	<string>写入错误</string>
 	<key>Write operation rate</key>

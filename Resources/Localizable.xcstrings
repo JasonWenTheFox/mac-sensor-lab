@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ %%/hour" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%@ %%/小时" } }
+      }
+    },
+    "%@ h" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%@ 小时" } }
+      }
+    },
     "50 MB safety limit" : {
       "localizations" : {
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "50 MB 安全上限" } }
@@ -29,6 +39,11 @@
     "Average" : {
       "localizations" : {
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "平均" } }
+      }
+    },
+    "Battery Trend" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "电池趋势" } }
       }
     },
     "Build" : {
@@ -174,6 +189,36 @@
     "Estimated illuminance" : {
       "localizations" : {
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "估算照度" } }
+      }
+    },
+    "Estimated from %lld samples over %@ minutes; workload changes can invalidate it." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "依据 %lld 个样本（%@ 分钟）估算；工作负载变化可能使其失效。" } }
+      }
+    },
+    "Observed drain" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "观察到的耗电速率" } }
+      }
+    },
+    "Projected empty" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "预计耗尽" } }
+      }
+    },
+    "Trend estimate pauses while connected to power or charging." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "连接电源或充电时暂停趋势估算。" } }
+      }
+    },
+    "Uses recent public charge history; shown only while discharging" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "使用最近的公开电量历史；仅在放电时显示" } }
+      }
+    },
+    "Waiting for at least five minutes and a measurable charge drop." : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在等待至少五分钟和可测量的电量下降。" } }
       }
     },
     "Every 1 second" : {

@@ -85,6 +85,94 @@ public struct MotionVariationStatistics: Equatable, Sendable {
   }
 }
 
+/// A deliberately conservative estimate from recent public battery-charge history.
+///
+/// The estimate is only about the observed dashboard window. Callers must additionally verify that
+/// the current power source is the battery and that charging is off before presenting it.
+public struct BatteryDischargeEstimate: Equatable, Sendable {
+  public static let minimumSampleCount = 4
+  public static let minimumDuration: TimeInterval = 5 * 60
+  public static let minimumChargeDrop = 0.5
+  public static let maximumHistoryPointCount = 600
+
+  public let sampleCount: Int
+  public let duration: TimeInterval
+  public let chargeDrop: Double
+  public let percentPerHour: Double
+  public let estimatedHoursToEmpty: Double
+
+  public static func isEligible(snapshot: SensorSnapshot) -> Bool {
+    guard snapshot.id == "power.source", snapshot.status == .available,
+      snapshot.channels.first(where: { $0.id == "active_source" })?.formattedValue == "Battery",
+      snapshot.channels.first(where: { $0.id == "battery_charging" })?.value == 0
+    else { return false }
+    return true
+  }
+
+  public init?(points input: [SensorHistoryPoint]) {
+    let bounded = Array(input.suffix(Self.maximumHistoryPointCount))
+    guard bounded.count >= Self.minimumSampleCount else { return nil }
+    for point in bounded {
+      guard point.timestamp.timeIntervalSinceReferenceDate.isFinite,
+        point.value.isFinite,
+        (0...100).contains(point.value)
+      else { return nil }
+    }
+    for pair in zip(bounded, bounded.dropFirst()) {
+      guard pair.0.timestamp < pair.1.timestamp else { return nil }
+    }
+
+    // A rise greater than controller rounding noise indicates that the old window may include a
+    // charging session. Restart after the last such transition instead of mixing regimes.
+    var startIndex = 0
+    for index in 1..<bounded.count where bounded[index].value - bounded[index - 1].value > 0.25 {
+      startIndex = index
+    }
+    let points = Array(bounded[startIndex...])
+    guard points.count >= Self.minimumSampleCount,
+      let first = points.first,
+      let last = points.last
+    else { return nil }
+
+    let duration = last.timestamp.timeIntervalSince(first.timestamp)
+    let chargeDrop = first.value - last.value
+    guard duration.isFinite, duration >= Self.minimumDuration,
+      chargeDrop.isFinite, chargeDrop >= Self.minimumChargeDrop
+    else { return nil }
+
+    let normalizedTimes = points.map {
+      $0.timestamp.timeIntervalSince(first.timestamp) / duration
+    }
+    let normalizedCharges = points.map { $0.value / 100 }
+    let count = Double(points.count)
+    let meanTime = normalizedTimes.reduce(0, +) / count
+    let meanCharge = normalizedCharges.reduce(0, +) / count
+    var covariance = 0.0
+    var variance = 0.0
+    for (time, charge) in zip(normalizedTimes, normalizedCharges) {
+      let timeDelta = time - meanTime
+      covariance += timeDelta * (charge - meanCharge)
+      variance += timeDelta * timeDelta
+    }
+    guard covariance.isFinite, variance.isFinite, variance > 0 else { return nil }
+
+    let percentageChangeAcrossWindow = covariance / variance * 100
+    let durationHours = duration / 3_600
+    let percentPerHour = -percentageChangeAcrossWindow / durationHours
+    guard percentPerHour.isFinite, (0.1...100).contains(percentPerHour) else { return nil }
+    let estimatedHoursToEmpty = last.value / percentPerHour
+    guard estimatedHoursToEmpty.isFinite, (0...168).contains(estimatedHoursToEmpty) else {
+      return nil
+    }
+
+    self.sampleCount = points.count
+    self.duration = duration
+    self.chargeDrop = chargeDrop
+    self.percentPerHour = percentPerHour
+    self.estimatedHoursToEmpty = estimatedHoursToEmpty
+  }
+}
+
 public struct AmbientLuxCalibrationPoint: Codable, Equatable, Sendable {
   public let rawReference: Double
   public let luxReference: Double

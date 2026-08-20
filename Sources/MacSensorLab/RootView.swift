@@ -540,6 +540,12 @@ private struct ExperimentsView: View {
 
   private let experiments = [
     Experiment(
+      name: L10n.text("Battery Trend"), symbol: "battery.100percent",
+      providerID: "power.source", channelID: "battery_charge",
+      description: L10n.text(
+        "Uses recent public charge history; shown only while discharging"
+      )),
+    Experiment(
       name: L10n.text("Level"), symbol: "level", providerID: "motion.spu_live",
       channelID: "level_roll",
       description: L10n.text(
@@ -724,6 +730,13 @@ private struct ExperimentsView: View {
         .foregroundStyle(.secondary)
       }
 
+      if channelID == "battery_charge" {
+        BatteryTrendPanel(
+          points: points,
+          isDischarging: BatteryDischargeEstimate.isEligible(snapshot: snapshot)
+        )
+      }
+
       if points.count >= 2 {
         Chart(points) { point in
           LineMark(x: .value("Time", point.timestamp), y: .value(channel.label, point.value))
@@ -761,6 +774,61 @@ private struct ExperimentsView: View {
       .accessibilityElement(children: .ignore)
       .accessibilityLabel(L10n.text("Four uncalibrated ambient spectral channels"))
     }
+  }
+}
+
+private struct BatteryTrendPanel: View {
+  let points: [SensorHistoryPoint]
+  let isDischarging: Bool
+
+  private var estimate: BatteryDischargeEstimate? {
+    guard isDischarging else { return nil }
+    return BatteryDischargeEstimate(points: points)
+  }
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      if !isDischarging {
+        Text(L10n.text("Trend estimate pauses while connected to power or charging."))
+          .font(.caption)
+          .foregroundStyle(.secondary)
+      } else if let estimate {
+        HStack(spacing: 8) {
+          ExperimentMetric(
+            label: L10n.text("Observed drain"),
+            value: L10n.format(
+              "%@ %%/hour",
+              SensorFormatting.decimal(estimate.percentPerHour, fractionDigits: 1)
+            )
+          )
+          ExperimentMetric(
+            label: L10n.text("Projected empty"),
+            value: L10n.format(
+              "%@ h",
+              SensorFormatting.decimal(estimate.estimatedHoursToEmpty, fractionDigits: 1)
+            )
+          )
+        }
+        Text(
+          L10n.format(
+            "Estimated from %lld samples over %@ minutes; workload changes can invalidate it.",
+            Int64(estimate.sampleCount),
+            SensorFormatting.decimal(estimate.duration / 60, fractionDigits: 0)
+          )
+        )
+        .font(.caption2)
+        .foregroundStyle(.secondary)
+      } else {
+        Text(
+          L10n.text(
+            "Waiting for at least five minutes and a measurable charge drop."
+          )
+        )
+        .font(.caption)
+        .foregroundStyle(.secondary)
+      }
+    }
+    .padding(.top, 4)
   }
 }
 

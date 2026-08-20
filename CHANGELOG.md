@@ -6,6 +6,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ### Added
 
+- A conservative Battery Trend experiment derived from bounded in-memory public charge history, gated on an explicit discharging state, minimum duration/sample/drop thresholds, and safe handling of charging transitions or malformed data.
 - A separate public `IOPowerSources` provider for the active AC/battery/UPS source, public charge/charging state, OS low-battery warning level, and valid time estimates without reading power-source identity or adapter metadata.
 - Native English and Simplified Chinese UI localization backed by a checked-in String Catalog, generated `.lproj` resources, catalog/key consistency tests, and a bounded display adapter for dynamic summaries, channel labels, enum values, units, and app-owned notes.
 - An Overview provider-health summary with distinct loading, available, limited, permission-required, unavailable, and error counts, a launch-wide status-transition total, and direct Raw Sensors/Diagnostics review actions.

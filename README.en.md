@@ -91,6 +91,9 @@ raw sensor payloads do not change with the selected language.
   pairs and capture times. Imports are local files capped at 64 KiB; invalid or oversized input
   cannot replace the current calibration, and legacy single-point files remain readable.
 - Capture a local lid-angle reference and view signed relative opening/closing change.
+- Observe an in-memory Battery Trend from the public charge channel. It appears only while the Mac
+  is explicitly discharging and after at least five minutes, four samples, and a measurable drop;
+  drain rate and time-to-empty remain labeled as recent-history estimates.
 - Inspect low-rate acceleration-magnitude RMS variation and peak-to-peak motion without presenting
   the 1–10 second dashboard cadence as vibration-frequency analysis.
 - Inspect value-free sampling health counters for completed cycles, latest duration, provider
