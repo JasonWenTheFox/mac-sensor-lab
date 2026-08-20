@@ -166,10 +166,11 @@ swift test
 - [x] 加入可复用的 Provider/Snapshot 数据契约审计，并接入本地及 CI portable 自检。
 - [x] Provider 排序对重复 ID 安全降级，不会在契约审计报告问题前触发运行时崩溃。
 - [x] Demo 模式隔离采样、光照校准和上盖角度参考偏好，不污染 live 状态。
+- [x] 加入隐私安全兼容性 Issue 表单、匿名贡献指南，并由发布审计强制检查。
 - [ ] 用户确认正式名称后公开 GitHub 仓库。
 
 ## 重要边界
 
 本项目不是医疗、计量、工业安全或法定测量仪器。未经外部基准校准的读数只能用于观察、比较、教育和实验。
 
-开发与发布细节见 [`docs/05-当前实现与后续路线.md`](docs/05-当前实现与后续路线.md)、[`CONTRIBUTING.md`](CONTRIBUTING.md) 和 [`SECURITY.md`](SECURITY.md)。
+开发与发布细节见 [`docs/05-当前实现与后续路线.md`](docs/05-当前实现与后续路线.md)、[`docs/06-匿名兼容性贡献指南.md`](docs/06-匿名兼容性贡献指南.md)、[`CONTRIBUTING.md`](CONTRIBUTING.md) 和 [`SECURITY.md`](SECURITY.md)。

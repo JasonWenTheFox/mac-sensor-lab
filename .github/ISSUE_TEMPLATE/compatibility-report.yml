@@ -1,0 +1,90 @@
+name: Privacy-safe compatibility report
+description: Report provider availability on another Mac without publishing readings or identifiers.
+title: "[Compatibility] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for testing Mac Sensor Lab on another Mac. Attach only the app's **Privacy-Safe Diagnostics** JSON if needed. Do not attach full snapshot/recording exports, `ioreg`, `system_profiler`, `sysdiagnose`, crash dumps, screenshots with real readings, or files containing serial numbers, UUIDs, user/host names, network identifiers, paths, or account data.
+
+  - type: dropdown
+    id: architecture
+    attributes:
+      label: Architecture
+      options:
+        - Apple Silicon
+        - Intel
+        - Unknown
+    validations:
+      required: true
+
+  - type: dropdown
+    id: product_family
+    attributes:
+      label: Broad Mac family
+      description: Do not enter a serial number or hardware UUID.
+      options:
+        - MacBook Air
+        - MacBook Pro
+        - iMac
+        - Mac mini
+        - Mac Studio
+        - Mac Pro
+        - Other or unknown
+    validations:
+      required: true
+
+  - type: input
+    id: macos_version
+    attributes:
+      label: macOS version
+      description: Major and minor version are enough, for example 15.6.
+      placeholder: "15.6"
+    validations:
+      required: true
+
+  - type: input
+    id: app_version
+    attributes:
+      label: Mac Sensor Lab version or commit
+      placeholder: "0.1.0 (1) or a short commit hash"
+    validations:
+      required: true
+
+  - type: textarea
+    id: provider_statuses
+    attributes:
+      label: Provider statuses
+      description: List only stable provider IDs and statuses such as available, limited, unavailable, permission-required, or error. Do not paste readings, notes, paths, or system dumps.
+      placeholder: |
+        motion.spu_live: available
+        motion.lid_angle: unavailable
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: observations
+    attributes:
+      label: Reproduction and observations
+      description: Describe steps, expected behavior, and visible status messages. Redact values and identifying information.
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Optional privacy-safe diagnostics
+      description: Drag in only the JSON created by Diagnostics > Export Privacy-Safe Diagnostics after reviewing it locally. Leave blank if unnecessary.
+
+  - type: checkboxes
+    id: privacy_confirmation
+    attributes:
+      label: Privacy confirmation
+      options:
+        - label: I did not attach a full snapshot, continuous recording, system dump, crash dump, or real-reading screenshot.
+          required: true
+        - label: I reviewed the report and removed any serial number, UUID, user/host name, network identifier, private path, account data, or other unique identifier.
+          required: true
+        - label: I understand that this public report is for compatibility evidence, not certified measurement data.
+          required: true

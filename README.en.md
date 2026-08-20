@@ -189,6 +189,9 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) before adding a provider. New data sources must use
 stable non-identifying IDs, document units and provenance, define unsupported/timeout behavior, and
 include fixture tests. Hardware presence alone must never be treated as a live measurement source.
+Cross-model evidence should use the repository's privacy-safe compatibility form and the workflow
+in [docs/06-匿名兼容性贡献指南.md](docs/06-匿名兼容性贡献指南.md); never attach full snapshots,
+recordings, system dumps, or real-reading screenshots to a public issue.
 
 ## License
 

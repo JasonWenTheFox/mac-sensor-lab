@@ -27,6 +27,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - Probe CLI options for deterministic demo snapshots, value-free diagnostics, help, and strict unknown-option rejection.
 - A reusable provider/snapshot contract audit for stable IDs, registry consistency, finite values, complete display metadata, timestamps, and identifying-field exclusions.
 - Runtime diagnostics-export enforcement that rejects invalid, duplicate, or identifying provider/channel IDs.
+- A privacy-safe compatibility issue form and anonymous cross-model contribution guide enforced by the release audit.
 
 ### Changed
 

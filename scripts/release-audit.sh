@@ -51,7 +51,13 @@ done
 /usr/bin/grep -Fq 'PrivacyInfo.xcprivacy' scripts/build-app.sh \
   || fail "build-app.sh does not package the privacy manifest"
 
-for required in LICENSE THIRD_PARTY_NOTICES.md CONTRIBUTING.md SECURITY.md; do
+for required in \
+  LICENSE \
+  THIRD_PARTY_NOTICES.md \
+  CONTRIBUTING.md \
+  SECURITY.md \
+  .github/ISSUE_TEMPLATE/compatibility-report.yml \
+  docs/06-匿名兼容性贡献指南.md; do
   [[ -s "$required" ]] || fail "required release file is missing or empty: $required"
 done
 

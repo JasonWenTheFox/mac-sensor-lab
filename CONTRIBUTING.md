@@ -24,3 +24,9 @@
 - 新的权限提示只能由清楚的用户操作触发。
 
 提交 Pull Request 前，请在描述中列出测试机型、macOS 版本、数据来源、已知范围和失败路径，不要公开序列号、UUID 或其他唯一标识。
+
+## 匿名兼容性报告
+
+跨机型测试请使用 GitHub 的 `Privacy-safe compatibility report` 表单，并遵循 [`docs/06-匿名兼容性贡献指南.md`](docs/06-匿名兼容性贡献指南.md)。如需附件，只上传由 App 主动导出的 Privacy-Safe Diagnostics JSON，并先在本地人工检查。
+
+不要在公开 Issue 中粘贴完整 Snapshot/CSV、连续记录、`ioreg`、`system_profiler`、`sysdiagnose`、崩溃转储或真实读数截图。发现问题不等于获得公开设备信息的授权。
