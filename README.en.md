@@ -100,9 +100,10 @@ creating a report that violates its privacy-safe contract.
 
 `sensorlab-selftest` applies a reusable structural contract audit to registered metadata and live
 snapshots. It checks stable and unique provider/channel IDs, registry metadata consistency, finite
-numeric values, nonblank formatted values and explicit units, future timestamps, and identifying
-field names that must never become IDs. The audit does not scan free-text summaries or notes and
-does not collect additional data.
+numeric values, bounded nonblank display metadata, provider/channel/note cardinality, status/channel
+consistency, future timestamps, and identifying field names that must never become IDs. The audit
+does not match free-text summaries or notes against privacy keywords and does not collect additional
+data.
 
 ## Build and test
 
@@ -131,7 +132,7 @@ rejects tracked build output, absolute user paths, common secret signatures, pro
 keys that this release does not implement, forbidden mutation/privilege APIs, missing release
 documents, or a privacy manifest inconsistent with the current offline behavior.
 
-GitHub Actions repeats formatting, audit, build, 37 XCTest cases, portable self-test, and app-bundle
+GitHub Actions repeats formatting, audit, build, 38 XCTest cases, portable self-test, and app-bundle
 assembly on `macos-26`.
 
 ## Repository layout

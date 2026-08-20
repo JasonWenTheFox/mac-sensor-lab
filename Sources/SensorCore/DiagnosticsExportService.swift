@@ -89,6 +89,10 @@ public enum SensorDiagnosticsExportService {
     .duplicateChannelIdentifier,
     .invalidStableIdentifier,
     .forbiddenIdentifier,
+    .tooManyProviders,
+    .tooManyChannels,
+    .oversizedText,
+    .emptyUnit,
   ]
 
   public static func jsonData(

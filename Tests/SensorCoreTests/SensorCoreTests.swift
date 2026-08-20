@@ -263,6 +263,36 @@ final class SensorCoreTests: XCTestCase {
         .unsafeMetadata(code: .duplicateProviderIdentifier, path: "snapshots[1].id")
       )
     }
+
+    let oversizedUnit = SensorSnapshot(
+      id: "test.oversized",
+      name: "Fixture",
+      category: .diagnostics,
+      summary: "Fixture",
+      status: .available,
+      source: "Fixture",
+      capability: .publicAPI,
+      channels: [
+        SensorChannel(
+          id: "value",
+          label: "Value",
+          value: 1,
+          formattedValue: "1",
+          unit: String(repeating: "u", count: SensorContractAudit.maximumUnitByteCount + 1)
+        )
+      ]
+    )
+    XCTAssertThrowsError(
+      try SensorDiagnosticsExportService.jsonData(
+        [oversizedUnit],
+        applicationVersion: "test"
+      )
+    ) { error in
+      XCTAssertEqual(
+        error as? SensorDiagnosticsExportError,
+        .unsafeMetadata(code: .oversizedText, path: "snapshots[0].channels[0].unit")
+      )
+    }
   }
 
   func testCSVExportKeepsRawAndFormattedValuesSeparate() {
@@ -929,6 +959,98 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertTrue(codes.contains(.emptyFormattedValue))
     XCTAssertTrue(codes.contains(.emptyUnit))
     XCTAssertTrue(codes.contains(.futureTimestamp))
+  }
+
+  func testContractAuditRejectsBlankInconsistentAndUnboundedPayloads() {
+    var tooManyChannels: [SensorChannel] = []
+    for index in 0...SensorContractAudit.maximumChannelsPerProvider {
+      let label = index == 0 ? " " : "Channel \(index)"
+      let formattedValue =
+        index == 1
+        ? String(repeating: "x", count: SensorContractAudit.maximumDisplayTextByteCount + 1)
+        : "\(index)"
+      let unit: String? =
+        index == 2
+        ? String(repeating: "u", count: SensorContractAudit.maximumUnitByteCount + 1)
+        : nil
+      tooManyChannels.append(
+        SensorChannel(
+          id: "channel_\(index)",
+          label: label,
+          value: Double(index),
+          formattedValue: formattedValue,
+          unit: unit,
+          note: index == 3 ? "" : nil
+        ))
+    }
+    let malformed = SensorSnapshot(
+      id: String(repeating: "a", count: SensorContractAudit.maximumIdentifierByteCount + 1),
+      name: " ",
+      category: .diagnostics,
+      summary: "Fixture",
+      status: .available,
+      source: "Fixture",
+      capability: .publicAPI,
+      channels: tooManyChannels,
+      notes: ["Repeated", "Repeated"]
+    )
+    let loading = SensorSnapshot(
+      id: "test.loading",
+      name: "Loading fixture",
+      category: .diagnostics,
+      summary: "Fixture",
+      status: .loading,
+      source: "Fixture",
+      capability: .publicAPI
+    )
+    let emptyAvailable = SensorSnapshot(
+      id: "test.empty",
+      name: "Empty fixture",
+      category: .diagnostics,
+      summary: "Fixture",
+      status: .available,
+      source: "Fixture",
+      capability: .publicAPI
+    )
+    let tooManyNotes = SensorSnapshot(
+      id: "test.notes",
+      name: "Notes fixture",
+      category: .diagnostics,
+      summary: "Fixture",
+      status: .degraded,
+      source: "Fixture",
+      capability: .publicAPI,
+      notes: (0...SensorContractAudit.maximumNotesPerProvider).map { "Note \($0)" }
+    )
+
+    let codes: Set<SensorContractIssue.Code> = Set(
+      SensorContractAudit.issues(for: [malformed, loading, emptyAvailable, tooManyNotes]).map(
+        \.code)
+    )
+    XCTAssertTrue(codes.contains(.invalidStableIdentifier))
+    XCTAssertTrue(codes.contains(.emptyText))
+    XCTAssertTrue(codes.contains(.oversizedText))
+    XCTAssertTrue(codes.contains(.duplicateNote))
+    XCTAssertTrue(codes.contains(.tooManyChannels))
+    XCTAssertTrue(codes.contains(.tooManyNotes))
+    XCTAssertTrue(codes.contains(.unexpectedLoadingStatus))
+    XCTAssertTrue(codes.contains(.availableWithoutChannels))
+
+    let tooManyProviders = (0...SensorContractAudit.maximumProviderCount).map { index in
+      SensorSnapshot(
+        id: "test.provider_\(index)",
+        name: "Provider \(index)",
+        category: .diagnostics,
+        summary: "Fixture",
+        status: .unavailable,
+        source: "Fixture",
+        capability: .publicAPI
+      )
+    }
+    XCTAssertTrue(
+      SensorContractAudit.issues(for: tooManyProviders).contains {
+        $0.code == .tooManyProviders
+      })
   }
 
   func testSPUVectorReportDecoding() {

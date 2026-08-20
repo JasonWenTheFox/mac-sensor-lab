@@ -29,6 +29,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - Runtime diagnostics-export enforcement that rejects invalid, duplicate, or identifying provider/channel IDs.
 - A privacy-safe compatibility issue form and anonymous cross-model contribution guide enforced by the release audit.
 - Value-free sampling health diagnostics with refresh counts/duration, per-provider status transitions, and consecutive issue counts.
+- Provider contract cardinality/text bounds plus blank-label, duplicate-note, loading-state, and empty-available consistency checks.
 
 ### Changed
 

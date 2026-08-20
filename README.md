@@ -101,7 +101,7 @@ swift test
 
 `sensorlab-probe` 同样支持 `--demo`；加上 `--diagnostics` 时只输出无传感器读数/自由文本的隐私安全 Provider 元数据，并在非法、重复或识别性 ID 出现时拒绝导出。无参数时仍按原行为读取真实 Provider 并在本地标准输出完整快照。
 
-`sensorlab-selftest` 会对注册信息和实际 Snapshot 执行结构化数据契约审计：检查 Provider/通道稳定 ID、唯一性、注册元数据一致性、有限数值、非空显示值/单位、未来时间戳，以及禁止进入 ID 的机器识别字段名。审计不扫描摘要、备注等自由文本，也不会采集额外数据。
+`sensorlab-selftest` 会对注册信息和实际 Snapshot 执行结构化数据契约审计：检查 Provider/通道稳定 ID、唯一性、注册元数据一致性、有限数值、非空且有界的显示字段、Provider/通道/备注数量上限、状态与通道一致性、未来时间戳，以及禁止进入 ID 的机器识别字段名。审计不会把摘要、备注等自由文本与隐私关键词匹配，也不会采集额外数据。
 
 ## 采样与记录
 
@@ -149,7 +149,7 @@ swift test
 - [x] 添加 macOS 26 / Xcode 26 CI 和 Pull Request 安全检查模板。
 - [x] 建立私有 GitHub 仓库并通过首轮 CI。
 - [x] 用户接受 Xcode 许可。
-- [x] 完成 Xcode 首次组件初始化并在本机通过 37 项 XCTest。
+- [x] 完成 Xcode 首次组件初始化并在本机通过 38 项 XCTest。
 - [x] 加入可调采样、暂停/恢复、历史清空和 50 MB 上限的连续 CSV 记录。
 - [x] 加入环境光滚动统计、可选 Estimated lux 和上盖相对角度实验。
 - [x] 加入严格校验且不含设备标识的单点光照校准 JSON 导入/导出。
