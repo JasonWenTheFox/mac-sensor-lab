@@ -12,6 +12,7 @@ public enum SensorContractAudit {
   public static let maximumIdentifierByteCount = 128
   public static let maximumDisplayTextByteCount = 4_096
   public static let maximumUnitByteCount = 64
+  public static let maximumIssueCount = 4_096
 
   public static func issues(
     for snapshots: [SensorSnapshot],
@@ -34,7 +35,10 @@ public enum SensorContractAudit {
         ))
     }
 
-    for (snapshotIndex, snapshot) in snapshots.prefix(maximumProviderCount).enumerated() {
+    snapshotLoop: for (snapshotIndex, snapshot) in snapshots.prefix(maximumProviderCount)
+      .enumerated()
+    {
+      guard issues.count < maximumIssueCount else { break }
       let providerPath = "snapshots[\(snapshotIndex)]"
       auditIdentifier(snapshot.id, at: "\(providerPath).id", into: &issues)
       auditRequiredText(snapshot.name, at: "\(providerPath).name", into: &issues)
@@ -84,9 +88,11 @@ public enum SensorContractAudit {
             message: "Note count exceeds the \(maximumNotesPerProvider)-note safety limit."
           ))
       }
+      guard issues.count < maximumIssueCount else { break }
 
       var seenNotes: Set<String> = []
       for (noteIndex, note) in snapshot.notes.prefix(maximumNotesPerProvider).enumerated() {
+        guard issues.count < maximumIssueCount else { break snapshotLoop }
         let notePath = "\(providerPath).notes[\(noteIndex)]"
         let isBounded = auditRequiredText(note, at: notePath, into: &issues)
         if isBounded, !seenNotes.insert(note).inserted {
@@ -114,11 +120,13 @@ public enum SensorContractAudit {
             message: "Snapshot timestamp exceeds the allowed future tolerance."
           ))
       }
+      guard issues.count < maximumIssueCount else { break }
 
       var seenChannelIDs: Set<String> = []
       for (channelIndex, channel) in snapshot.channels.prefix(maximumChannelsPerProvider)
         .enumerated()
       {
+        guard issues.count < maximumIssueCount else { break snapshotLoop }
         let channelPath = "\(providerPath).channels[\(channelIndex)]"
         auditIdentifier(channel.id, at: "\(channelPath).id", into: &issues)
         auditRequiredText(channel.label, at: "\(channelPath).label", into: &issues)
@@ -182,7 +190,7 @@ public enum SensorContractAudit {
       }
     }
 
-    return issues
+    return Array(issues.prefix(maximumIssueCount))
   }
 
   public static func issues(
@@ -230,17 +238,22 @@ public enum SensorContractAudit {
       }
     }
 
-    issues += self.issues(
+    let snapshotIssues = self.issues(
       for: snapshots,
       now: now,
       futureTolerance: futureTolerance
     )
+    issues.append(
+      contentsOf: snapshotIssues.prefix(max(0, maximumIssueCount - issues.count))
+    )
+    guard issues.count < maximumIssueCount else { return issues }
 
     let expectedIDs = Set(metadataByID.keys)
     let actualIDs = Set(
       snapshots.prefix(maximumProviderCount).compactMap { boundedIdentifier($0.id) }
     )
     for id in expectedIDs.subtracting(actualIDs).sorted() {
+      guard issues.count < maximumIssueCount else { break }
       issues.append(
         SensorContractIssue(
           code: .missingProviderSnapshot,
@@ -249,6 +262,7 @@ public enum SensorContractAudit {
         ))
     }
     for id in actualIDs.subtracting(expectedIDs).sorted() {
+      guard issues.count < maximumIssueCount else { break }
       issues.append(
         SensorContractIssue(
           code: .unexpectedProviderIdentifier,
@@ -258,6 +272,7 @@ public enum SensorContractAudit {
     }
 
     for (snapshotIndex, snapshot) in snapshots.prefix(maximumProviderCount).enumerated() {
+      guard issues.count < maximumIssueCount else { break }
       guard let snapshotID = boundedIdentifier(snapshot.id),
         let metadata = metadataByID[snapshotID]
       else { continue }
@@ -280,7 +295,7 @@ public enum SensorContractAudit {
       }
     }
 
-    return issues
+    return Array(issues.prefix(maximumIssueCount))
   }
 
   private static let forbiddenIdentifierFragments = [

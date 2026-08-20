@@ -53,6 +53,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - Continuous recording now rejects contract-invalid batches before row encoding and caps cross-batch deduplication state at 256 Provider identities.
 - Recording finalization now refreshes the real file-end byte count and always transitions the recorder to closed before reporting synchronization, seek, or close errors.
 - Contract timestamp tolerance now treats negative, non-finite, or overflowing values as zero instead of allowing future-snapshot checks to be bypassed.
+- Contract auditing now stops scanning and caps returned output at 4,096 issues even when every allowed channel violates several fields.
 - Corrupt or extreme counters can no longer overflow CPU totals, network/disk/GPU aggregation, memory page conversion, fan-count conversion, sampling duration, or byte-rate formatting.
 - Continuous CSV recording now preflights the complete batch size and then encodes/writes one row at a time instead of retaining a second full-batch copy in memory.
 - Duplicate provider IDs no longer trap while constructing read or dashboard ordering; they remain visible to the contract audit.

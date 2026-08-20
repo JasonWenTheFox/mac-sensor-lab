@@ -1509,6 +1509,38 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertLessThan(issueText.utf8.count, 16_384)
   }
 
+  func testContractAuditCapsTotalIssueOutputAndScanning() {
+    let invalidChannels = (0..<SensorContractAudit.maximumChannelsPerProvider).map { index in
+      SensorChannel(
+        id: "Bad ID \(index)",
+        label: " ",
+        value: .nan,
+        formattedValue: " ",
+        unit: " ",
+        note: " "
+      )
+    }
+    let malformed = SensorSnapshot(
+      id: "test.issue_cap",
+      name: "Fixture",
+      category: .diagnostics,
+      summary: "Fixture",
+      status: .available,
+      source: "Fixture",
+      capability: .publicAPI,
+      channels: invalidChannels
+    )
+
+    XCTAssertEqual(
+      SensorContractAudit.issues(for: [malformed]).count,
+      SensorContractAudit.maximumIssueCount
+    )
+    XCTAssertEqual(
+      SensorContractAudit.issues(providers: [], snapshots: [malformed]).count,
+      SensorContractAudit.maximumIssueCount
+    )
+  }
+
   func testSnapshotGateFailsClosedWithoutEchoingMalformedProviderOutput() {
     let metadata = SensorProviderMetadata(
       id: "test.provider",

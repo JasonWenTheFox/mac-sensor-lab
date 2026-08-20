@@ -153,7 +153,7 @@ Dashboard 还会在每个 Provider 结果进入 UI、历史或记录前执行同
 - [x] 添加 macOS 26 / Xcode 26 CI 和 Pull Request 安全检查模板。
 - [x] 建立私有 GitHub 仓库并通过首轮 CI。
 - [x] 用户接受 Xcode 许可。
-- [x] 完成 Xcode 首次组件初始化并在本机通过 49 项 XCTest。
+- [x] 完成 Xcode 首次组件初始化并在本机通过 50 项 XCTest。
 - [x] 加入可调采样、暂停/恢复、历史清空和 50 MB 上限的连续 CSV 记录。
 - [x] 加入环境光滚动统计、可选 Estimated lux 和上盖相对角度实验。
 - [x] 加入严格校验且不含设备标识的单点光照校准 JSON 导入/导出。
