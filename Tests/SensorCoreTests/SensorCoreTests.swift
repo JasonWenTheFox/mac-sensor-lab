@@ -225,6 +225,11 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertEqual(statistics.relativePosition ?? .nan, 1, accuracy: 0.000_001)
     XCTAssertNil(SensorSeriesStatistics(values: [.nan, .infinity]))
     XCTAssertNil(SensorSeriesStatistics(values: [5])?.relativePosition)
+    let extremeStatistics = try XCTUnwrap(
+      SensorSeriesStatistics(values: [-.greatestFiniteMagnitude, 0, .greatestFiniteMagnitude]))
+    XCTAssertTrue(extremeStatistics.average.isFinite)
+    XCTAssertEqual(extremeStatistics.average, 0, accuracy: 0.000_001)
+    XCTAssertEqual(extremeStatistics.relativePosition ?? .nan, 1, accuracy: 0.000_001)
   }
 
   func testAmbientLuxCalibrationIsExplicitAndValidated() throws {
@@ -249,6 +254,11 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertThrowsError(try JSONDecoder().decode(AmbientLuxCalibration.self, from: invalid))
     XCTAssertNil(AmbientLuxCalibration(rawReference: 0, luxReference: 100))
     XCTAssertNil(AmbientLuxCalibration(rawReference: 25, luxReference: -1))
+    XCTAssertNil(
+      AmbientLuxCalibration(
+        rawReference: .leastNonzeroMagnitude,
+        luxReference: .greatestFiniteMagnitude
+      ))
   }
 
   func testAmbientCalibrationFileRoundTripsAndBoundsInput() throws {
@@ -301,6 +311,11 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertEqual(opening.delta, 20)
     XCTAssertEqual(closing.delta, -20)
     XCTAssertNil(RelativeAngleMeasurement(current: .nan, reference: 90))
+    XCTAssertNil(
+      RelativeAngleMeasurement(
+        current: .greatestFiniteMagnitude,
+        reference: -.greatestFiniteMagnitude
+      ))
   }
 
   func testCPUUsageCalculatorUsesTickDeltas() throws {

@@ -11,8 +11,12 @@ public struct SensorSeriesStatistics: Equatable, Sendable {
 
   /// Latest value mapped into the observed range. Nil until the range is non-zero.
   public var relativePosition: Double? {
-    guard range > 0 else { return nil }
-    return min(max((latest - minimum) / range, 0), 1)
+    guard maximum > minimum else { return nil }
+    let magnitude = max(abs(minimum), abs(maximum), 1)
+    let normalizedRange = maximum / magnitude - minimum / magnitude
+    let position = (latest / magnitude - minimum / magnitude) / normalizedRange
+    guard position.isFinite else { return nil }
+    return min(max(position, 0), 1)
   }
 
   public init?(values: [Double]) {
@@ -22,11 +26,19 @@ public struct SensorSeriesStatistics: Equatable, Sendable {
       let maximum = finiteValues.max()
     else { return nil }
 
+    let magnitude = finiteValues.reduce(0) { max($0, abs($1)) }
+    let normalizedAverage =
+      magnitude == 0
+      ? 0
+      : finiteValues.reduce(0) { $0 + $1 / magnitude } / Double(finiteValues.count)
+    let average = normalizedAverage * magnitude
+    guard average.isFinite else { return nil }
+
     self.sampleCount = finiteValues.count
     self.latest = latest
     self.minimum = minimum
     self.maximum = maximum
-    self.average = finiteValues.reduce(0, +) / Double(finiteValues.count)
+    self.average = average
   }
 }
 
@@ -42,8 +54,10 @@ public struct AmbientLuxCalibration: Codable, Equatable, Sendable {
   public var scale: Double { luxReference / rawReference }
 
   public init?(rawReference: Double, luxReference: Double, capturedAt: Date = .now) {
+    let scale = luxReference / rawReference
     guard rawReference.isFinite, rawReference > 0,
       luxReference.isFinite, luxReference > 0,
+      scale.isFinite, scale > 0,
       capturedAt.timeIntervalSinceReferenceDate.isFinite
     else { return nil }
     self.rawReference = rawReference
@@ -111,9 +125,10 @@ public struct RelativeAngleMeasurement: Equatable, Sendable {
   public let delta: Double
 
   public init?(current: Double, reference: Double) {
-    guard current.isFinite, reference.isFinite else { return nil }
+    let delta = current - reference
+    guard current.isFinite, reference.isFinite, delta.isFinite else { return nil }
     self.current = current
     self.reference = reference
-    self.delta = current - reference
+    self.delta = delta
   }
 }
