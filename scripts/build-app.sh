@@ -37,8 +37,21 @@ if [[ "$configuration" == "release" ]] \
     echo "release build contains an absolute user path" >&2
     exit 1
 fi
-/usr/bin/codesign --force --sign - --timestamp=none "$app_path"
+codesign_options=(--force --sign - --timestamp=none)
+if [[ "$configuration" == "release" ]]; then
+    codesign_options+=(--options runtime)
+fi
+/usr/bin/codesign "${codesign_options[@]}" "$app_path"
 /usr/bin/plutil -lint "$contents_path/Info.plist"
 /usr/bin/codesign --verify --deep --strict "$app_path"
+if [[ "$configuration" == "release" ]]; then
+    if /usr/bin/codesign --display --verbose=4 "$app_path" 2>&1 \
+        | /usr/bin/grep -E 'flags=.*runtime' >/dev/null; then
+        :
+    else
+        echo "release app signature is missing Hardened Runtime" >&2
+        exit 1
+    fi
+fi
 
 print -r -- "$app_path"
