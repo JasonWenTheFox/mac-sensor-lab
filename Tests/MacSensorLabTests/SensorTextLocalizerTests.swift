@@ -200,4 +200,41 @@ final class SensorTextLocalizerTests: XCTestCase {
     XCTAssertEqual(system.summary, "Apple Silicon (demo) • 32 GB memory")
     XCTAssertEqual(motion.channels.first?.label, "Acceleration X")
   }
+
+  func testOverviewHealthStateSeparatesLoadingFromReviewableIssues() {
+    func snapshot(_ id: String, _ status: SensorStatus) -> SensorSnapshot {
+      SensorSnapshot(
+        id: id,
+        name: "Fixture",
+        category: .diagnostics,
+        summary: "Fixture",
+        status: status,
+        source: "Fixture",
+        capability: .publicAPI,
+        channels: status == .available
+          ? [SensorChannel(id: "value", label: "Value", formattedValue: "1")]
+          : []
+      )
+    }
+
+    let loading = ProviderHealthSummaryState(snapshots: [snapshot("loading", .loading)])
+    XCTAssertEqual(loading.metrics.map(\.status.rawValue), ["loading"])
+    XCTAssertFalse(loading.hasReviewableIssues)
+
+    let mixed = ProviderHealthSummaryState(
+      snapshots: [
+        snapshot("available", .available),
+        snapshot("limited", .degraded),
+        snapshot("permission", .permissionRequired),
+        snapshot("unavailable", .unavailable),
+        snapshot("error", .error),
+      ]
+    )
+    XCTAssertEqual(
+      mixed.metrics.map(\.status.rawValue),
+      ["available", "degraded", "permissionRequired", "unavailable", "error"]
+    )
+    XCTAssertEqual(mixed.metrics.map(\.count), [1, 1, 1, 1, 1])
+    XCTAssertTrue(mixed.hasReviewableIssues)
+  }
 }

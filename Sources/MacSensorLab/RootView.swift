@@ -30,7 +30,8 @@ struct RootView: View {
             OverviewView(
               snapshots: model.snapshots,
               history: model.history,
-              isDemoMode: model.isDemoMode
+              isDemoMode: model.isDemoMode,
+              onReviewIssues: { model.selection = .rawSensors }
             )
           case .rawSensors:
             RawSensorsView(snapshots: model.snapshots)
@@ -128,6 +129,7 @@ private struct OverviewView: View {
   let snapshots: [SensorSnapshot]
   let history: [String: [SensorHistoryPoint]]
   let isDemoMode: Bool
+  let onReviewIssues: () -> Void
   private let columns = [GridItem(.adaptive(minimum: 300), spacing: 16)]
 
   var body: some View {
@@ -147,6 +149,9 @@ private struct OverviewView: View {
       .frame(maxWidth: .infinity, alignment: .leading)
       .padding(.bottom, 12)
 
+      ProviderHealthSummary(snapshots: snapshots, onReviewIssues: onReviewIssues)
+        .padding(.bottom, 16)
+
       LazyVGrid(columns: columns, spacing: 16) {
         ForEach(snapshots) { snapshot in
           SensorCard(snapshot: snapshot, history: history)
@@ -155,6 +160,99 @@ private struct OverviewView: View {
     }
     .padding(24)
     .navigationTitle(L10n.text("Overview"))
+  }
+}
+
+struct ProviderHealthSummaryState {
+  struct Metric: Identifiable {
+    let status: SensorStatus
+    let count: Int
+
+    var id: String { status.rawValue }
+  }
+
+  let metrics: [Metric]
+  let hasReviewableIssues: Bool
+
+  init(snapshots: [SensorSnapshot]) {
+    let counts = SensorStatusCounts(snapshots: snapshots)
+    metrics = [
+      Metric(status: .available, count: counts.available),
+      Metric(status: .loading, count: counts.loading),
+      Metric(status: .degraded, count: counts.degraded),
+      Metric(status: .permissionRequired, count: counts.permissionRequired),
+      Metric(status: .unavailable, count: counts.unavailable),
+      Metric(status: .error, count: counts.error),
+    ].filter { $0.count > 0 }
+    hasReviewableIssues =
+      counts.degraded + counts.permissionRequired + counts.unavailable + counts.error > 0
+  }
+}
+
+private struct ProviderHealthSummary: View {
+  let snapshots: [SensorSnapshot]
+  let onReviewIssues: () -> Void
+
+  private var state: ProviderHealthSummaryState {
+    ProviderHealthSummaryState(snapshots: snapshots)
+  }
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      HStack {
+        Label(L10n.text("Provider health"), systemImage: "heart.text.square")
+          .font(.headline)
+        Spacer()
+        if state.hasReviewableIssues {
+          Button(L10n.text("Review Raw Sensors"), action: onReviewIssues)
+            .buttonStyle(.link)
+        }
+      }
+      ViewThatFits(in: .horizontal) {
+        HStack(spacing: 10) {
+          ForEach(state.metrics) { metric in
+            ProviderHealthMetric(status: metric.status, count: metric.count)
+          }
+        }
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 10)], spacing: 10) {
+          ForEach(state.metrics) { metric in
+            ProviderHealthMetric(status: metric.status, count: metric.count)
+          }
+        }
+      }
+    }
+    .padding(14)
+    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+    .overlay {
+      RoundedRectangle(cornerRadius: 14, style: .continuous)
+        .stroke(.quaternary, lineWidth: 1)
+    }
+  }
+}
+
+private struct ProviderHealthMetric: View {
+  let status: SensorStatus
+  let count: Int
+
+  var body: some View {
+    HStack(spacing: 8) {
+      Circle()
+        .fill(sensorStatusColor(status))
+        .frame(width: 8, height: 8)
+      VStack(alignment: .leading, spacing: 1) {
+        Text("\(count)")
+          .font(.headline.monospacedDigit())
+        Text(L10n.text(status.displayName))
+          .font(.caption)
+          .foregroundStyle(.secondary)
+          .lineLimit(1)
+      }
+    }
+    .frame(minWidth: 94, maxWidth: .infinity, alignment: .leading)
+    .padding(.horizontal, 10)
+    .padding(.vertical, 8)
+    .background(sensorStatusColor(status).opacity(0.08), in: RoundedRectangle(cornerRadius: 9))
+    .accessibilityElement(children: .combine)
   }
 }
 
@@ -281,14 +379,7 @@ private struct StatusPill: View {
   let status: SensorStatus
 
   private var color: Color {
-    switch status {
-    case .available: .green
-    case .loading: .blue
-    case .degraded: .orange
-    case .permissionRequired: .yellow
-    case .unavailable: .gray
-    case .error: .red
-    }
+    sensorStatusColor(status)
   }
 
   var body: some View {
@@ -300,6 +391,17 @@ private struct StatusPill: View {
     .padding(.horizontal, 9)
     .padding(.vertical, 5)
     .background(color.opacity(0.12), in: Capsule())
+  }
+}
+
+private func sensorStatusColor(_ status: SensorStatus) -> Color {
+  switch status {
+  case .available: .green
+  case .loading: .blue
+  case .degraded: .orange
+  case .permissionRequired: .yellow
+  case .unavailable: .gray
+  case .error: .red
   }
 }
 

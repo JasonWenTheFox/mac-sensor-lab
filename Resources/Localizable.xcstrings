@@ -456,6 +456,11 @@
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "恢复自动采样" } }
       }
     },
+    "Review Raw Sensors" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "查看原始传感器" } }
+      }
+    },
     "RMS variation" : {
       "localizations" : {
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "RMS 变化" } }

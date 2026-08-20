@@ -124,6 +124,7 @@ Dashboard 还会在每个 Provider 结果进入 UI、历史或记录前执行同
 - Motion Trend 对低速加速度模长历史计算 RMS 变化量和峰峰值，并明确说明 1–10 秒 Dashboard 采样不能测量振动频率。
 - App 不会自动开始记录，不会上传数据，也不会把用户选择的记录文件加入仓库。
 - Dashboard 使用单一原生窗口，避免多个窗口为同一硬件启动互相争用的采样循环；关闭窗口时会安全结束仍在进行的连续记录。
+- Overview 在卡片前汇总加载中、可用、受限、权限不足、不可用和错误数量；存在异常状态时可直接进入 Raw Sensors 查看 Provider 原因。
 - Overview 卡片显示 Snapshot 原始时间戳的动态相对时间；SPU 短暂缺报时保留的降级样本不会看起来像刚刚采集的新值。
 - Raw Sensors 支持按 Provider、通道、来源、状态或稳定 ID 做本地即时搜索，也可匹配当前界面语言中的已本地化名称；通道命中时只收窄显示，不改变底层采样或导出内容。
 - Raw Sensors 的每个 Provider 页脚显示该 Snapshot 的实际时间戳；最近样本降级不会伪装成新的更新时间。
@@ -159,7 +160,7 @@ Dashboard 还会在每个 Provider 结果进入 UI、历史或记录前执行同
 - [x] 添加 macOS 26 / Xcode 26 CI 和 Pull Request 安全检查模板。
 - [x] 建立私有 GitHub 仓库并通过首轮 CI。
 - [x] 用户接受 Xcode 许可。
-- [x] 完成 Xcode 首次组件初始化并在本机通过 62 项 XCTest。
+- [x] 完成 Xcode 首次组件初始化并在本机通过 63 项 XCTest。
 - [x] 加入可调采样、暂停/恢复、历史清空和 50 MB 上限的连续 CSV 记录。
 - [x] 加入环境光滚动统计、可选 Estimated lux 和上盖相对角度实验。
 - [x] 加入严格校验且不含设备标识的 1–8 点光照拟合、RMSE、撤销，以及兼容旧单点格式的 JSON 导入/导出。
@@ -182,6 +183,7 @@ Dashboard 还会在每个 Provider 结果进入 UI、历史或记录前执行同
 - [x] 将 SMC 温度白名单按 M1–M5 代际分层，并用不含真实读数的各代 fixture 验证选表、通用键与未知代际降级。
 - [x] 完成 OpenMultitouchSupport 4.0.0 静态准入审计；因现成二进制读取/日志输出设备标识、依赖私有框架、要求关闭 Sandbox 且发布边界未完成，当前明确不接入。
 - [x] 建立英文/简体中文 String Catalog、中央本地化入口、键覆盖测试和 App Bundle `.lproj` 校验。
+- [x] 在 Overview 加入 Provider 健康汇总和异常状态的 Raw Sensors 快速入口。
 - [ ] 用户确认正式名称后公开 GitHub 仓库。
 
 ## 重要边界

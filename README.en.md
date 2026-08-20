@@ -78,6 +78,8 @@ raw sensor payloads do not change with the selected language.
   256 cross-batch provider markers, final file-end recounting, and a 50 MB hard limit.
 - Search Raw Sensors by provider, channel, source, status, stable ID, or translated display name
   without mutating sampling, history, or export data.
+- Scan provider health on Overview with distinct loading, available, limited, permission-required,
+  unavailable, and error counts, then jump directly to Raw Sensors when review is needed.
 - Overview cards show each snapshot's original timestamp as a live relative age, so a retained
   degraded SPU sample cannot look newly collected.
 - Use rolling raw ambient-light statistics. A lux value appears only after an explicit external
@@ -155,7 +157,7 @@ rejects tracked build output, absolute user paths, common secret signatures, pro
 keys that this release does not implement, forbidden mutation/privilege APIs, missing release
 documents, or a privacy manifest inconsistent with the current offline behavior.
 
-GitHub Actions repeats formatting, audit, build, 62 XCTest cases, portable self-test, and app-bundle
+GitHub Actions repeats formatting, audit, build, 63 XCTest cases, portable self-test, and app-bundle
 assembly on `macos-26`.
 
 ## Repository layout

@@ -578,6 +578,8 @@
 	<string>分辨率为当前逻辑模式；有意省略持久显示器标识符。</string>
 	<key>Resume Automatic Sampling</key>
 	<string>恢复自动采样</string>
+	<key>Review Raw Sensors</key>
+	<string>查看原始传感器</string>
 	<key>Roll %@°</key>
 	<string>横滚 %@°</string>
 	<key>SMC Sensors</key>
