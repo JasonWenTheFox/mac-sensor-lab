@@ -1146,6 +1146,48 @@ final class SensorCoreTests: XCTestCase {
       })
   }
 
+  func testContractAuditDoesNotEchoOrDeduplicateOversizedStrings() {
+    let tailMarker = "PRIVATE_TAIL_MARKER"
+    let oversizedIdentifier = String(repeating: "a", count: 1_000_000) + tailMarker
+    let oversizedText = String(repeating: " ", count: 1_000_000) + tailMarker
+    let malformed = SensorSnapshot(
+      id: oversizedIdentifier,
+      name: oversizedText,
+      category: .diagnostics,
+      summary: "Fixture",
+      status: .available,
+      source: "Fixture",
+      capability: .publicAPI,
+      channels: [
+        SensorChannel(
+          id: oversizedIdentifier,
+          label: oversizedText,
+          value: 1,
+          formattedValue: oversizedText,
+          unit: oversizedText,
+          note: oversizedText
+        )
+      ],
+      notes: [oversizedText, oversizedText]
+    )
+
+    let issues = SensorContractAudit.issues(
+      providers: [],
+      snapshots: [malformed]
+    )
+    let codes = Set(issues.map(\.code))
+    XCTAssertTrue(codes.contains(.invalidStableIdentifier))
+    XCTAssertTrue(codes.contains(.oversizedText))
+    XCTAssertFalse(codes.contains(.duplicateProviderIdentifier))
+    XCTAssertFalse(codes.contains(.duplicateChannelIdentifier))
+    XCTAssertFalse(codes.contains(.duplicateNote))
+    XCTAssertFalse(codes.contains(.unexpectedProviderIdentifier))
+
+    let issueText = issues.map(\.description).joined(separator: "\n")
+    XCTAssertFalse(issueText.contains(tailMarker))
+    XCTAssertLessThan(issueText.utf8.count, 16_384)
+  }
+
   func testSPUVectorReportDecoding() {
     var report = [UInt8](repeating: 0, count: 22)
     writeLittleEndian(UInt32(bitPattern: 65_536), to: &report, at: 6)

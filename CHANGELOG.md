@@ -46,6 +46,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - Settings no longer claims that existing automatically sampled read-only HID providers are opt-in.
 - The former Vibration Recorder placeholder no longer implies that 1–10 second dashboard samples can measure vibration frequency.
 - Sampling health now caps both per-cycle scanning and cross-cycle provider state at the 256-provider contract limit, preventing changing malformed IDs from growing memory indefinitely.
+- Contract auditing now prefix-bounds UTF-8 validation and excludes oversized IDs/text from hashing, lowercasing, metadata comparison, and issue messages.
 - Corrupt or extreme counters can no longer overflow CPU totals, network/disk/GPU aggregation, memory page conversion, fan-count conversion, sampling duration, or byte-rate formatting.
 - Continuous CSV recording now preflights the complete batch size and then encodes/writes one row at a time instead of retaining a second full-batch copy in memory.
 - Duplicate provider IDs no longer trap while constructing read or dashboard ordering; they remain visible to the contract audit.

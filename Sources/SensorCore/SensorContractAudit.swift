@@ -37,12 +37,14 @@ public enum SensorContractAudit {
       auditRequiredText(snapshot.name, at: "\(providerPath).name", into: &issues)
       auditRequiredText(snapshot.summary, at: "\(providerPath).summary", into: &issues)
       auditRequiredText(snapshot.source, at: "\(providerPath).source", into: &issues)
-      if !seenProviderIDs.insert(snapshot.id).inserted {
+      if let providerID = boundedIdentifier(snapshot.id),
+        !seenProviderIDs.insert(providerID).inserted
+      {
         issues.append(
           SensorContractIssue(
             code: .duplicateProviderIdentifier,
             path: "\(providerPath).id",
-            message: "Provider ID '\(snapshot.id)' appears more than once."
+            message: "Provider ID '\(providerID)' appears more than once."
           ))
       }
 
@@ -83,8 +85,8 @@ public enum SensorContractAudit {
       var seenNotes: Set<String> = []
       for (noteIndex, note) in snapshot.notes.prefix(maximumNotesPerProvider).enumerated() {
         let notePath = "\(providerPath).notes[\(noteIndex)]"
-        auditRequiredText(note, at: notePath, into: &issues)
-        if !seenNotes.insert(note).inserted {
+        let isBounded = auditRequiredText(note, at: notePath, into: &issues)
+        if isBounded, !seenNotes.insert(note).inserted {
           issues.append(
             SensorContractIssue(
               code: .duplicateNote,
@@ -120,12 +122,14 @@ public enum SensorContractAudit {
         if let note = channel.note {
           auditRequiredText(note, at: "\(channelPath).note", into: &issues)
         }
-        if !seenChannelIDs.insert(channel.id).inserted {
+        if let channelID = boundedIdentifier(channel.id),
+          !seenChannelIDs.insert(channelID).inserted
+        {
           issues.append(
             SensorContractIssue(
               code: .duplicateChannelIdentifier,
               path: "\(channelPath).id",
-              message: "Channel ID '\(channel.id)' is duplicated within provider '\(snapshot.id)'."
+              message: "Channel ID '\(channelID)' is duplicated within a provider."
             ))
         }
         if let value = channel.value, !value.isFinite {
@@ -136,14 +140,10 @@ public enum SensorContractAudit {
               message: "Channel numeric value must be finite."
             ))
         }
-        if channel.formattedValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-          issues.append(
-            SensorContractIssue(
-              code: .emptyFormattedValue,
-              path: "\(channelPath).formattedValue",
-              message: "Channel formatted value must not be blank."
-            ))
-        } else if channel.formattedValue.utf8.count > maximumDisplayTextByteCount {
+        if exceedsUTF8ByteLimit(
+          channel.formattedValue,
+          limit: maximumDisplayTextByteCount
+        ) {
           issues.append(
             SensorContractIssue(
               code: .oversizedText,
@@ -151,23 +151,30 @@ public enum SensorContractAudit {
               message:
                 "Formatted values must not exceed \(maximumDisplayTextByteCount) UTF-8 bytes."
             ))
+        } else if channel.formattedValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+          issues.append(
+            SensorContractIssue(
+              code: .emptyFormattedValue,
+              path: "\(channelPath).formattedValue",
+              message: "Channel formatted value must not be blank."
+            ))
         }
-        if let unit = channel.unit,
-          unit.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        {
-          issues.append(
-            SensorContractIssue(
-              code: .emptyUnit,
-              path: "\(channelPath).unit",
-              message: "A present channel unit must not be blank."
-            ))
-        } else if let unit = channel.unit, unit.utf8.count > maximumUnitByteCount {
-          issues.append(
-            SensorContractIssue(
-              code: .oversizedText,
-              path: "\(channelPath).unit",
-              message: "Units must not exceed \(maximumUnitByteCount) UTF-8 bytes."
-            ))
+        if let unit = channel.unit {
+          if exceedsUTF8ByteLimit(unit, limit: maximumUnitByteCount) {
+            issues.append(
+              SensorContractIssue(
+                code: .oversizedText,
+                path: "\(channelPath).unit",
+                message: "Units must not exceed \(maximumUnitByteCount) UTF-8 bytes."
+              ))
+          } else if unit.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            issues.append(
+              SensorContractIssue(
+                code: .emptyUnit,
+                path: "\(channelPath).unit",
+                message: "A present channel unit must not be blank."
+              ))
+          }
         }
       }
     }
@@ -207,15 +214,16 @@ public enum SensorContractAudit {
         at: "providers[\(providerIndex)].metadata.source",
         into: &issues
       )
-      if metadataByID[metadata.id] != nil {
+      guard let metadataID = boundedIdentifier(metadata.id) else { continue }
+      if metadataByID[metadataID] != nil {
         issues.append(
           SensorContractIssue(
             code: .duplicateProviderIdentifier,
             path: path,
-            message: "Provider ID '\(metadata.id)' is registered more than once."
+            message: "Provider ID '\(metadataID)' is registered more than once."
           ))
       } else {
-        metadataByID[metadata.id] = metadata
+        metadataByID[metadataID] = metadata
       }
     }
 
@@ -226,7 +234,9 @@ public enum SensorContractAudit {
     )
 
     let expectedIDs = Set(metadataByID.keys)
-    let actualIDs = Set(snapshots.map(\.id))
+    let actualIDs = Set(
+      snapshots.prefix(maximumProviderCount).compactMap { boundedIdentifier($0.id) }
+    )
     for id in expectedIDs.subtracting(actualIDs).sorted() {
       issues.append(
         SensorContractIssue(
@@ -245,15 +255,21 @@ public enum SensorContractAudit {
     }
 
     for (snapshotIndex, snapshot) in snapshots.prefix(maximumProviderCount).enumerated() {
-      guard let metadata = metadataByID[snapshot.id] else { continue }
+      guard let snapshotID = boundedIdentifier(snapshot.id),
+        let metadata = metadataByID[snapshotID]
+      else { continue }
       let path = "snapshots[\(snapshotIndex)]"
-      if snapshot.name != metadata.name {
+      if isBoundedDisplayText(snapshot.name), isBoundedDisplayText(metadata.name),
+        snapshot.name != metadata.name
+      {
         issues.append(metadataMismatch(at: "\(path).name", field: "name"))
       }
       if snapshot.category != metadata.category {
         issues.append(metadataMismatch(at: "\(path).category", field: "category"))
       }
-      if snapshot.source != metadata.source {
+      if isBoundedDisplayText(snapshot.source), isBoundedDisplayText(metadata.source),
+        snapshot.source != metadata.source
+      {
         issues.append(metadataMismatch(at: "\(path).source", field: "source"))
       }
       if snapshot.capability != metadata.capability {
@@ -283,6 +299,7 @@ public enum SensorContractAudit {
             "Stable IDs must be 1...\(maximumIdentifierByteCount) bytes, use lowercase ASCII letters, digits, dots, or underscores, and begin and end with a letter or digit."
         ))
     }
+    guard boundedIdentifier(identifier) != nil else { return }
     let lowercaseIdentifier = identifier.lowercased()
     if forbiddenIdentifierFragments.contains(where: lowercaseIdentifier.contains) {
       issues.append(
@@ -295,7 +312,7 @@ public enum SensorContractAudit {
   }
 
   private static func isStableIdentifier(_ identifier: String) -> Bool {
-    guard !identifier.isEmpty, identifier.utf8.count <= maximumIdentifierByteCount else {
+    guard !identifier.isEmpty, boundedIdentifier(identifier) != nil else {
       return false
     }
     guard let first = identifier.unicodeScalars.first,
@@ -309,11 +326,21 @@ public enum SensorContractAudit {
     }
   }
 
+  @discardableResult
   private static func auditRequiredText(
     _ value: String,
     at path: String,
     into issues: inout [SensorContractIssue]
-  ) {
+  ) -> Bool {
+    if !isBoundedDisplayText(value) {
+      issues.append(
+        SensorContractIssue(
+          code: .oversizedText,
+          path: path,
+          message: "Display text must not exceed \(maximumDisplayTextByteCount) UTF-8 bytes."
+        ))
+      return false
+    }
     if value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
       issues.append(
         SensorContractIssue(
@@ -321,14 +348,20 @@ public enum SensorContractAudit {
           path: path,
           message: "Required display text must not be blank."
         ))
-    } else if value.utf8.count > maximumDisplayTextByteCount {
-      issues.append(
-        SensorContractIssue(
-          code: .oversizedText,
-          path: path,
-          message: "Display text must not exceed \(maximumDisplayTextByteCount) UTF-8 bytes."
-        ))
     }
+    return true
+  }
+
+  private static func boundedIdentifier(_ identifier: String) -> String? {
+    exceedsUTF8ByteLimit(identifier, limit: maximumIdentifierByteCount) ? nil : identifier
+  }
+
+  private static func isBoundedDisplayText(_ value: String) -> Bool {
+    !exceedsUTF8ByteLimit(value, limit: maximumDisplayTextByteCount)
+  }
+
+  private static func exceedsUTF8ByteLimit(_ value: String, limit: Int) -> Bool {
+    value.utf8.prefix(limit + 1).count > limit
   }
 
   private static func isASCIIAlphanumeric(_ scalar: Unicode.Scalar) -> Bool {
