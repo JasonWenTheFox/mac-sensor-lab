@@ -6,6 +6,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ### Added
 
+- A single offline `verify-local.sh` entry point for formatting, localization, release-boundary checks, builds, XCTest, portable self-test, Release bundle verification, and opt-in hardware/sanitizer/SPU stability checks without consuming GitHub Actions minutes.
 - Component Thermals and System Power Trend experiments that reuse the fixed read-only SMC allowlist for bounded CPU/GPU comparisons and recent power averages/peaks, with internal-versus-ambient/wall-power caveats.
 - Network Throughput and Disk Activity experiments with bounded, dual-series receive/send and read/write history, recent averages, and explicit aggregate-identity caveats.
 - A Thermal Trend experiment that retains the public pressure-state order, recent peak, and transition count without presenting the 0–3 ordinal as temperature or a linear physical scale.

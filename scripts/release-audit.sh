@@ -62,4 +62,7 @@ for required in \
   [[ -s "$required" ]] || fail "required release file is missing or empty: $required"
 done
 
+[[ -x scripts/verify-local.sh ]] \
+  || fail "scripts/verify-local.sh must exist and remain executable"
+
 echo "PASS: tracked-file, permission, mutation, license, and privacy release checks succeeded"

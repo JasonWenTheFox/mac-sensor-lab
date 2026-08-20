@@ -83,6 +83,8 @@ DEVELOPER_DIR=/Library/Developer/CommandLineTools swift run sensorlab-probe -- -
 ./scripts/build-app.sh
 ./scripts/build-app.sh release
 ./scripts/release-audit.sh
+./scripts/verify-local.sh
+./scripts/verify-local.sh --all
 open "outputs/Mac Sensor Lab.app"
 open "outputs/Mac Sensor Lab.app" --args --demo
 ```
@@ -99,6 +101,8 @@ swift test
 `scripts/build-app.sh` 会在 Xcode 尚不可用时自动回退到 Command Line Tools，生成并临时签名本地 Debug `.app`；传入 `release` 会从优化后的 Release 可执行文件组装 App，并对本地 ad-hoc 签名启用、验证 Hardened Runtime。打包时会校验 String Catalog 与生成的简体中文 `.lproj` 一致，并拒绝在 Release 可执行文件中留下开发机的绝对用户目录构建路径。两种模式都不会修改全局开发者目录，CI 使用 Release 模式复验。
 
 `scripts/release-audit.sh` 只检查本仓库的已跟踪文件和发布资源：阻止构建产物、绝对用户路径、密钥特征、未实现的受保护权限、危险写入 API、失配的本地化产物或与当前离线行为不一致的 Privacy Manifest 进入发布分支。
+
+`scripts/verify-local.sh` 会在本机统一执行格式、本地化、发布审计、Debug 构建、75 项 XCTest、portable 自检和 Release App/Hardened Runtime 验证，全程不连接 GitHub。`--hardware` 追加只输出计数的真机契约自检，`--sanitizers` 追加 ASan/TSan，`--spu-stability` 追加有界只读 SPU 稳定性检查；`--all` 启用全部可选检查。
 
 原生 UI 当前支持英文和简体中文，跟随 macOS 的 App 语言设置。Provider 名称、动态摘要、通道标签、枚举值、单位和项目自有说明均在白名单展示层中本地化；Provider/Channel 稳定 ID、JSON/CSV 字段与原始传感器数据不会随语言变化。
 

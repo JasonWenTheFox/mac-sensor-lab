@@ -5,7 +5,7 @@
 ## 开发流程
 
 1. 使用 macOS 14 或更高版本和已完成首次设置的 Xcode；
-2. 运行 `swift build`、`swift test` 和 `swift run sensorlab-selftest`；修改 SPU 读取时再运行 `swift run sensorlab-selftest --spu-stability`；
+2. 提交前运行不联网的 `./scripts/verify-local.sh`；需要真机、清洗器或 SPU 稳定性覆盖时分别添加 `--hardware`、`--sanitizers`、`--spu-stability`，或使用 `--all`；
 3. 新传感器实现为独立 `SensorProvider`，使用稳定且不含机器标识的 Provider/Channel ID；
 4. 明确来源、单位、原始或派生类别、权限和失败状态；
 5. 为二进制解码、换算和导出补充纯 fixture 测试；

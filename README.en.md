@@ -156,6 +156,8 @@ swift run sensorlab-probe -- --diagnostics
 ./scripts/build-app.sh
 ./scripts/build-app.sh release
 ./scripts/release-audit.sh
+./scripts/verify-local.sh
+./scripts/verify-local.sh --all
 open "outputs/Mac Sensor Lab.app"
 ```
 
@@ -168,7 +170,12 @@ rejects tracked build output, absolute user paths, common secret signatures, pro
 keys that this release does not implement, forbidden mutation/privilege APIs, missing release
 documents, or a privacy manifest inconsistent with the current offline behavior.
 
-GitHub Actions repeats formatting, audit, build, 63 XCTest cases, portable self-test, and app-bundle
+`scripts/verify-local.sh` runs formatting, localization, release audit, Debug build, all 75 XCTest
+cases, portable self-test, and optimized App/Hardened Runtime verification without contacting
+GitHub. Add `--hardware`, `--sanitizers`, or `--spu-stability` for the corresponding opt-in local
+checks, or use `--all` for all three.
+
+GitHub Actions repeats formatting, audit, build, 75 XCTest cases, portable self-test, and app-bundle
 assembly on `macos-26`.
 
 ## Repository layout
