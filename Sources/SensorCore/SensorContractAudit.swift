@@ -20,7 +20,10 @@ public enum SensorContractAudit {
   ) -> [SensorContractIssue] {
     var issues: [SensorContractIssue] = []
     var seenProviderIDs: Set<String> = []
-    let latestAllowedTimestamp = now.addingTimeInterval(max(0, futureTolerance))
+    let latestAllowedTimestamp = latestAllowedTimestamp(
+      now: now,
+      futureTolerance: futureTolerance
+    )
 
     if snapshots.count > maximumProviderCount {
       issues.append(
@@ -362,6 +365,17 @@ public enum SensorContractAudit {
 
   private static func exceedsUTF8ByteLimit(_ value: String, limit: Int) -> Bool {
     value.utf8.prefix(limit + 1).count > limit
+  }
+
+  private static func latestAllowedTimestamp(
+    now: Date,
+    futureTolerance: TimeInterval
+  ) -> Date {
+    let referenceNow = now.timeIntervalSinceReferenceDate.isFinite ? now : .now
+    let tolerance = futureTolerance.isFinite ? max(0, futureTolerance) : 0
+    let latestReferenceTime = referenceNow.timeIntervalSinceReferenceDate + tolerance
+    guard latestReferenceTime.isFinite else { return referenceNow }
+    return Date(timeIntervalSinceReferenceDate: latestReferenceTime)
   }
 
   private static func isASCIIAlphanumeric(_ scalar: Unicode.Scalar) -> Bool {

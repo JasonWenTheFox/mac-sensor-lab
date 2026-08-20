@@ -1323,6 +1323,58 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertTrue(codes.contains(.futureTimestamp))
   }
 
+  func testContractAuditRejectsNonFiniteOrOverflowingFutureTolerance() {
+    let now = Date(timeIntervalSinceReferenceDate: 1_000)
+    let future = SensorSnapshot(
+      id: "test.future",
+      name: "Fixture",
+      category: .diagnostics,
+      summary: "Fixture",
+      status: .unavailable,
+      source: "Fixture",
+      capability: .publicAPI,
+      timestamp: now.addingTimeInterval(1)
+    )
+
+    XCTAssertFalse(
+      SensorContractAudit.issues(for: [future], now: now, futureTolerance: 2).contains {
+        $0.code == .futureTimestamp
+      }
+    )
+    for invalidTolerance in [Double.nan, .infinity, -1] {
+      XCTAssertTrue(
+        SensorContractAudit.issues(
+          for: [future],
+          now: now,
+          futureTolerance: invalidTolerance
+        ).contains { $0.code == .futureTimestamp }
+      )
+    }
+
+    let largeNow = Date(
+      timeIntervalSinceReferenceDate: Double.greatestFiniteMagnitude / 2
+    )
+    let largeFuture = SensorSnapshot(
+      id: future.id,
+      name: future.name,
+      category: future.category,
+      summary: future.summary,
+      status: future.status,
+      source: future.source,
+      capability: future.capability,
+      timestamp: Date(
+        timeIntervalSinceReferenceDate: Double.greatestFiniteMagnitude * 0.75
+      )
+    )
+    XCTAssertTrue(
+      SensorContractAudit.issues(
+        for: [largeFuture],
+        now: largeNow,
+        futureTolerance: .greatestFiniteMagnitude
+      ).contains { $0.code == .futureTimestamp }
+    )
+  }
+
   func testContractAuditRejectsBlankInconsistentAndUnboundedPayloads() {
     var tooManyChannels: [SensorChannel] = []
     for index in 0...SensorContractAudit.maximumChannelsPerProvider {
