@@ -200,6 +200,9 @@ network expansion requires a new design and privacy review.
 - Acceleration and gyroscope channels remain unavailable when macOS does not publish reports; this
   build does not force the driver awake.
 - Force Touch raw pressure and microphone analysis are not implemented in the current build.
+- [OpenMultitouchSupport 4.0.0 was statically audited](references/openmultitouch-audit.md) but is not
+  integrated: its packaged code logs trackpad GUID/device identifiers, links a private framework,
+  requires App Sandbox to be disabled, and does not yet meet this project's distribution boundary.
 - Developer ID signing, hardened-runtime compatibility, notarization, and an App Sandbox policy are
   still required before distributing a downloadable binary.
 

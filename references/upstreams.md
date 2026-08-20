@@ -6,7 +6,7 @@
 |---|---|---|---|
 | [olvvier/apple-silicon-accelerometer](https://github.com/olvvier/apple-silicon-accelerometer) | `203685640287449eaecf521c24d1f5e52486ecb7` | MIT | Apple SPU HID 报告格式、IMU/ALS/开合角参考 |
 | [KrishKrosh/TrackWeight](https://github.com/KrishKrosh/TrackWeight) | `e322cae241d29afbee2860a6b585e9fe3974bd0c` | MIT | 触摸板称重工作流与稳定性参考 |
-| [Kyome22/OpenMultitouchSupport](https://github.com/Kyome22/OpenMultitouchSupport) | `15c6bb0c6a2d2858559493a28ab23f7ac58648a3` | MIT | 原始触点、压力、面积与状态 API 参考；依赖私有框架和二进制 XCFramework |
+| [Kyome22/OpenMultitouchSupport](https://github.com/Kyome22/OpenMultitouchSupport) | `15c6bb0c6a2d2858559493a28ab23f7ac58648a3` | MIT | 原始触点、压力、面积与状态 API 参考；4.0.0 静态审计因设备标识日志、私有框架、Sandbox/发布边界而拒绝直接接入 |
 | [samhenrigold/LidAngleSensor](https://github.com/samhenrigold/LidAngleSensor) | `f7e4e5cb46fe13a518091ce5d47f0ec2e3fecd80` | Apache-2.0 | 原生 Swift IOKit 开合角设备探测和 feature report 参考 |
 | [exelban/stats](https://github.com/exelban/stats) | `db5fee1eae913e24a7e0c4a0395092d867cf902d` | MIT | SMC、HID 温度、电压、电流和 IOReport 功耗参考 |
 | [pirate/mac-hardware-toys](https://github.com/pirate/mac-hardware-toys) | `5ed3c81540e214e1d1f99160d9c3c0446a7db506` | **未发现仓库级明确许可证** | 只研究产品思路；禁止复制代码或资源 |
@@ -24,6 +24,6 @@
 ## 复用决策
 
 - 允许：基于 MIT/Apache-2.0 项目移植必要的最小代码，保留版权、许可证和 NOTICE。
-- 谨慎：OpenMultitouchSupport 的预编译 XCFramework 在正式集成前需校验发布来源、checksum、Sandbox 和签名影响。
+- 拒绝直接接入：OpenMultitouchSupport 4.0.0 的发布来源与 checksum 可验证，但预编译 XCFramework 会读取/日志输出设备标识，并存在私有框架、Sandbox、部署目标和发布签名阻塞；详见 [`openmultitouch-audit.md`](openmultitouch-audit.md)。
 - 禁止：从无许可证仓库复制代码、UI 资源或文案。
 - 不做：反编译或提取 Task Manager TMOG 的实现。只把用户可见交互作为一般性竞品观察。

@@ -176,10 +176,11 @@ Dashboard 还会在每个 Provider 结果进入 UI、历史或记录前执行同
 - [x] 加入不保留读数和时间戳、最多跟踪 256 个 Provider 的采样健康统计，用于识别间歇性 Provider 状态抖动。
 - [x] 对极端 CPU/网络/磁盘/GPU/内存/SMC 数值使用检查式算术，损坏计数不会触发整数转换或溢出崩溃。
 - [x] 将 SMC 温度白名单按 M1–M5 代际分层，并用不含真实读数的各代 fixture 验证选表、通用键与未知代际降级。
+- [x] 完成 OpenMultitouchSupport 4.0.0 静态准入审计；因现成二进制读取/日志输出设备标识、依赖私有框架、要求关闭 Sandbox 且发布边界未完成，当前明确不接入。
 - [ ] 用户确认正式名称后公开 GitHub 仓库。
 
 ## 重要边界
 
 本项目不是医疗、计量、工业安全或法定测量仪器。未经外部基准校准的读数只能用于观察、比较、教育和实验。
 
-开发与发布细节见 [`docs/05-当前实现与后续路线.md`](docs/05-当前实现与后续路线.md)、[`docs/06-匿名兼容性贡献指南.md`](docs/06-匿名兼容性贡献指南.md)、[`CONTRIBUTING.md`](CONTRIBUTING.md) 和 [`SECURITY.md`](SECURITY.md)。
+开发与发布细节见 [`docs/05-当前实现与后续路线.md`](docs/05-当前实现与后续路线.md)、[`docs/06-匿名兼容性贡献指南.md`](docs/06-匿名兼容性贡献指南.md)、[`references/openmultitouch-audit.md`](references/openmultitouch-audit.md)、[`CONTRIBUTING.md`](CONTRIBUTING.md) 和 [`SECURITY.md`](SECURITY.md)。

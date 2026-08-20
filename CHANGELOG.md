@@ -6,6 +6,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ### Added
 
+- A reproducible static admission audit for OpenMultitouchSupport 4.0.0, documenting its matching checksum and architecture as well as the privacy and distribution blockers that prevent direct integration.
 - Selectable 1, 2, 5, and 10 second sampling cadence, pause/resume, and in-memory history clearing.
 - User-initiated continuous CSV recording with per-batch synchronization and a 50 MB safety limit.
 - Separate `raw_value` and `formatted_value` CSV columns.
