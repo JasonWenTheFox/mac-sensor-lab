@@ -28,7 +28,7 @@ The complete upstream license is included at `LICENSES/apple-silicon-acceleromet
 - Fixed source commit: `db5fee1eae913e24a7e0c4a0395092d867cf902d`
 - Copyright: Copyright (c) 2019 Serhiy Mytrovtsiy
 - License: MIT
-- Use: read-only AppleSMC connection, key decoding and M5 sensor-key references
+- Use: read-only AppleSMC connection, key decoding and M1–M5 sensor-key references
 
 The working implementation intentionally omits all SMC write and fan-control methods.
 The complete upstream license is included at `LICENSES/Stats-MIT.txt`.

@@ -35,6 +35,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ### Changed
 
+- SMC temperature lookup now selects fixed M1, M2, M3, M4, or M5 key catalogs, keeps generation detection out of exports, and safely falls back to generation-neutral keys.
 - CI now compiles all products in optimized Release mode and assembles/verifies the ad-hoc signed App Bundle from the Release executable.
 - Demo mode now isolates lid-angle reference preferences in addition to sampling and ambient-light calibration.
 - The dashboard now uses a single native window so multiple sampling loops cannot contend for the same hardware providers.

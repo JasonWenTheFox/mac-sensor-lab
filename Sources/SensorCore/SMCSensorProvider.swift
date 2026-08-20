@@ -25,62 +25,62 @@ public struct SMCSensorProvider: SensorProvider {
       )
     }
 
-    let cpuSensors = [
-      ("Tp00", "CPU super core 1"), ("Tp04", "CPU super core 2"),
-      ("Tp08", "CPU super core 3"), ("Tp0C", "CPU super core 4"),
-      ("Tp0G", "CPU super core 5"), ("Tp0K", "CPU super core 6"),
-      ("Tp0O", "CPU performance core 1"), ("Tp0R", "CPU performance core 2"),
-      ("Tp0U", "CPU performance core 3"), ("Tp0X", "CPU performance core 4"),
-      ("Tp0a", "CPU performance core 5"), ("Tp0d", "CPU performance core 6"),
-      ("Tp0g", "CPU performance core 7"), ("Tp0j", "CPU performance core 8"),
-      ("Tp0m", "CPU performance core 9"), ("Tp0p", "CPU performance core 10"),
-      ("Tp0u", "CPU performance core 11"), ("Tp0y", "CPU performance core 12"),
-    ]
-    let gpuSensors = [
-      ("Tg0U", "GPU 1"), ("Tg0X", "GPU 2"), ("Tg0d", "GPU 3"),
-      ("Tg0g", "GPU 4"), ("Tg0j", "GPU 5"), ("Tg1Y", "GPU 6"),
-      ("Tg1c", "GPU 7"), ("Tg1g", "GPU 8"),
-    ]
-    let auxiliarySensors = [
-      ("TaLP", "Airflow left"), ("TaRF", "Airflow right"),
-      ("TH0x", "NAND"), ("TB1T", "Battery sensor 1"),
-      ("TB2T", "Battery sensor 2"), ("TW0P", "Wi-Fi proximity"),
-      ("Tm0p", "Memory proximity 1"), ("Tm1p", "Memory proximity 2"),
-      ("Tm2p", "Memory proximity 3"),
-    ]
-    let cpuValues = validTemperatures(sensors: cpuSensors, smc: smc)
-    let gpuValues = validTemperatures(sensors: gpuSensors, smc: smc)
-    let auxiliaryValues = validTemperatures(sensors: auxiliarySensors, smc: smc)
+    return SMCSensorSnapshotBuilder(
+      metadata: metadata,
+      generation: AppleSiliconSMCGeneration.current()
+    ).snapshot(valueFor: smc.value)
+  }
+}
+
+struct SMCSensorSnapshotBuilder {
+  let metadata: SensorProviderMetadata
+  let generation: AppleSiliconSMCGeneration
+
+  func snapshot(valueFor: (String) -> Double?) -> SensorSnapshot {
+    let cpuValues = validTemperatures(
+      sensors: SMCSensorCatalog.cpuSensors(for: generation),
+      valueFor: valueFor
+    )
+    let gpuValues = validTemperatures(
+      sensors: SMCSensorCatalog.gpuSensors(for: generation),
+      valueFor: valueFor
+    )
+    let auxiliaryValues = validTemperatures(
+      sensors: SMCSensorCatalog.auxiliarySensors(for: generation),
+      valueFor: valueFor
+    )
 
     var channels: [SensorChannel] = []
     if let hotspot = cpuValues.map(\.value).max() {
       channels.append(
-        temperatureChannel(id: "cpu_hotspot", label: "CPU hotspot", value: hotspot, kind: .derived))
+        temperatureChannel(id: "cpu_hotspot", label: "CPU hotspot", value: hotspot, kind: .derived)
+      )
     }
-    if !cpuValues.isEmpty {
-      let average = cpuValues.map(\.value).reduce(0, +) / Double(cpuValues.count)
+    if let average = finiteAverage(cpuValues.map(\.value)) {
       channels.append(
-        temperatureChannel(id: "cpu_average", label: "CPU average", value: average, kind: .derived))
+        temperatureChannel(id: "cpu_average", label: "CPU average", value: average, kind: .derived)
+      )
     }
     if let hotspot = gpuValues.map(\.value).max() {
       channels.append(
-        temperatureChannel(id: "gpu_hotspot", label: "GPU hotspot", value: hotspot, kind: .derived))
+        temperatureChannel(id: "gpu_hotspot", label: "GPU hotspot", value: hotspot, kind: .derived)
+      )
     }
-    if !gpuValues.isEmpty {
-      let average = gpuValues.map(\.value).reduce(0, +) / Double(gpuValues.count)
+    if let average = finiteAverage(gpuValues.map(\.value)) {
       channels.append(
-        temperatureChannel(id: "gpu_average", label: "GPU average", value: average, kind: .derived))
+        temperatureChannel(id: "gpu_average", label: "GPU average", value: average, kind: .derived)
+      )
     }
 
     channels += cpuValues.map { rawTemperatureChannel(group: "cpu", sensor: $0) }
     channels += gpuValues.map { rawTemperatureChannel(group: "gpu", sensor: $0) }
     channels += auxiliaryValues.map { rawTemperatureChannel(group: "system", sensor: $0) }
 
-    if let fanCount = smc.value(for: "FNum").flatMap({
+    if let fanCount = valueFor("FNum").flatMap({
       SensorNumericSafety.boundedNonnegativeInteger($0, maximum: 4)
     }) {
       for index in 0..<fanCount {
-        if let rpm = smc.value(for: "F\(index)Ac"), (0...20_000).contains(rpm) {
+        if let rpm = valueFor("F\(index)Ac"), rpm.isFinite, (0...20_000).contains(rpm) {
           channels.append(
             SensorChannel(
               id: "fan_\(index)",
@@ -88,7 +88,8 @@ public struct SMCSensorProvider: SensorProvider {
               value: rpm,
               formattedValue: SensorFormatting.decimal(rpm, fractionDigits: 0),
               unit: "RPM"
-            ))
+            )
+          )
         }
       }
     }
@@ -102,7 +103,7 @@ public struct SMCSensorProvider: SensorProvider {
       ("PG0R", "gpu_power", "GPU power"),
       ("PBwo", "display_backlight_power", "Display backlight power"),
     ] {
-      if let watts = smc.value(for: item.0), (-500...1_000).contains(watts) {
+      if let watts = valueFor(item.0), watts.isFinite, (-500...1_000).contains(watts) {
         channels.append(
           SensorChannel(
             id: item.1,
@@ -111,7 +112,8 @@ public struct SMCSensorProvider: SensorProvider {
             formattedValue: SensorFormatting.decimal(watts, fractionDigits: 2),
             unit: "W",
             note: "Internal SMC telemetry; not wall-plug power."
-          ))
+          )
+        )
       }
     }
 
@@ -120,11 +122,13 @@ public struct SMCSensorProvider: SensorProvider {
         id: metadata.id,
         name: metadata.name,
         category: metadata.category,
-        summary: "SMC opened, but the current key allowlist returned no readings",
+        summary: generation == .unknown
+          ? "SMC opened, but common keys returned no readings"
+          : "SMC opened, but the \(generation.displayName) key allowlist returned no readings",
         status: .degraded,
         source: metadata.source,
         capability: metadata.capability,
-        notes: ["The M5-oriented key allowlist may need model-specific updates."]
+        notes: generationNotes
       )
     }
 
@@ -139,22 +143,45 @@ public struct SMCSensorProvider: SensorProvider {
       source: metadata.source,
       capability: metadata.capability,
       channels: channels,
-      notes: [
-        "Only a fixed M5-oriented allowlist of temperature, fan and power keys is read.",
-        "No SMC write or fan-control method exists in this target.",
-        "M5 key names are preliminary and require cross-model validation.",
-      ]
+      notes: generationNotes
     )
   }
 
+  private var generationNotes: [String] {
+    let allowlistNote =
+      generation == .unknown
+      ? "CPU generation was not recognized; only fixed generation-neutral temperature, fan and power keys were read."
+      : "Only a fixed \(generation.displayName) and generation-neutral allowlist of temperature, fan and power keys was read."
+    return [
+      allowlistNote,
+      "CPU generation selects an allowlist only; the brand string is not retained or exported.",
+      "No SMC write or fan-control method exists in this target.",
+      "Undocumented key meanings require anonymous cross-model validation.",
+    ]
+  }
+
   private func validTemperatures(
-    sensors: [(key: String, label: String)], smc: ReadOnlySMC
+    sensors: [SMCTemperatureSensorDefinition],
+    valueFor: (String) -> Double?
   ) -> [(key: String, label: String, value: Double)] {
     sensors.compactMap { sensor in
-      let key = sensor.key
-      guard let value = smc.value(for: key), (0...110).contains(value) else { return nil }
-      return (key, sensor.label, value)
+      guard let value = valueFor(sensor.key), value.isFinite, (0...110).contains(value) else {
+        return nil
+      }
+      return (sensor.key, sensor.label, value)
     }
+  }
+
+  private func finiteAverage(_ values: [Double]) -> Double? {
+    guard !values.isEmpty else { return nil }
+    var total = 0.0
+    for value in values {
+      let sum = total + value
+      guard sum.isFinite else { return nil }
+      total = sum
+    }
+    let average = total / Double(values.count)
+    return average.isFinite ? average : nil
   }
 
   private func rawTemperatureChannel(

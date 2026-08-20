@@ -43,7 +43,7 @@ The current build has 14 providers:
 | Network | aggregate active-interface bytes, packet rates, and throughput | No interface names, addresses, SSID, BSSID, or MAC address |
 | Battery | charge, source, charging state, cycles, electrical data, temperature, capacities, valid time estimates | Fixed non-identifying AppleSmartBattery key allowlist |
 | Thermal | public thermal pressure and Low Power Mode | A pressure state is not a temperature |
-| SMC | allowlisted temperatures, fan RPM, and internal power channels | Read-only client; no key writes or fan control |
+| SMC | generation-specific M1–M5 temperatures, fan RPM, and internal power channels | Fixed read-only catalogs; CPU brand is reduced to a generation and never retained/exported; no key writes or fan control |
 | Display | active display count, logical resolution, refresh rate | Public CoreGraphics data |
 | Storage | system-volume capacity and free/used space | No paths in exports |
 | Disk activity | aggregate bytes, operations, rates, and driver errors | No device name, serial, volume name, mount point, or file path |
@@ -149,7 +149,7 @@ rejects tracked build output, absolute user paths, common secret signatures, pro
 keys that this release does not implement, forbidden mutation/privilege APIs, missing release
 documents, or a privacy manifest inconsistent with the current offline behavior.
 
-GitHub Actions repeats formatting, audit, build, 50 XCTest cases, portable self-test, and app-bundle
+GitHub Actions repeats formatting, audit, build, 54 XCTest cases, portable self-test, and app-bundle
 assembly on `macos-26`.
 
 ## Repository layout

@@ -1604,6 +1604,118 @@ final class SensorCoreTests: XCTestCase {
     }
   }
 
+  func testSMCGenerationParsingUsesExactNonIdentifyingTokens() {
+    XCTAssertEqual(AppleSiliconSMCGeneration.parse(cpuBrand: "Apple M1 Pro"), .m1)
+    XCTAssertEqual(AppleSiliconSMCGeneration.parse(cpuBrand: "Apple M2 Max"), .m2)
+    XCTAssertEqual(AppleSiliconSMCGeneration.parse(cpuBrand: "Apple M3"), .m3)
+    XCTAssertEqual(AppleSiliconSMCGeneration.parse(cpuBrand: "Apple M4 Ultra"), .m4)
+    XCTAssertEqual(AppleSiliconSMCGeneration.parse(cpuBrand: "Apple M5"), .m5)
+    XCTAssertEqual(AppleSiliconSMCGeneration.parse(cpuBrand: "Apple M10"), .unknown)
+    XCTAssertEqual(AppleSiliconSMCGeneration.parse(cpuBrand: ""), .unknown)
+  }
+
+  func testSMCGenerationCatalogsBuildPortableSnapshots() {
+    let fixtures:
+      [(
+        generation: AppleSiliconSMCGeneration,
+        cpuKey: String,
+        gpuKey: String,
+        auxiliaryKey: String,
+        foreignCPUKey: String
+      )] = [
+        (.m1, "Tp09", "Tg05", "Tm02", "Tp00"),
+        (.m2, "Tp1h", "Tg0f", "TaLP", "Tp00"),
+        (.m3, "Tf04", "Tf14", "TaLP", "Tp00"),
+        (.m4, "Te09", "Tg0G", "Tm0p", "Tp00"),
+        (.m5, "Tp00", "Tg0U", "Tm0p", "Tp1h"),
+      ]
+    let metadata = SMCSensorProvider().metadata
+
+    for fixture in fixtures {
+      let values: [String: Double] = [
+        fixture.cpuKey: 40,
+        fixture.gpuKey: 45,
+        fixture.auxiliaryKey: 35,
+        fixture.foreignCPUKey: 99,
+        "FNum": 1,
+        "F0Ac": 2_000,
+        "PSTR": 24,
+      ]
+      let snapshot = SMCSensorSnapshotBuilder(
+        metadata: metadata,
+        generation: fixture.generation
+      ).snapshot { values[$0] }
+      let channelIDs = Set(snapshot.channels.map(\.id))
+
+      XCTAssertEqual(snapshot.status, .available, fixture.generation.rawValue)
+      XCTAssertTrue(channelIDs.contains("cpu_hotspot"), fixture.generation.rawValue)
+      XCTAssertTrue(channelIDs.contains("gpu_hotspot"), fixture.generation.rawValue)
+      XCTAssertTrue(
+        channelIDs.contains("temperature_cpu_\(fixture.cpuKey.lowercased())"),
+        fixture.generation.rawValue
+      )
+      XCTAssertTrue(
+        channelIDs.contains("temperature_gpu_\(fixture.gpuKey.lowercased())"),
+        fixture.generation.rawValue
+      )
+      XCTAssertTrue(
+        channelIDs.contains("temperature_system_\(fixture.auxiliaryKey.lowercased())"),
+        fixture.generation.rawValue
+      )
+      XCTAssertFalse(
+        channelIDs.contains("temperature_cpu_\(fixture.foreignCPUKey.lowercased())"),
+        fixture.generation.rawValue
+      )
+      XCTAssertTrue(channelIDs.contains("fan_0"), fixture.generation.rawValue)
+      XCTAssertTrue(channelIDs.contains("system_power"), fixture.generation.rawValue)
+      XCTAssertTrue(SensorContractAudit.issues(for: [snapshot]).isEmpty)
+    }
+  }
+
+  func testSMCCatalogKeysAreFourBytesAndUniqueWithinEachGeneration() {
+    for generation in AppleSiliconSMCGeneration.allCases where generation != .unknown {
+      let definitions =
+        SMCSensorCatalog.cpuSensors(for: generation)
+        + SMCSensorCatalog.gpuSensors(for: generation)
+        + SMCSensorCatalog.auxiliarySensors(for: generation)
+      let keys = definitions.map(\.key)
+
+      XCTAssertTrue(keys.allSatisfy { $0.utf8.count == 4 }, generation.rawValue)
+      XCTAssertEqual(keys.count, Set(keys).count, generation.rawValue)
+    }
+  }
+
+  func testSMCUnknownGenerationUsesOnlyCommonKeysAndRejectsInvalidValues() {
+    let metadata = SMCSensorProvider().metadata
+    let commonValues = ["Tp00": 90.0, "TaLP": 31.0]
+    let commonSnapshot = SMCSensorSnapshotBuilder(
+      metadata: metadata,
+      generation: .unknown
+    ).snapshot { commonValues[$0] }
+    let commonIDs = Set(commonSnapshot.channels.map(\.id))
+
+    XCTAssertEqual(commonSnapshot.status, .available)
+    XCTAssertTrue(commonIDs.contains("temperature_system_talp"))
+    XCTAssertFalse(commonIDs.contains("temperature_cpu_tp00"))
+    XCTAssertTrue(commonSnapshot.notes.joined().contains("not retained or exported"))
+
+    let invalidValues = [
+      "Tp09": Double.infinity,
+      "Tg05": 111,
+      "TaLP": -1,
+      "FNum": 5,
+      "PSTR": Double.nan,
+    ]
+    let invalidSnapshot = SMCSensorSnapshotBuilder(
+      metadata: metadata,
+      generation: .m1
+    ).snapshot { invalidValues[$0] }
+
+    XCTAssertEqual(invalidSnapshot.status, .degraded)
+    XCTAssertTrue(invalidSnapshot.channels.isEmpty)
+    XCTAssertTrue(SensorContractAudit.issues(for: [invalidSnapshot]).isEmpty)
+  }
+
   func testSPUVectorReportDecoding() {
     var report = [UInt8](repeating: 0, count: 22)
     writeLittleEndian(UInt32(bitPattern: 65_536), to: &report, at: 6)
