@@ -97,7 +97,7 @@ swift test
 
 `scripts/release-audit.sh` 只检查本仓库的已跟踪文件和发布资源：阻止构建产物、绝对用户路径、密钥特征、未实现的受保护权限、危险写入 API 或与当前离线行为不一致的 Privacy Manifest 进入发布分支。
 
-显式 `--demo` 启动参数使用 14 个内置、确定性且无机器标识的 Provider fixture。全界面会显示 Demo 横幅，并使用独立的采样/校准偏好键，适合截图、UI 回归和无对应硬件的演示；它绝不会伪装成实时读数。
+显式 `--demo` 启动参数使用 14 个内置、确定性且无机器标识的 Provider fixture。全界面会显示 Demo 横幅，并使用独立的采样、光照校准和上盖参考偏好键，适合截图、UI 回归和无对应硬件的演示；它绝不会伪装成实时读数。
 
 `sensorlab-probe` 同样支持 `--demo`；加上 `--diagnostics` 时只输出无传感器读数/自由文本的隐私安全 Provider 元数据。无参数时仍按原行为读取真实 Provider 并在本地标准输出完整快照。
 
@@ -149,7 +149,7 @@ swift test
 - [x] 添加 macOS 26 / Xcode 26 CI 和 Pull Request 安全检查模板。
 - [x] 建立私有 GitHub 仓库并通过首轮 CI。
 - [x] 用户接受 Xcode 许可。
-- [x] 完成 Xcode 首次组件初始化并在本机通过 29 项 XCTest。
+- [x] 完成 Xcode 首次组件初始化并在本机通过 30 项 XCTest。
 - [x] 加入可调采样、暂停/恢复、历史清空和 50 MB 上限的连续 CSV 记录。
 - [x] 加入环境光滚动统计、可选 Estimated lux 和上盖相对角度实验。
 - [x] 加入严格校验且不含设备标识的单点光照校准 JSON 导入/导出。
@@ -165,6 +165,7 @@ swift test
 - [x] 加入明确标识且与真实偏好隔离的确定性 Demo Provider 模式。
 - [x] 加入可复用的 Provider/Snapshot 数据契约审计，并接入本地及 CI portable 自检。
 - [x] Provider 排序对重复 ID 安全降级，不会在契约审计报告问题前触发运行时崩溃。
+- [x] Demo 模式隔离采样、光照校准和上盖角度参考偏好，不污染 live 状态。
 - [ ] 用户确认正式名称后公开 GitHub 仓库。
 
 ## 重要边界

@@ -38,6 +38,7 @@ struct RootView: View {
             ExperimentsView(
               snapshots: model.snapshots,
               history: model.history,
+              isDemoMode: model.isDemoMode,
               ambientLuxCalibration: model.ambientLuxCalibration,
               onSetAmbientCalibration: model.setAmbientLuxCalibration,
               onClearAmbientCalibration: model.clearAmbientLuxCalibration,
@@ -349,6 +350,7 @@ private func shouldDisplayUnit(_ unit: String, for channel: SensorChannel) -> Bo
 private struct ExperimentsView: View {
   let snapshots: [SensorSnapshot]
   let history: [String: [SensorHistoryPoint]]
+  let isDemoMode: Bool
   let ambientLuxCalibration: AmbientLuxCalibration?
   let onSetAmbientCalibration: (Double, Double) -> Void
   let onClearAmbientCalibration: () -> Void
@@ -465,7 +467,7 @@ private struct ExperimentsView: View {
           Text("0° — 180°").font(.caption2)
         }
         .gaugeStyle(.linearCapacity)
-        LidReferencePanel(currentAngle: value)
+        LidReferencePanel(currentAngle: value, isDemoMode: isDemoMode)
       }
 
       if channelID == "level_roll",
@@ -641,8 +643,20 @@ private struct AmbientLightInterpretationPanel: View {
 private struct LidReferencePanel: View {
   let currentAngle: Double
 
-  @AppStorage("dev.macsensorlab.lid.hasReference") private var hasReference = false
-  @AppStorage("dev.macsensorlab.lid.referenceAngle") private var referenceAngle = 0.0
+  @AppStorage private var hasReference: Bool
+  @AppStorage private var referenceAngle: Double
+
+  init(currentAngle: Double, isDemoMode: Bool) {
+    self.currentAngle = currentAngle
+    _hasReference = AppStorage(
+      wrappedValue: false,
+      SensorPreferenceKeys.lidHasReference(isDemoMode: isDemoMode)
+    )
+    _referenceAngle = AppStorage(
+      wrappedValue: 0,
+      SensorPreferenceKeys.lidReferenceAngle(isDemoMode: isDemoMode)
+    )
+  }
 
   private var measurement: RelativeAngleMeasurement? {
     guard hasReference else { return nil }

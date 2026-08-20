@@ -67,18 +67,16 @@ final class SensorDashboardModel: ObservableObject {
 
   private let providers: [any SensorProvider]
   private let maximumHistoryPoints = 600
-  private static let ambientCalibrationDefaultsKey = "dev.macsensorlab.ambientLuxCalibration"
-  private static let samplingCadenceDefaultsKey = "dev.macsensorlab.samplingCadence"
   private var recorder: SensorCSVRecorder?
 
   var isRecording: Bool { recordingFileName != nil }
 
   private var ambientCalibrationDefaultsKey: String {
-    Self.ambientCalibrationDefaultsKey + (isDemoMode ? ".demo" : "")
+    SensorPreferenceKeys.ambientLuxCalibration(isDemoMode: isDemoMode)
   }
 
   private var samplingCadenceDefaultsKey: String {
-    Self.samplingCadenceDefaultsKey + (isDemoMode ? ".demo" : "")
+    SensorPreferenceKeys.samplingCadence(isDemoMode: isDemoMode)
   }
 
   init(
@@ -89,9 +87,9 @@ final class SensorDashboardModel: ObservableObject {
     self.providers = providers
     self.snapshots = providers.map { SensorSnapshot.loading(metadata: $0.metadata) }
     self.ambientLuxCalibration = Self.loadAmbientCalibration(
-      key: Self.ambientCalibrationDefaultsKey + (isDemoMode ? ".demo" : ""))
+      key: SensorPreferenceKeys.ambientLuxCalibration(isDemoMode: isDemoMode))
     self.samplingCadence = Self.loadSamplingCadence(
-      key: Self.samplingCadenceDefaultsKey + (isDemoMode ? ".demo" : ""))
+      key: SensorPreferenceKeys.samplingCadence(isDemoMode: isDemoMode))
   }
 
   func runLiveUpdates() async {

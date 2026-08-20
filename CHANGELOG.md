@@ -29,6 +29,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ### Changed
 
+- Demo mode now isolates lid-angle reference preferences in addition to sampling and ambient-light calibration.
 - The dashboard now uses a single native window so multiple sampling loops cannot contend for the same hardware providers.
 - Closing the dashboard stops an active continuous recording cleanly.
 - The selected automatic sampling interval is remembered, while pause state intentionally resets on launch.

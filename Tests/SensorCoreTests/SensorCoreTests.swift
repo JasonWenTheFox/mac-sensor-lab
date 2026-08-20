@@ -510,6 +510,27 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertGreaterThanOrEqual(ids.count, 14)
   }
 
+  func testDemoPreferenceKeysAreIsolatedFromLiveMode() {
+    let liveKeys = Set([
+      SensorPreferenceKeys.samplingCadence(isDemoMode: false),
+      SensorPreferenceKeys.ambientLuxCalibration(isDemoMode: false),
+      SensorPreferenceKeys.lidHasReference(isDemoMode: false),
+      SensorPreferenceKeys.lidReferenceAngle(isDemoMode: false),
+    ])
+    let demoKeys = Set([
+      SensorPreferenceKeys.samplingCadence(isDemoMode: true),
+      SensorPreferenceKeys.ambientLuxCalibration(isDemoMode: true),
+      SensorPreferenceKeys.lidHasReference(isDemoMode: true),
+      SensorPreferenceKeys.lidReferenceAngle(isDemoMode: true),
+    ])
+
+    XCTAssertEqual(liveKeys.count, 4)
+    XCTAssertEqual(demoKeys.count, 4)
+    XCTAssertTrue(liveKeys.isDisjoint(with: demoKeys))
+    XCTAssertTrue(demoKeys.allSatisfy { $0.hasSuffix(".demo") })
+    XCTAssertTrue(liveKeys.allSatisfy { !$0.hasSuffix(".demo") })
+  }
+
   func testReadAllKeepsDuplicateProviderIDsVisibleForContractAudit() async {
     let provider = SensorDemoProviderRegistry.providers()[0]
     let providers: [any SensorProvider] = [provider, provider]
