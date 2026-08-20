@@ -493,6 +493,46 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertEqual(text.components(separatedBy: "\n").filter { !$0.isEmpty }.count, 2)
   }
 
+  func testPrivateFileWriterAtomicallyReplacesWithOwnerOnlyPermissions() throws {
+    func permissions(at url: URL) throws -> Int {
+      let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
+      return try XCTUnwrap(attributes[.posixPermissions] as? NSNumber).intValue & 0o777
+    }
+
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
+      UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    let destination = directory.appendingPathComponent("private.json")
+    try Data("old".utf8).write(to: destination)
+    try FileManager.default.setAttributes(
+      [.posixPermissions: 0o666],
+      ofItemAtPath: destination.path
+    )
+
+    let replacement = Data("replacement".utf8)
+    try SensorPrivateFileWriter.write(replacement, to: destination)
+    XCTAssertEqual(try Data(contentsOf: destination), replacement)
+    XCTAssertEqual(try permissions(at: destination), 0o600)
+
+    let directoryDestination = directory.appendingPathComponent("existing-directory")
+    try FileManager.default.createDirectory(
+      at: directoryDestination,
+      withIntermediateDirectories: true
+    )
+    XCTAssertThrowsError(
+      try SensorPrivateFileWriter.write(replacement, to: directoryDestination)
+    )
+    let remainingNames = try FileManager.default.contentsOfDirectory(atPath: directory.path)
+    XCTAssertFalse(remainingNames.contains { $0.hasPrefix(".mac-sensor-lab-export.") })
+
+    let remoteURL = try XCTUnwrap(URL(string: "https://example.invalid/private.json"))
+    XCTAssertThrowsError(try SensorPrivateFileWriter.write(replacement, to: remoteURL)) {
+      XCTAssertEqual($0 as? SensorPrivateFileWriterError, .invalidDestination)
+    }
+  }
+
   func testCSVRecorderAppendsBatchesAndClosesCleanly() async throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
       UUID().uuidString, isDirectory: true)
@@ -500,6 +540,9 @@ final class SensorCoreTests: XCTestCase {
     defer { try? FileManager.default.removeItem(at: directory) }
     let destination = directory.appendingPathComponent("recording.csv")
     let recorder = try SensorCSVRecorder(destinationURL: destination)
+    let attributes = try FileManager.default.attributesOfItem(atPath: destination.path)
+    let permissions = try XCTUnwrap(attributes[.posixPermissions] as? NSNumber).intValue & 0o777
+    XCTAssertEqual(permissions, 0o600)
     let snapshot = makeSPUSnapshot(
       status: .available,
       channels: [

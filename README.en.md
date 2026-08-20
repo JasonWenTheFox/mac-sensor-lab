@@ -63,6 +63,9 @@ The Overview, Raw Sensors, Experiments, and Diagnostics screens share the same n
 - Chart history retains only plotted/derived channels and is capped at 256 total series with 600
   strictly increasing timestamps per series.
 - Export a current JSON snapshot or channel-oriented CSV file after choosing a destination.
+- Snapshot, diagnostics, calibration, and recording files are created through an owner-only `0600`
+  same-directory temporary file, synchronized, and atomically replaced without changing directory
+  or system-wide permission policy.
 - Start an explicit continuous CSV recording with separate `raw_value` and `formatted_value`
   columns, spreadsheet-formula protection for text fields, per-batch synchronization,
   actor-isolated duplicate suppression, a fresh end-of-file/size check before every batch, full
@@ -138,7 +141,7 @@ rejects tracked build output, absolute user paths, common secret signatures, pro
 keys that this release does not implement, forbidden mutation/privilege APIs, missing release
 documents, or a privacy manifest inconsistent with the current offline behavior.
 
-GitHub Actions repeats formatting, audit, build, 43 XCTest cases, portable self-test, and app-bundle
+GitHub Actions repeats formatting, audit, build, 44 XCTest cases, portable self-test, and app-bundle
 assembly on `macos-26`.
 
 ## Repository layout

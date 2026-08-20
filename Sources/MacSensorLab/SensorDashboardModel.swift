@@ -166,7 +166,7 @@ final class SensorDashboardModel: ObservableObject {
         case .json: try SensorExportService.jsonData(snapshots)
         case .csv: SensorExportService.csvData(snapshots)
         }
-      try data.write(to: url, options: .atomic)
+      try SensorPrivateFileWriter.write(data, to: url)
       lastActionMessage = "Exported \(url.lastPathComponent)"
     } catch {
       lastActionMessage = "Export failed: \(error.localizedDescription)"
@@ -188,7 +188,7 @@ final class SensorDashboardModel: ObservableObject {
         applicationVersion: AppBuildInfo.version + (isDemoMode ? " demo" : ""),
         samplingHealth: samplingHealth
       )
-      try data.write(to: url, options: .atomic)
+      try SensorPrivateFileWriter.write(data, to: url)
       lastActionMessage = "Exported privacy-safe diagnostics \(url.lastPathComponent)"
     } catch {
       lastActionMessage = "Diagnostics export failed: \(error.localizedDescription)"
@@ -254,9 +254,9 @@ final class SensorDashboardModel: ObservableObject {
     guard panel.runModal() == .OK, let url = panel.url else { return }
 
     do {
-      try AmbientLuxCalibrationFileService.data(for: ambientLuxCalibration).write(
-        to: url,
-        options: .atomic
+      try SensorPrivateFileWriter.write(
+        AmbientLuxCalibrationFileService.data(for: ambientLuxCalibration),
+        to: url
       )
       lastActionMessage = "Exported light calibration \(url.lastPathComponent)"
     } catch {

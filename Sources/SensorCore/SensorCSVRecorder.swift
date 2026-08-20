@@ -150,7 +150,7 @@ public actor SensorCSVRecorder {
     let headerData = Data(SensorCSVStreamEncoder.header.utf8)
     self.byteCount = headerData.count
 
-    try headerData.write(to: destinationURL, options: .atomic)
+    try SensorPrivateFileWriter.write(headerData, to: destinationURL)
     let handle = try FileHandle(forWritingTo: destinationURL)
     try handle.seekToEnd()
     self.handle = handle

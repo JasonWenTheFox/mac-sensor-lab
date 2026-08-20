@@ -48,6 +48,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - Sampling health now caps both per-cycle scanning and cross-cycle provider state at the 256-provider contract limit, preventing changing malformed IDs from growing memory indefinitely.
 - Contract auditing now prefix-bounds UTF-8 validation and excludes oversized IDs/text from hashing, lowercasing, metadata comparison, and issue messages.
 - Chart history now retains only plotted/derived channels, caps total series at 256 and points per series at 600, and rejects stale or malformed samples.
+- Snapshot, diagnostics, calibration, and recording files now use same-directory atomic replacement through an owner-only `0600` temporary file.
 - Corrupt or extreme counters can no longer overflow CPU totals, network/disk/GPU aggregation, memory page conversion, fan-count conversion, sampling duration, or byte-rate formatting.
 - Continuous CSV recording now preflights the complete batch size and then encodes/writes one row at a time instead of retaining a second full-batch copy in memory.
 - Duplicate provider IDs no longer trap while constructing read or dashboard ordering; they remain visible to the contract audit.
