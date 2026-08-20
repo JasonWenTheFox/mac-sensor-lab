@@ -215,21 +215,36 @@ final class SensorDashboardModel: ObservableObject {
   }
 
   func setAmbientLuxCalibration(rawReference: Double, luxReference: Double) {
-    guard
-      let calibration = AmbientLuxCalibration(
-        rawReference: rawReference,
-        luxReference: luxReference
-      )
+    let calibration =
+      if let ambientLuxCalibration {
+        ambientLuxCalibration.addingPoint(
+          rawReference: rawReference,
+          luxReference: luxReference
+        )
+      } else {
+        AmbientLuxCalibration(
+          rawReference: rawReference,
+          luxReference: luxReference
+        )
+      }
+    guard let calibration
     else {
-      lastActionMessage = "Ambient-light calibration values were invalid"
+      lastActionMessage =
+        "Calibration point was invalid, non-monotonic, or exceeded the eight-point limit"
       return
     }
-    ambientLuxCalibration = calibration
-    if let data = try? JSONEncoder().encode(calibration) {
-      UserDefaults.standard.set(data, forKey: ambientCalibrationDefaultsKey)
+    saveAmbientCalibration(calibration)
+    lastActionMessage = "Saved ambient-light calibration point \(calibration.pointCount)"
+  }
+
+  func undoLastAmbientLuxCalibrationPoint() {
+    guard let ambientLuxCalibration else { return }
+    guard let calibration = ambientLuxCalibration.removingLastPoint() else {
+      clearAmbientLuxCalibration()
+      return
     }
-    reapplyAmbientCalibration()
-    lastActionMessage = "Saved a single-point ambient-light calibration"
+    saveAmbientCalibration(calibration)
+    lastActionMessage = "Removed the last ambient-light calibration point"
   }
 
   func clearAmbientLuxCalibration() {
@@ -271,11 +286,7 @@ final class SensorDashboardModel: ObservableObject {
 
     do {
       let calibration = try AmbientLuxCalibrationFileService.read(from: url)
-      ambientLuxCalibration = calibration
-      if let data = try? JSONEncoder().encode(calibration) {
-        UserDefaults.standard.set(data, forKey: ambientCalibrationDefaultsKey)
-      }
-      reapplyAmbientCalibration()
+      saveAmbientCalibration(calibration)
       lastActionMessage = "Imported light calibration \(url.lastPathComponent)"
     } catch {
       lastActionMessage = "Calibration import failed: \(error.localizedDescription)"
@@ -342,6 +353,14 @@ final class SensorDashboardModel: ObservableObject {
   private func reapplyAmbientCalibration() {
     guard let index = snapshots.firstIndex(where: { $0.id == "motion.spu_live" }) else { return }
     snapshots[index] = applyingUserDerivations(to: snapshots[index])
+  }
+
+  private func saveAmbientCalibration(_ calibration: AmbientLuxCalibration) {
+    ambientLuxCalibration = calibration
+    if let data = try? JSONEncoder().encode(calibration) {
+      UserDefaults.standard.set(data, forKey: ambientCalibrationDefaultsKey)
+    }
+    reapplyAmbientCalibration()
   }
 
   private static func loadAmbientCalibration(key: String) -> AmbientLuxCalibration? {

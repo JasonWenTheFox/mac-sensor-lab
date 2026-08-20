@@ -41,6 +41,7 @@ struct RootView: View {
               isDemoMode: model.isDemoMode,
               ambientLuxCalibration: model.ambientLuxCalibration,
               onSetAmbientCalibration: model.setAmbientLuxCalibration,
+              onUndoAmbientCalibrationPoint: model.undoLastAmbientLuxCalibrationPoint,
               onClearAmbientCalibration: model.clearAmbientLuxCalibration,
               onExportAmbientCalibration: model.exportAmbientLuxCalibration,
               onImportAmbientCalibration: model.importAmbientLuxCalibration
@@ -363,6 +364,7 @@ private struct ExperimentsView: View {
   let isDemoMode: Bool
   let ambientLuxCalibration: AmbientLuxCalibration?
   let onSetAmbientCalibration: (Double, Double) -> Void
+  let onUndoAmbientCalibrationPoint: () -> Void
   let onClearAmbientCalibration: () -> Void
   let onExportAmbientCalibration: () -> Void
   let onImportAmbientCalibration: () -> Void
@@ -515,6 +517,7 @@ private struct ExperimentsView: View {
             historyValues: points.map(\.value),
             calibration: ambientLuxCalibration,
             onSetCalibration: onSetAmbientCalibration,
+            onUndoCalibrationPoint: onUndoAmbientCalibrationPoint,
             onClearCalibration: onClearAmbientCalibration,
             onExportCalibration: onExportAmbientCalibration,
             onImportCalibration: onImportAmbientCalibration
@@ -583,6 +586,7 @@ private struct AmbientLightInterpretationPanel: View {
   let historyValues: [Double]
   let calibration: AmbientLuxCalibration?
   let onSetCalibration: (Double, Double) -> Void
+  let onUndoCalibrationPoint: () -> Void
   let onClearCalibration: () -> Void
   let onExportCalibration: () -> Void
   let onImportCalibration: () -> Void
@@ -596,6 +600,14 @@ private struct AmbientLightInterpretationPanel: View {
   private var enteredLux: Double? {
     guard let value = Double(referenceLuxText), value.isFinite, value > 0 else { return nil }
     return value
+  }
+
+  private var candidateCalibration: AmbientLuxCalibration? {
+    guard let enteredLux else { return nil }
+    if let calibration {
+      return calibration.addingPoint(rawReference: rawValue, luxReference: enteredLux)
+    }
+    return AmbientLuxCalibration(rawReference: rawValue, luxReference: enteredLux)
   }
 
   var body: some View {
@@ -634,21 +646,24 @@ private struct AmbientLightInterpretationPanel: View {
             .font(.caption.weight(.medium))
             .foregroundStyle(.orange)
         }
-        Text(
-          "Single-point scale: \(SensorFormatting.decimal(calibration.luxReference, fractionDigits: 1)) lux at raw \(SensorFormatting.decimal(calibration.rawReference, fractionDigits: 3))."
-        )
-        .font(.caption2)
-        .foregroundStyle(.secondary)
+        Text(calibrationDescription(calibration))
+          .font(.caption2)
+          .foregroundStyle(.secondary)
       }
 
       HStack {
         TextField("Reference lux", text: $referenceLuxText)
           .textFieldStyle(.roundedBorder)
           .frame(width: 110)
-        Button("Calibrate at Current Raw") { captureCalibration() }
-          .disabled(enteredLux == nil || rawValue <= 0 || !rawValue.isFinite)
+        Button(calibration == nil ? "Calibrate at Current Raw" : "Add Calibration Point") {
+          captureCalibration()
+        }
+        .disabled(candidateCalibration == nil)
         if calibration != nil {
-          Button("Clear") { clearCalibration() }
+          if calibration?.pointCount ?? 0 > 1 {
+            Button("Undo Last Point") { onUndoCalibrationPoint() }
+          }
+          Button("Clear All") { clearCalibration() }
         }
       }
       HStack {
@@ -658,7 +673,7 @@ private struct AmbientLightInterpretationPanel: View {
         }
       }
       Text(
-        "Requires an external lux reference. This is a one-point estimate, not a certified meter."
+        "Requires an external lux reference. Add up to eight strictly increasing points; every result remains an estimate, not a certified meter."
       )
       .font(.caption2)
       .foregroundStyle(.secondary)
@@ -667,9 +682,7 @@ private struct AmbientLightInterpretationPanel: View {
   }
 
   private func captureCalibration() {
-    guard let enteredLux,
-      AmbientLuxCalibration(rawReference: rawValue, luxReference: enteredLux) != nil
-    else { return }
+    guard let enteredLux, candidateCalibration != nil else { return }
     onSetCalibration(rawValue, enteredLux)
   }
 
@@ -680,6 +693,15 @@ private struct AmbientLightInterpretationPanel: View {
 
   private func formatted(_ value: Double) -> String {
     SensorFormatting.decimal(value, fractionDigits: 2)
+  }
+
+  private func calibrationDescription(_ calibration: AmbientLuxCalibration) -> String {
+    if calibration.pointCount == 1 {
+      return
+        "Single-point scale: \(SensorFormatting.decimal(calibration.luxReference, fractionDigits: 1)) lux at raw \(SensorFormatting.decimal(calibration.rawReference, fractionDigits: 3))."
+    }
+    return
+      "Linear fit from \(calibration.pointCount) points • RMSE \(SensorFormatting.decimal(calibration.rootMeanSquareError, fractionDigits: 1)) lux."
   }
 }
 

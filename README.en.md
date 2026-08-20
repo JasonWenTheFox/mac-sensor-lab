@@ -75,11 +75,12 @@ The Overview, Raw Sensors, Experiments, and Diagnostics screens share the same n
   history, or export data.
 - Overview cards show each snapshot's original timestamp as a live relative age, so a retained
   degraded SPU sample cannot look newly collected.
-- Use rolling raw ambient-light statistics. A lux value appears only after an explicit one-point
-  external reference and remains labeled `Estimated`.
-- Import or export a portable light-calibration JSON file containing only the two reference values
-  and capture time. Imports are local files capped at 64 KiB; invalid or oversized input cannot
-  replace the current calibration.
+- Use rolling raw ambient-light statistics. A lux value appears only after an explicit external
+  reference and remains labeled `Estimated`. One point uses the original zero-offset scale; two to
+  eight strictly monotonic points use a normalized linear fit with visible RMSE and last-point undo.
+- Import or export a portable light-calibration JSON file containing at most eight raw/lux reference
+  pairs and capture times. Imports are local files capped at 64 KiB; invalid or oversized input
+  cannot replace the current calibration, and legacy single-point files remain readable.
 - Capture a local lid-angle reference and view signed relative opening/closing change.
 - Inspect low-rate acceleration-magnitude RMS variation and peak-to-peak motion without presenting
   the 1–10 second dashboard cadence as vibration-frequency analysis.
@@ -149,7 +150,7 @@ rejects tracked build output, absolute user paths, common secret signatures, pro
 keys that this release does not implement, forbidden mutation/privilege APIs, missing release
 documents, or a privacy manifest inconsistent with the current offline behavior.
 
-GitHub Actions repeats formatting, audit, build, 54 XCTest cases, portable self-test, and app-bundle
+GitHub Actions repeats formatting, audit, build, 56 XCTest cases, portable self-test, and app-bundle
 assembly on `macos-26`.
 
 ## Repository layout
@@ -196,7 +197,8 @@ network expansion requires a new design and privacy review.
   multiple paths; the chart is a trend, not ISP billing data.
 - Battery capacity ratio is controller-reported full-charge capacity divided by design capacity. It
   can exceed 100% and is not Apple's Battery Health status.
-- One-point light calibration assumes zero offset and is not certified photometry.
+- User-referenced light fitting remains empirical and is not certified photometry; one-point mode
+  assumes zero offset, while multi-point mode extrapolates a least-squares line outside its samples.
 - Acceleration and gyroscope channels remain unavailable when macOS does not publish reports; this
   build does not force the driver awake.
 - Force Touch raw pressure and microphone analysis are not implemented in the current build.

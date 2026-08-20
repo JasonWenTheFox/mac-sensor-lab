@@ -863,6 +863,8 @@ final class SensorCoreTests: XCTestCase {
         capturedAt: Date(timeIntervalSince1970: 1_000)
       ))
     XCTAssertEqual(calibration.scale, 4)
+    XCTAssertEqual(calibration.pointCount, 1)
+    XCTAssertEqual(calibration.rootMeanSquareError, 0)
     XCTAssertEqual(try XCTUnwrap(calibration.estimatedLux(for: 12.5)), 50)
     let channel = try XCTUnwrap(calibration.estimatedChannel(for: 12.5))
     XCTAssertEqual(channel.id, "ambient_estimated_lux")
@@ -872,6 +874,13 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertNil(calibration.estimatedLux(for: .nan))
     let encoded = try JSONEncoder().encode(calibration)
     XCTAssertEqual(try JSONDecoder().decode(AmbientLuxCalibration.self, from: encoded), calibration)
+    let legacy = Data(
+      "{\"rawReference\":25,\"luxReference\":100,\"capturedAt\":0}".utf8
+    )
+    XCTAssertEqual(
+      try JSONDecoder().decode(AmbientLuxCalibration.self, from: legacy).pointCount,
+      1
+    )
     let invalid = Data(
       "{\"rawReference\":0,\"luxReference\":100,\"capturedAt\":0}".utf8)
     XCTAssertThrowsError(try JSONDecoder().decode(AmbientLuxCalibration.self, from: invalid))
@@ -884,18 +893,110 @@ final class SensorCoreTests: XCTestCase {
       ))
   }
 
-  func testAmbientCalibrationFileRoundTripsAndBoundsInput() throws {
+  func testAmbientLuxCalibrationFitsBoundedMonotonicPointsAndSupportsUndo() throws {
+    let first = try XCTUnwrap(
+      AmbientLuxCalibration(
+        rawReference: 10,
+        luxReference: 105,
+        capturedAt: Date(timeIntervalSince1970: 1)
+      ))
+    let twoPoints = try XCTUnwrap(
+      first.addingPoint(
+        rawReference: 20,
+        luxReference: 205,
+        capturedAt: Date(timeIntervalSince1970: 2)
+      ))
     let calibration = try XCTUnwrap(
+      twoPoints.addingPoint(
+        rawReference: 30,
+        luxReference: 305,
+        capturedAt: Date(timeIntervalSince1970: 3)
+      ))
+
+    XCTAssertEqual(calibration.pointCount, 3)
+    XCTAssertEqual(calibration.scale, 10, accuracy: 0.000_001)
+    XCTAssertEqual(calibration.rootMeanSquareError, 0, accuracy: 0.000_001)
+    XCTAssertEqual(try XCTUnwrap(calibration.estimatedLux(for: 15)), 155, accuracy: 0.000_001)
+    XCTAssertEqual(
+      try XCTUnwrap(calibration.estimatedChannel(for: 15)).kind,
+      .estimated
+    )
+    XCTAssertEqual(try XCTUnwrap(calibration.removingLastPoint()).pointCount, 2)
+
+    let replaced = try XCTUnwrap(
+      calibration.addingPoint(
+        rawReference: 20,
+        luxReference: 210,
+        capturedAt: Date(timeIntervalSince1970: 4)
+      ))
+    XCTAssertEqual(replaced.pointCount, 3)
+    XCTAssertEqual(replaced.rawReference, 20)
+    XCTAssertEqual(replaced.luxReference, 210)
+    XCTAssertGreaterThan(replaced.rootMeanSquareError, 0)
+    XCTAssertNil(calibration.addingPoint(rawReference: 40, luxReference: 100))
+
+    var bounded = first
+    for value in 2...AmbientLuxCalibration.maximumPointCount {
+      bounded = try XCTUnwrap(
+        bounded.addingPoint(rawReference: Double(value) * 10, luxReference: Double(value) * 100)
+      )
+    }
+    XCTAssertEqual(bounded.pointCount, AmbientLuxCalibration.maximumPointCount)
+    XCTAssertNil(bounded.addingPoint(rawReference: 90, luxReference: 900))
+  }
+
+  func testAmbientLuxCalibrationRejectsDuplicateAndUnsupportedPointPayloads() throws {
+    let point = try XCTUnwrap(
+      AmbientLuxCalibrationPoint(rawReference: 10, luxReference: 100)
+    )
+    XCTAssertNil(AmbientLuxCalibration(points: [point, point]))
+    XCTAssertNil(
+      AmbientLuxCalibration(points: [
+        point,
+        try XCTUnwrap(AmbientLuxCalibrationPoint(rawReference: 20, luxReference: 50)),
+      ]))
+    XCTAssertNil(AmbientLuxCalibrationPoint(rawReference: .nan, luxReference: 100))
+
+    let missingSchema = Data(
+      "{\"points\":[]}".utf8
+    )
+    XCTAssertThrowsError(
+      try JSONDecoder().decode(AmbientLuxCalibration.self, from: missingSchema)
+    )
+    let unsupportedSchema = Data(
+      "{\"schemaVersion\":3,\"points\":[]}".utf8
+    )
+    XCTAssertThrowsError(
+      try JSONDecoder().decode(AmbientLuxCalibration.self, from: unsupportedSchema)
+    )
+  }
+
+  func testAmbientCalibrationFileRoundTripsAndBoundsInput() throws {
+    let first = try XCTUnwrap(
       AmbientLuxCalibration(
         rawReference: 25,
         luxReference: 100,
         capturedAt: Date(timeIntervalSince1970: 1_000)
+      ))
+    let calibration = try XCTUnwrap(
+      first.addingPoint(
+        rawReference: 50,
+        luxReference: 220,
+        capturedAt: Date(timeIntervalSince1970: 2_000)
       ))
     let data = try AmbientLuxCalibrationFileService.data(for: calibration)
     XCTAssertLessThan(data.count, AmbientLuxCalibrationFileService.maximumByteCount)
     XCTAssertEqual(
       try AmbientLuxCalibrationFileService.calibration(from: data),
       calibration
+    )
+    let legacyData = Data(
+      "{\"rawReference\":25,\"luxReference\":100,\"capturedAt\":\"1970-01-01T00:16:40Z\"}"
+        .utf8
+    )
+    XCTAssertEqual(
+      try AmbientLuxCalibrationFileService.calibration(from: legacyData).pointCount,
+      1
     )
 
     let oversized = Data(

@@ -10,9 +10,9 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - Selectable 1, 2, 5, and 10 second sampling cadence, pause/resume, and in-memory history clearing.
 - User-initiated continuous CSV recording with per-batch synchronization and a 50 MB safety limit.
 - Separate `raw_value` and `formatted_value` CSV columns.
-- Ambient-light rolling raw statistics and optional single-point, user-referenced estimated lux.
+- Ambient-light rolling raw statistics and optional one-to-eight-point, user-referenced estimated lux with normalized linear fitting and RMSE.
 - Exportable `ambient_estimated_lux` channel clearly marked as `Estimated`.
-- User-initiated import/export of portable, identity-free single-point light calibration JSON with strict validation.
+- User-initiated import/export of portable, identity-free, bounded multi-point light calibration JSON with strict validation and legacy single-point import.
 - Lid-angle reference capture and signed relative change.
 - Aggregate CPU utilization, load averages, raw Mach memory categories, and swap telemetry without collecting a process list.
 - Aggregate receive/send throughput, packet rates, and byte counters without exporting interface or network identifiers.
@@ -36,6 +36,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ### Changed
 
+- Existing ambient-light calibration now accepts up to eight strictly monotonic reference points, supports undoing the last point, and preserves legacy single-point JSON/UserDefaults compatibility.
 - SMC temperature lookup now selects fixed M1, M2, M3, M4, or M5 key catalogs, keeps generation detection out of exports, and safely falls back to generation-neutral keys.
 - CI now compiles all products in optimized Release mode and assembles/verifies the ad-hoc signed App Bundle from the Release executable.
 - Demo mode now isolates lid-angle reference preferences in addition to sampling and ambient-light calibration.

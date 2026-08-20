@@ -85,22 +85,14 @@ public struct MotionVariationStatistics: Equatable, Sendable {
   }
 }
 
-/// A zero-offset, one-point illuminance estimate supplied by the user.
-///
-/// This intentionally does not claim that the Apple SPU raw channel is lux.
-/// It scales a positive raw reference to a positive external lux reference.
-public struct AmbientLuxCalibration: Codable, Equatable, Sendable {
+public struct AmbientLuxCalibrationPoint: Codable, Equatable, Sendable {
   public let rawReference: Double
   public let luxReference: Double
   public let capturedAt: Date
 
-  public var scale: Double { luxReference / rawReference }
-
   public init?(rawReference: Double, luxReference: Double, capturedAt: Date = .now) {
-    let scale = luxReference / rawReference
     guard rawReference.isFinite, rawReference > 0,
       luxReference.isFinite, luxReference > 0,
-      scale.isFinite, scale > 0,
       capturedAt.timeIntervalSinceReferenceDate.isFinite
     else { return nil }
     self.rawReference = rawReference
@@ -120,7 +112,7 @@ public struct AmbientLuxCalibration: Codable, Equatable, Sendable {
     let luxReference = try container.decode(Double.self, forKey: .luxReference)
     let capturedAt = try container.decode(Date.self, forKey: .capturedAt)
     guard
-      let calibration = AmbientLuxCalibration(
+      let point = Self(
         rawReference: rawReference,
         luxReference: luxReference,
         capturedAt: capturedAt
@@ -129,7 +121,85 @@ public struct AmbientLuxCalibration: Codable, Equatable, Sendable {
       throw DecodingError.dataCorruptedError(
         forKey: .rawReference,
         in: container,
-        debugDescription: "Ambient-light calibration values must be finite and positive."
+        debugDescription: "Ambient-light calibration points must be finite and positive."
+      )
+    }
+    self = point
+  }
+}
+
+/// A bounded user-referenced illuminance estimate.
+///
+/// One point retains the original zero-offset scale. Two to eight strictly monotonic points use a
+/// numerically normalized least-squares line. Neither mode claims Apple calibration or certified
+/// photometry.
+public struct AmbientLuxCalibration: Codable, Equatable, Sendable {
+  public static let maximumPointCount = 8
+  public let points: [AmbientLuxCalibrationPoint]
+
+  public var rawReference: Double { points.last?.rawReference ?? .nan }
+  public var luxReference: Double { points.last?.luxReference ?? .nan }
+  public var capturedAt: Date { points.last?.capturedAt ?? .distantPast }
+  public var pointCount: Int { points.count }
+  public var scale: Double { fit?.slope ?? .nan }
+  public var rootMeanSquareError: Double { fit?.rootMeanSquareError ?? .nan }
+
+  public init?(rawReference: Double, luxReference: Double, capturedAt: Date = .now) {
+    guard
+      let point = AmbientLuxCalibrationPoint(
+        rawReference: rawReference,
+        luxReference: luxReference,
+        capturedAt: capturedAt
+      ),
+      let calibration = Self(points: [point])
+    else { return nil }
+    self = calibration
+  }
+
+  public init?(points: [AmbientLuxCalibrationPoint]) {
+    guard !points.isEmpty, points.count <= Self.maximumPointCount,
+      Self.hasStrictlyIncreasingReferences(points),
+      AmbientLuxLinearFit(points: points) != nil
+    else { return nil }
+    self.points = points
+  }
+
+  private enum CodingKeys: String, CodingKey {
+    case schemaVersion
+    case points
+    case rawReference
+    case luxReference
+    case capturedAt
+  }
+
+  public init(from decoder: any Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    let calibration: Self?
+    if container.contains(.points) {
+      let schemaVersion = try container.decode(Int.self, forKey: .schemaVersion)
+      guard schemaVersion == 2 else {
+        throw DecodingError.dataCorruptedError(
+          forKey: .schemaVersion,
+          in: container,
+          debugDescription: "Unsupported ambient-light calibration schema."
+        )
+      }
+      calibration = Self(
+        points: try container.decode([AmbientLuxCalibrationPoint].self, forKey: .points)
+      )
+    } else {
+      calibration = Self(
+        rawReference: try container.decode(Double.self, forKey: .rawReference),
+        luxReference: try container.decode(Double.self, forKey: .luxReference),
+        capturedAt: try container.decode(Date.self, forKey: .capturedAt)
+      )
+    }
+    guard let calibration else {
+      throw DecodingError.dataCorruptedError(
+        forKey: container.contains(.points) ? .points : .rawReference,
+        in: container,
+        debugDescription:
+          "Ambient-light calibration must contain one to eight finite, positive, strictly monotonic points."
       )
     }
     self = calibration
@@ -137,19 +207,42 @@ public struct AmbientLuxCalibration: Codable, Equatable, Sendable {
 
   public func encode(to encoder: any Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
-    try container.encode(rawReference, forKey: .rawReference)
-    try container.encode(luxReference, forKey: .luxReference)
-    try container.encode(capturedAt, forKey: .capturedAt)
+    try container.encode(2, forKey: .schemaVersion)
+    try container.encode(points, forKey: .points)
+  }
+
+  public func addingPoint(
+    rawReference: Double,
+    luxReference: Double,
+    capturedAt: Date = .now
+  ) -> Self? {
+    guard
+      let point = AmbientLuxCalibrationPoint(
+        rawReference: rawReference,
+        luxReference: luxReference,
+        capturedAt: capturedAt
+      )
+    else { return nil }
+    var updatedPoints = points.filter { $0.rawReference != rawReference }
+    updatedPoints.append(point)
+    guard updatedPoints.count <= Self.maximumPointCount else { return nil }
+    return Self(points: updatedPoints)
+  }
+
+  public func removingLastPoint() -> Self? {
+    Self(points: Array(points.dropLast()))
   }
 
   public func estimatedLux(for rawValue: Double) -> Double? {
-    guard rawValue.isFinite, rawValue >= 0 else { return nil }
-    let estimate = rawValue * scale
-    return estimate.isFinite ? estimate : nil
+    fit?.estimate(rawValue: rawValue)
   }
 
   public func estimatedChannel(for rawValue: Double) -> SensorChannel? {
     guard let estimate = estimatedLux(for: rawValue) else { return nil }
+    let note =
+      pointCount == 1
+      ? "Single-point user calibration; not calibrated or certified by Apple."
+      : "\(pointCount)-point user linear fit; RMSE \(SensorFormatting.decimal(rootMeanSquareError, fractionDigits: 1)) lux; not calibrated or certified by Apple."
     return SensorChannel(
       id: "ambient_estimated_lux",
       label: "Estimated illuminance",
@@ -157,8 +250,95 @@ public struct AmbientLuxCalibration: Codable, Equatable, Sendable {
       formattedValue: SensorFormatting.decimal(estimate, fractionDigits: 1),
       unit: "lux",
       kind: .estimated,
-      note: "Single-point user calibration; not calibrated or certified by Apple."
+      note: note
     )
+  }
+
+  private var fit: AmbientLuxLinearFit? {
+    AmbientLuxLinearFit(points: points)
+  }
+
+  private static func hasStrictlyIncreasingReferences(
+    _ points: [AmbientLuxCalibrationPoint]
+  ) -> Bool {
+    let sorted = points.sorted { $0.rawReference < $1.rawReference }
+    for pair in zip(sorted, sorted.dropFirst()) {
+      guard pair.0.rawReference < pair.1.rawReference,
+        pair.0.luxReference < pair.1.luxReference
+      else { return false }
+    }
+    return true
+  }
+}
+
+private struct AmbientLuxLinearFit {
+  let rawScale: Double
+  let luxScale: Double
+  let normalizedRawMean: Double
+  let normalizedLuxMean: Double
+  let normalizedSlope: Double
+  let slope: Double
+  let rootMeanSquareError: Double
+
+  init?(points: [AmbientLuxCalibrationPoint]) {
+    guard let rawScale = points.map(\.rawReference).max(), rawScale.isFinite, rawScale > 0,
+      let luxScale = points.map(\.luxReference).max(), luxScale.isFinite, luxScale > 0
+    else { return nil }
+    let normalized = points.map {
+      (raw: $0.rawReference / rawScale, lux: $0.luxReference / luxScale)
+    }
+    guard normalized.allSatisfy({ $0.raw.isFinite && $0.lux.isFinite }) else { return nil }
+
+    let rawMean = normalized.map(\.raw).reduce(0, +) / Double(normalized.count)
+    let luxMean = normalized.map(\.lux).reduce(0, +) / Double(normalized.count)
+    let normalizedSlope: Double
+    if normalized.count == 1 {
+      normalizedSlope = 1
+    } else {
+      let covariance = normalized.reduce(0) {
+        $0 + ($1.raw - rawMean) * ($1.lux - luxMean)
+      }
+      let variance = normalized.reduce(0) {
+        $0 + ($1.raw - rawMean) * ($1.raw - rawMean)
+      }
+      guard covariance.isFinite, variance.isFinite, variance > 0 else { return nil }
+      normalizedSlope = covariance / variance
+    }
+
+    let slope = normalizedSlope * (luxScale / rawScale)
+    guard rawMean.isFinite, luxMean.isFinite,
+      normalizedSlope.isFinite, normalizedSlope > 0,
+      slope.isFinite, slope > 0
+    else { return nil }
+
+    var normalizedSquaredError = 0.0
+    for point in normalized {
+      let prediction = luxMean + normalizedSlope * (point.raw - rawMean)
+      let residual = point.lux - prediction
+      normalizedSquaredError += residual * residual
+      guard normalizedSquaredError.isFinite else { return nil }
+    }
+    let normalizedRMSE = sqrt(normalizedSquaredError / Double(normalized.count))
+    let rootMeanSquareError = normalizedRMSE * luxScale
+    guard rootMeanSquareError.isFinite else { return nil }
+
+    self.rawScale = rawScale
+    self.luxScale = luxScale
+    self.normalizedRawMean = rawMean
+    self.normalizedLuxMean = luxMean
+    self.normalizedSlope = normalizedSlope
+    self.slope = slope
+    self.rootMeanSquareError = rootMeanSquareError
+  }
+
+  func estimate(rawValue: Double) -> Double? {
+    guard rawValue.isFinite, rawValue >= 0 else { return nil }
+    let normalizedRaw = rawValue / rawScale
+    let normalizedEstimate =
+      normalizedLuxMean + normalizedSlope * (normalizedRaw - normalizedRawMean)
+    let estimate = normalizedEstimate * luxScale
+    guard normalizedRaw.isFinite, normalizedEstimate.isFinite, estimate.isFinite else { return nil }
+    return max(estimate, 0)
   }
 }
 
