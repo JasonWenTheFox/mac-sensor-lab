@@ -24,8 +24,32 @@ enum PublicPowerSourceKind: Equatable, Sendable {
   }
 }
 
+enum PublicBatteryWarning: Equatable, Sendable {
+  case none
+  case early
+  case final
+
+  init?(systemValue: IOPSLowBatteryWarningLevel) {
+    switch systemValue {
+    case kIOPSLowBatteryWarningNone: self = .none
+    case kIOPSLowBatteryWarningEarly: self = .early
+    case kIOPSLowBatteryWarningFinal: self = .final
+    default: return nil
+    }
+  }
+
+  var displayName: String {
+    switch self {
+    case .none: "No warning"
+    case .early: "Early warning"
+    case .final: "Final warning"
+    }
+  }
+}
+
 struct PublicPowerSourceReading: Equatable, Sendable {
   let source: PublicPowerSourceKind?
+  let batteryWarning: PublicBatteryWarning?
   let currentCapacity: Double?
   let maximumCapacity: Double?
   let isCharging: Bool?
@@ -78,6 +102,7 @@ public struct PublicPowerSourceProvider: SensorProvider {
     let battery = internalBatteryDescription(info: info)
     let reading = PublicPowerSourceReading(
       source: PublicPowerSourceKind(systemValue: sourceValue),
+      batteryWarning: PublicBatteryWarning(systemValue: IOPSGetBatteryWarningLevel()),
       currentCapacity: number(battery, key: kIOPSCurrentCapacityKey),
       maximumCapacity: number(battery, key: kIOPSMaxCapacityKey),
       isCharging: boolean(battery, key: kIOPSIsChargingKey),
@@ -124,6 +149,16 @@ public struct PublicPowerSourceProvider: SensorProvider {
           label: "Battery charging (public API)",
           value: isCharging ? 1 : 0,
           formattedValue: isCharging ? "Yes" : "No"
+        )
+      )
+    }
+    if let batteryWarning = reading.batteryWarning {
+      channels.append(
+        SensorChannel(
+          id: "battery_warning",
+          label: "System low-battery warning",
+          formattedValue: batteryWarning.displayName,
+          note: "Operating-system warning level; time thresholds are estimates, not guarantees."
         )
       )
     }

@@ -41,7 +41,7 @@ The current build has 15 providers:
 | Performance | aggregate CPU utilization, load averages, Mach memory categories, swap | No process list |
 | GPU | allowlisted AGX device/renderer/tiler utilization and memory counters | Undocumented fixed keys; no registry identity fields |
 | Network | aggregate active-interface bytes, packet rates, and throughput | No interface names, addresses, SSID, BSSID, or MAC address |
-| System power source | active AC/battery/UPS source, public charge/charging state, and valid OS time estimates | Public `IOPowerSources`; ignores names, IDs, serial numbers, transport details, and adapter metadata |
+| System power source | active AC/battery/UPS source, public charge/charging state, OS low-battery warning level, and valid time estimates | Public `IOPowerSources`; ignores names, IDs, serial numbers, transport details, and adapter metadata |
 | Extended battery | charge, source, charging state, cycles, electrical data, temperature, capacities, valid time estimates | Fixed non-identifying AppleSmartBattery key allowlist |
 | Thermal | public thermal pressure and Low Power Mode | A pressure state is not a temperature |
 | SMC | generation-specific M1–M5 temperatures, fan RPM, and internal power channels | Fixed read-only catalogs; CPU brand is reduced to a generation and never retained/exported; no key writes or fan control |

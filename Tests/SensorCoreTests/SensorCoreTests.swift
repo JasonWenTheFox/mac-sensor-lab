@@ -1360,6 +1360,7 @@ final class SensorCoreTests: XCTestCase {
     let snapshot = PublicPowerSourceProvider().snapshot(
       reading: PublicPowerSourceReading(
         source: .battery,
+        batteryWarning: PublicBatteryWarning.none,
         currentCapacity: 78,
         maximumCapacity: 100,
         isCharging: false,
@@ -1375,6 +1376,7 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertEqual(channels["active_source"]?.formattedValue, "Battery")
     XCTAssertEqual(try XCTUnwrap(channels["battery_charge"]?.value), 78, accuracy: 0.001)
     XCTAssertEqual(channels["battery_charging"]?.formattedValue, "No")
+    XCTAssertEqual(channels["battery_warning"]?.formattedValue, "No warning")
     XCTAssertEqual(
       try XCTUnwrap(channels["system_time_remaining"]?.value), 280, accuracy: 0.001)
     XCTAssertEqual(
@@ -1388,6 +1390,7 @@ final class SensorCoreTests: XCTestCase {
     let snapshot = PublicPowerSourceProvider().snapshot(
       reading: PublicPowerSourceReading(
         source: nil,
+        batteryWarning: nil,
         currentCapacity: .nan,
         maximumCapacity: 0,
         isCharging: nil,
@@ -1409,6 +1412,7 @@ final class SensorCoreTests: XCTestCase {
     let snapshot = PublicPowerSourceProvider().snapshot(
       reading: PublicPowerSourceReading(
         source: .ac,
+        batteryWarning: PublicBatteryWarning.none,
         currentCapacity: 50,
         maximumCapacity: 100,
         isCharging: true,
@@ -1423,6 +1427,22 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertEqual(try XCTUnwrap(channels["battery_time_to_full"]?.value), 45, accuracy: 0.001)
     XCTAssertNil(channels["battery_time_to_empty"])
     XCTAssertNil(channels["system_time_remaining"])
+  }
+
+  func testPublicBatteryWarningMapsOnlyDocumentedSystemLevels() {
+    XCTAssertEqual(
+      PublicBatteryWarning(systemValue: kIOPSLowBatteryWarningNone),
+      PublicBatteryWarning.none
+    )
+    XCTAssertEqual(
+      PublicBatteryWarning(systemValue: kIOPSLowBatteryWarningEarly),
+      .early
+    )
+    XCTAssertEqual(
+      PublicBatteryWarning(systemValue: kIOPSLowBatteryWarningFinal),
+      .final
+    )
+    XCTAssertNil(PublicBatteryWarning(systemValue: IOPSLowBatteryWarningLevel(rawValue: 99)))
   }
 
   func testGPUPerformanceValueRejectsInvalidPercentages() {

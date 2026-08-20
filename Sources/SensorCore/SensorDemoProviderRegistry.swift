@@ -57,6 +57,7 @@ public enum SensorDemoProviderRegistry {
           text("active_source", "Active power source", "Battery"),
           percent("battery_charge", "Battery charge (public API)", 78, .derived),
           text("battery_charging", "Battery charging (public API)", "No", 0),
+          text("battery_warning", "System low-battery warning", "No warning"),
           number(
             "system_time_remaining", "System time remaining", 285, "minutes", .estimated),
           number(

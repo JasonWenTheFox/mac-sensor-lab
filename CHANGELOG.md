@@ -6,7 +6,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ### Added
 
-- A separate public `IOPowerSources` provider for the active AC/battery/UPS source, public charge/charging state, and valid OS time estimates without reading power-source identity or adapter metadata.
+- A separate public `IOPowerSources` provider for the active AC/battery/UPS source, public charge/charging state, OS low-battery warning level, and valid time estimates without reading power-source identity or adapter metadata.
 - Native English and Simplified Chinese UI localization backed by a checked-in String Catalog, generated `.lproj` resources, catalog/key consistency tests, and a bounded display adapter for dynamic summaries, channel labels, enum values, units, and app-owned notes.
 - An Overview provider-health summary with distinct loading, available, limited, permission-required, unavailable, and error counts, a launch-wide status-transition total, and direct Raw Sensors/Diagnostics review actions.
 - A reproducible static admission audit for OpenMultitouchSupport 4.0.0, documenting its matching checksum and architecture as well as the privacy and distribution blockers that prevent direct integration.

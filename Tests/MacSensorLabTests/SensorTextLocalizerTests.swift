@@ -186,6 +186,11 @@ final class SensorTextLocalizerTests: XCTestCase {
       packagedLocalizer.localized(try XCTUnwrap(publicPower.channels.first).label),
       "当前供电来源"
     )
+    let warning = try XCTUnwrap(
+      publicPower.channels.first(where: { $0.id == "battery_warning" })
+    )
+    XCTAssertEqual(packagedLocalizer.localized(warning.label), "系统低电量告警")
+    XCTAssertEqual(packagedLocalizer.localized(warning.formattedValue), "无告警")
 
     let motion = try XCTUnwrap(snapshots["motion.spu_live"])
     XCTAssertEqual(packagedLocalizer.localized(motion.summary), "实时加速度、水平与环境光数据")

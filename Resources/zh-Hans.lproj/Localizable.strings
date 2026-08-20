@@ -252,6 +252,8 @@
 	<string>磁盘活动</string>
 	<key>Display</key>
 	<string>显示器</string>
+	<key>Early warning</key>
+	<string>早期告警</string>
 	<key>Error</key>
 	<string>错误</string>
 	<key>Errors</key>
@@ -302,6 +304,8 @@
 	<string>轻度</string>
 	<key>Fan %lld</key>
 	<string>风扇 %lld</string>
+	<key>Final warning</key>
+	<string>最终告警</string>
 	<key>Fixed allowlisted AppleSmartBattery field.</key>
 	<string>固定白名单中的 AppleSmartBattery 字段。</string>
 	<key>Force Touch trackpad</key>
@@ -456,6 +460,8 @@
 	<string>此构建不采集序列号、硬件 UUID、UDID、主机名、用户名、位置、进程列表、SSID 或录音。</string>
 	<key>No sudo, driver-property writes, or permission bypass was attempted.</key>
 	<string>未尝试 sudo、写入驱动属性或绕过权限。</string>
+	<key>No warning</key>
+	<string>无告警</string>
 	<key>Nominal</key>
 	<string>正常</string>
 	<key>Not detected</key>
@@ -478,6 +484,8 @@
 	<string>相对参考角度已张开</string>
 	<key>Opening angle</key>
 	<string>张开角度</string>
+	<key>Operating-system warning level; time thresholds are estimates, not guarantees.</key>
+	<string>操作系统告警级别；时间阈值是估算，不是保证。</string>
 	<key>Original sample time: %@</key>
 	<string>原始采样时间：%@</string>
 	<key>Overview</key>
@@ -682,6 +690,8 @@
 	<string>系统</string>
 	<key>System Power Source</key>
 	<string>系统电源来源</string>
+	<key>System low-battery warning</key>
+	<string>系统低电量告警</string>
 	<key>System performance counters were unavailable</key>
 	<string>系统性能计数器不可用</string>
 	<key>System time remaining</key>
