@@ -3,7 +3,8 @@ import Foundation
 /// Bounded, value-free runtime evidence for diagnosing intermittent provider availability.
 ///
 /// The tracker records only counters, stable provider IDs, and status categories. It never keeps
-/// sensor readings, free text, wall-clock timestamps, file paths, or machine identifiers.
+/// sensor readings, free text, wall-clock timestamps, file paths, or machine identifiers. Provider
+/// state is capped at the same 256-provider limit enforced by the snapshot contract.
 public struct SensorProviderSamplingHealth: Identifiable, Codable, Equatable, Sendable {
   public var id: String { providerID }
 
@@ -44,13 +45,24 @@ public struct SensorSamplingHealthTracker: Sendable {
   private var completedCycleCount = 0
   private var providerOrder: [String] = []
   private var providers: [String: MutableProviderHealth] = [:]
+  private let maximumTrackedProviders: Int
 
-  public init() {}
+  public init() {
+    maximumTrackedProviders = SensorContractAudit.maximumProviderCount
+  }
+
+  init(maximumTrackedProviders: Int) {
+    self.maximumTrackedProviders = min(
+      max(0, maximumTrackedProviders),
+      SensorContractAudit.maximumProviderCount
+    )
+  }
 
   /// Records one completed dashboard cycle.
   ///
   /// Duplicate provider IDs are observed only once per cycle so malformed provider output cannot
-  /// inflate the counters before the separate contract audit reports the duplicate.
+  /// inflate the counters before the separate contract audit reports the duplicate. Only the
+  /// contract-bounded prefix is inspected or retained.
   @discardableResult
   public mutating func observe(
     snapshots: [SensorSnapshot],
@@ -59,9 +71,13 @@ public struct SensorSamplingHealthTracker: Sendable {
     completedCycleCount = saturatingIncrement(completedCycleCount)
     var seenProviderIDs: Set<String> = []
 
-    for snapshot in snapshots where seenProviderIDs.insert(snapshot.id).inserted {
+    for snapshot in snapshots.prefix(maximumTrackedProviders)
+    where seenProviderIDs.insert(snapshot.id).inserted {
+      let isNewProvider = providers[snapshot.id] == nil
+      guard !isNewProvider || providers.count < maximumTrackedProviders else { continue }
+
       var provider = providers[snapshot.id] ?? MutableProviderHealth()
-      if providers[snapshot.id] == nil {
+      if isNewProvider {
         providerOrder.append(snapshot.id)
       }
 

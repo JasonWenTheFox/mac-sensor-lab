@@ -215,6 +215,62 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertNil(unrepresentableDuration.lastCycleDurationMilliseconds)
   }
 
+  func testSamplingHealthBoundsDynamicProviderStateAcrossCycles() {
+    func snapshot(id: String) -> SensorSnapshot {
+      SensorSnapshot(
+        id: id,
+        name: "Fixture",
+        category: .diagnostics,
+        summary: "Fixture",
+        status: .available,
+        source: "Fixture",
+        capability: .publicAPI,
+        channels: [
+          SensorChannel(id: "value", label: "Value", value: 1, formattedValue: "1")
+        ]
+      )
+    }
+
+    var tracker = SensorSamplingHealthTracker(maximumTrackedProviders: 2)
+    var health = SensorSamplingHealth.empty
+    for index in 0..<10 {
+      health = tracker.observe(
+        snapshots: [snapshot(id: "dynamic.provider.\(index)")],
+        cycleDuration: 0.001
+      )
+    }
+
+    XCTAssertEqual(health.completedCycleCount, 10)
+    XCTAssertEqual(
+      health.providers.map(\.providerID),
+      ["dynamic.provider.0", "dynamic.provider.1"]
+    )
+    XCTAssertEqual(health.providers.map(\.observationCount), [1, 1])
+
+    health = tracker.observe(
+      snapshots: [snapshot(id: "dynamic.provider.1")],
+      cycleDuration: 0.001
+    )
+    XCTAssertEqual(health.providers.map(\.observationCount), [1, 2])
+
+    var disabledTracker = SensorSamplingHealthTracker(maximumTrackedProviders: -1)
+    let disabledHealth = disabledTracker.observe(
+      snapshots: [snapshot(id: "ignored.provider")],
+      cycleDuration: 0.001
+    )
+    XCTAssertTrue(disabledHealth.providers.isEmpty)
+
+    let oversizedInput = (0...SensorContractAudit.maximumProviderCount).map { index in
+      snapshot(id: "oversized.provider.\(index)")
+    }
+    var clampedTracker = SensorSamplingHealthTracker(maximumTrackedProviders: .max)
+    let clampedHealth = clampedTracker.observe(
+      snapshots: oversizedInput,
+      cycleDuration: 0.001
+    )
+    XCTAssertEqual(clampedHealth.providers.count, SensorContractAudit.maximumProviderCount)
+  }
+
   func testDiagnosticsExportRefusesUnsafeOrDuplicateIdentifiers() {
     let unsafe = SensorSnapshot(
       id: "system.device_uuid",
