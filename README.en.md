@@ -64,7 +64,8 @@ The Overview, Raw Sensors, Experiments, and Diagnostics screens share the same n
 - Export a current JSON snapshot or channel-oriented CSV file after choosing a destination.
 - Start an explicit continuous CSV recording with separate `raw_value` and `formatted_value`
   columns, spreadsheet-formula protection for text fields, per-batch synchronization,
-  actor-isolated duplicate suppression, and a 50 MB hard limit.
+  actor-isolated duplicate suppression, a fresh end-of-file/size check before every batch, and a
+  50 MB hard limit.
 - Search Raw Sensors by provider, channel, source, status, or stable ID without mutating sampling,
   history, or export data.
 - Use rolling raw ambient-light statistics. A lux value appears only after an explicit one-point
@@ -126,7 +127,7 @@ rejects tracked build output, absolute user paths, common secret signatures, pro
 keys that this release does not implement, forbidden mutation/privilege APIs, missing release
 documents, or a privacy manifest inconsistent with the current offline behavior.
 
-GitHub Actions repeats formatting, audit, build, 30 XCTest cases, portable self-test, and app-bundle
+GitHub Actions repeats formatting, audit, build, 32 XCTest cases, portable self-test, and app-bundle
 assembly on `macos-26`.
 
 ## Repository layout

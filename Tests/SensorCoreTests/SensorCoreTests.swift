@@ -180,6 +180,66 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertLessThanOrEqual(progress.byteCount, limit)
   }
 
+  func testCSVRecorderReseeksAndRecountsAfterExternalAppend() async throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
+      UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let destination = directory.appendingPathComponent("externally-appended.csv")
+    let recorder = try SensorCSVRecorder(destinationURL: destination)
+    let externalMarker = Data("external-marker\n".utf8)
+    let externalHandle = try FileHandle(forWritingTo: destination)
+    try externalHandle.seekToEnd()
+    try externalHandle.write(contentsOf: externalMarker)
+    try externalHandle.synchronize()
+    try externalHandle.close()
+
+    let snapshot = makeSPUSnapshot(
+      status: .available,
+      channels: [
+        SensorChannel(
+          id: "ambient_intensity", label: "Ambient intensity", value: 12,
+          formattedValue: "12")
+      ],
+      timestamp: Date(timeIntervalSince1970: 1_000)
+    )
+    let progress = try await recorder.append([snapshot])
+    _ = try await recorder.finish()
+
+    let data = try Data(contentsOf: destination)
+    let text = String(decoding: data, as: UTF8.self)
+    let markerRange = try XCTUnwrap(text.range(of: "external-marker\n"))
+    let rowRange = try XCTUnwrap(
+      text.range(of: "motion.spu_live", range: markerRange.upperBound..<text.endIndex))
+    XCTAssertLessThan(markerRange.lowerBound, rowRange.lowerBound)
+    XCTAssertEqual(progress.byteCount, data.count)
+    XCTAssertEqual(progress.rowCount, 1)
+  }
+
+  func testCSVRecorderRejectsExternallyTruncatedDestination() async throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
+      UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let destination = directory.appendingPathComponent("externally-truncated.csv")
+    let recorder = try SensorCSVRecorder(destinationURL: destination)
+    let externalHandle = try FileHandle(forWritingTo: destination)
+    try externalHandle.truncate(atOffset: 0)
+    try externalHandle.close()
+    let snapshot = makeSPUSnapshot(
+      status: .available,
+      timestamp: Date(timeIntervalSince1970: 1_000)
+    )
+
+    await assertThrowsErrorAsync(try await recorder.append([snapshot])) { error in
+      XCTAssertEqual(error as? SensorCSVRecorderError, .destinationTruncated)
+    }
+    let progress = try await recorder.finish()
+    XCTAssertEqual(progress.rowCount, 0)
+    XCTAssertEqual(progress.byteCount, 0)
+    XCTAssertEqual(try Data(contentsOf: destination).count, 0)
+  }
+
   func testCSVRecorderDeduplicatesConcurrentSnapshotFlushes() async throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
       UUID().uuidString, isDirectory: true)

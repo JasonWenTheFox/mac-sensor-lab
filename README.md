@@ -109,7 +109,7 @@ swift test
 - 采样间隔保存在本 App 自己的偏好中；暂停状态不会跨启动恢复。Settings 和工具栏使用同一设置。
 - 图表最多保留 600 个不同时间戳的内存样本，`Clear Chart History` 不会删除任何文件。
 - `Export` 菜单可以导出当前 JSON/CSV 快照，或由用户主动选择文件后开始连续 CSV 记录。
-- 连续 CSV 分开保存机器可读的 `raw_value` 和界面使用的 `formatted_value`；文本列防止表格软件公式解释，每批写入后同步，Recorder 内部按 Provider 时间戳/状态去重，默认达到 50 MB 前自动停止。
+- 连续 CSV 分开保存机器可读的 `raw_value` 和界面使用的 `formatted_value`；文本列防止表格软件公式解释，每批写入前重新确认真实文件末尾和大小、写入后同步，Recorder 内部按 Provider 时间戳/状态去重，默认达到 50 MB 前自动停止。
 - Light Meter 显示原始值的滚动最小/平均/最大；只有用户输入外部照度参考并主动校准后，才增加明确标为 `Estimated` 的 `ambient_estimated_lux` 通道。
 - 单点光照校准可以由用户主动导入/导出为 JSON；文件只保存原始参考值、外部 lux 参考值和校准时间，导入时会重新验证有限正数并限制为 64 KiB 本地文件，不读取或写入设备标识。
 - Lid Protractor 可以把当前开合角设为参考，并显示带方向的相对角度变化；不会改变或重新配置传感器。
@@ -149,7 +149,7 @@ swift test
 - [x] 添加 macOS 26 / Xcode 26 CI 和 Pull Request 安全检查模板。
 - [x] 建立私有 GitHub 仓库并通过首轮 CI。
 - [x] 用户接受 Xcode 许可。
-- [x] 完成 Xcode 首次组件初始化并在本机通过 30 项 XCTest。
+- [x] 完成 Xcode 首次组件初始化并在本机通过 32 项 XCTest。
 - [x] 加入可调采样、暂停/恢复、历史清空和 50 MB 上限的连续 CSV 记录。
 - [x] 加入环境光滚动统计、可选 Estimated lux 和上盖相对角度实验。
 - [x] 加入严格校验且不含设备标识的单点光照校准 JSON 导入/导出。

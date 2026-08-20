@@ -88,6 +88,7 @@ public struct SensorCSVRecordingProgress: Equatable, Sendable {
 
 public enum SensorCSVRecorderError: LocalizedError, Equatable {
   case invalidDestination
+  case destinationTruncated
   case alreadyClosed
   case sizeLimitReached(limit: Int)
 
@@ -95,6 +96,8 @@ public enum SensorCSVRecorderError: LocalizedError, Equatable {
     switch self {
     case .invalidDestination:
       "The recording destination must be a local file URL."
+    case .destinationTruncated:
+      "The recording destination was truncated by another process."
     case .alreadyClosed:
       "The recording has already stopped."
     case .sizeLimitReached(let limit):
@@ -149,8 +152,16 @@ public actor SensorCSVRecorder {
     guard let handle else { throw SensorCSVRecorderError.alreadyClosed }
     guard !snapshots.isEmpty else { return progress() }
 
+    let actualByteCount = try handle.seekToEnd()
+    guard actualByteCount <= UInt64(Int.max) else {
+      throw SensorCSVRecorderError.sizeLimitReached(limit: byteLimit)
+    }
+    byteCount = Int(actualByteCount)
+    guard byteCount >= SensorCSVStreamEncoder.header.utf8.count else {
+      throw SensorCSVRecorderError.destinationTruncated
+    }
     let data = SensorCSVStreamEncoder.data(for: snapshots, includeHeader: false)
-    guard byteCount + data.count <= byteLimit else {
+    guard byteCount <= byteLimit, data.count <= byteLimit - byteCount else {
       throw SensorCSVRecorderError.sizeLimitReached(limit: byteLimit)
     }
 
