@@ -231,13 +231,26 @@ private struct SensorCard: View {
       }
 
       Divider()
-      HStack {
-        Text(snapshot.source)
+      HStack(spacing: 8) {
+        Label {
+          Text("Updated ") + Text(snapshot.timestamp, style: .relative)
+        } icon: {
+          Image(systemName: "clock")
+        }
+        .help(
+          "Original sample time: \(snapshot.timestamp.formatted(date: .abbreviated, time: .standard))"
+        )
         Spacer()
         Text(snapshot.capability.displayName)
       }
       .font(.caption)
       .foregroundStyle(.tertiary)
+
+      Text("Source: \(snapshot.source)")
+        .font(.caption)
+        .foregroundStyle(.tertiary)
+        .lineLimit(1)
+        .help(snapshot.source)
     }
     .padding(18)
     .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))

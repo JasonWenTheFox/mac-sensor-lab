@@ -73,6 +73,8 @@ The Overview, Raw Sensors, Experiments, and Diagnostics screens share the same n
   256 cross-batch provider markers, final file-end recounting, and a 50 MB hard limit.
 - Search Raw Sensors by provider, channel, source, status, or stable ID without mutating sampling,
   history, or export data.
+- Overview cards show each snapshot's original timestamp as a live relative age, so a retained
+  degraded SPU sample cannot look newly collected.
 - Use rolling raw ambient-light statistics. A lux value appears only after an explicit one-point
   external reference and remains labeled `Estimated`.
 - Import or export a portable light-calibration JSON file containing only the two reference values
