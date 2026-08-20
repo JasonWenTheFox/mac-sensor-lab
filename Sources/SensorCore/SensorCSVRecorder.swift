@@ -5,40 +5,52 @@ public enum SensorCSVStreamEncoder {
     "provider_id,provider_name,status,source,channel_id,channel_name,raw_value,formatted_value,unit,kind,timestamp\n"
 
   public static func data(for snapshots: [SensorSnapshot], includeHeader: Bool) -> Data {
-    var text = includeHeader ? header : ""
+    var data = includeHeader ? Data(header.utf8) : Data()
+    forEachRow(in: snapshots) { row in
+      data.append(contentsOf: row.utf8)
+    }
+    return data
+  }
+
+  static func forEachRow(
+    in snapshots: [SensorSnapshot],
+    _ body: (String) throws -> Void
+  ) rethrows {
     let formatter = ISO8601DateFormatter()
 
     for snapshot in snapshots {
       let timestamp = formatter.string(from: snapshot.timestamp)
       if snapshot.channels.isEmpty {
-        text += row(
-          snapshot: snapshot,
-          channelID: "",
-          channelName: "",
-          rawValue: "",
-          formattedValue: "",
-          unit: "",
-          kind: "",
-          timestamp: timestamp
+        try body(
+          row(
+            snapshot: snapshot,
+            channelID: "",
+            channelName: "",
+            rawValue: "",
+            formattedValue: "",
+            unit: "",
+            kind: "",
+            timestamp: timestamp
+          )
         )
         continue
       }
 
       for channel in snapshot.channels {
-        text += row(
-          snapshot: snapshot,
-          channelID: channel.id,
-          channelName: channel.label,
-          rawValue: channel.value.map { String($0) } ?? "",
-          formattedValue: channel.formattedValue,
-          unit: channel.unit ?? "",
-          kind: channel.kind.rawValue,
-          timestamp: timestamp
+        try body(
+          row(
+            snapshot: snapshot,
+            channelID: channel.id,
+            channelName: channel.label,
+            rawValue: channel.value.map { String($0) } ?? "",
+            formattedValue: channel.formattedValue,
+            unit: channel.unit ?? "",
+            kind: channel.kind.rawValue,
+            timestamp: timestamp
+          )
         )
       }
     }
-
-    return Data(text.utf8)
   }
 
   public static func rowCount(for snapshots: [SensorSnapshot]) -> Int {
@@ -160,15 +172,29 @@ public actor SensorCSVRecorder {
     guard byteCount >= SensorCSVStreamEncoder.header.utf8.count else {
       throw SensorCSVRecorderError.destinationTruncated
     }
-    let data = SensorCSVStreamEncoder.data(for: snapshots, includeHeader: false)
-    guard byteCount <= byteLimit, data.count <= byteLimit - byteCount else {
+    guard byteCount <= byteLimit else {
       throw SensorCSVRecorderError.sizeLimitReached(limit: byteLimit)
     }
+    let remainingByteCount = byteLimit - byteCount
+    var pendingByteCount = 0
+    var pendingRowCount = 0
+    try SensorCSVStreamEncoder.forEachRow(in: snapshots) { row in
+      let rowByteCount = row.utf8.count
+      guard pendingByteCount <= remainingByteCount,
+        rowByteCount <= remainingByteCount - pendingByteCount
+      else {
+        throw SensorCSVRecorderError.sizeLimitReached(limit: byteLimit)
+      }
+      pendingByteCount += rowByteCount
+      pendingRowCount += 1
+    }
 
-    try handle.write(contentsOf: data)
+    try SensorCSVStreamEncoder.forEachRow(in: snapshots) { row in
+      try handle.write(contentsOf: Data(row.utf8))
+    }
     try handle.synchronize()
-    byteCount += data.count
-    rowCount += SensorCSVStreamEncoder.rowCount(for: snapshots)
+    byteCount += pendingByteCount
+    rowCount += pendingRowCount
     return progress()
   }
 

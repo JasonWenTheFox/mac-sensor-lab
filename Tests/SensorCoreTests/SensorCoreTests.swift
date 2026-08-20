@@ -344,6 +344,38 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertLessThanOrEqual(progress.byteCount, limit)
   }
 
+  func testCSVRecorderPreflightsTheWholeBatchBeforeWritingRows() async throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
+      UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let destination = directory.appendingPathComponent("preflight.csv")
+    let snapshot = makeSPUSnapshot(
+      status: .available,
+      channels: [
+        SensorChannel(id: "one", label: "One", value: 1, formattedValue: "1"),
+        SensorChannel(id: "two", label: "Two", value: 2, formattedValue: "2"),
+      ],
+      timestamp: Date(timeIntervalSince1970: 1_000)
+    )
+    let batchByteCount = SensorCSVStreamEncoder.data(
+      for: [snapshot], includeHeader: false
+    ).count
+    let limit = SensorCSVStreamEncoder.header.utf8.count + batchByteCount - 1
+    let recorder = try SensorCSVRecorder(destinationURL: destination, byteLimit: limit)
+
+    await assertThrowsErrorAsync(try await recorder.append([snapshot])) { error in
+      XCTAssertEqual(error as? SensorCSVRecorderError, .sizeLimitReached(limit: limit))
+    }
+    let progress = try await recorder.finish()
+    XCTAssertEqual(progress.rowCount, 0)
+    XCTAssertEqual(progress.byteCount, SensorCSVStreamEncoder.header.utf8.count)
+    XCTAssertEqual(
+      try Data(contentsOf: destination),
+      Data(SensorCSVStreamEncoder.header.utf8)
+    )
+  }
+
   func testCSVRecorderReseeksAndRecountsAfterExternalAppend() async throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
       UUID().uuidString, isDirectory: true)
