@@ -2,14 +2,30 @@ import Foundation
 import IOKit
 
 enum BatteryMeasurements {
+  static func chargePercentage(current: Double?, maximum: Double?) -> Double? {
+    guard let current, let maximum,
+      current.isFinite, maximum.isFinite,
+      maximum > 0, current >= 0, current <= maximum
+    else { return nil }
+    let percentage = current / maximum * 100
+    return percentage.isFinite ? percentage : nil
+  }
+
   static func capacityRatio(nominal: Double, design: Double) -> Double? {
     guard nominal.isFinite, design.isFinite, nominal >= 0, design > 0 else { return nil }
-    return nominal / design * 100
+    let ratio = nominal / design * 100
+    return ratio.isFinite ? ratio : nil
   }
 
   static func validMinutes(_ value: Double?) -> Double? {
     guard let value, value.isFinite, (0...1_440).contains(value) else { return nil }
     return value
+  }
+
+  static func electricalPower(voltage: Double?, current: Double?) -> Double? {
+    guard let voltage, let current, voltage.isFinite, current.isFinite else { return nil }
+    let power = voltage * current
+    return power.isFinite ? power : nil
   }
 }
 
@@ -40,11 +56,11 @@ public struct BatteryProvider: SensorProvider {
     }
     defer { IOObjectRelease(service) }
 
-    let current = IOKitHelpers.number(service, key: "CurrentCapacity")
+    let currentCapacity = IOKitHelpers.number(service, key: "CurrentCapacity")
     let maximum = IOKitHelpers.number(service, key: "MaxCapacity")
-    let external = IOKitHelpers.bool(service, key: "ExternalConnected") ?? false
-    let charging = IOKitHelpers.bool(service, key: "IsCharging") ?? false
-    let fullyCharged = IOKitHelpers.bool(service, key: "FullyCharged") ?? false
+    let external = IOKitHelpers.bool(service, key: "ExternalConnected")
+    let charging = IOKitHelpers.bool(service, key: "IsCharging")
+    let fullyCharged = IOKitHelpers.bool(service, key: "FullyCharged")
     let cycles = IOKitHelpers.number(service, key: "CycleCount")
     let designCapacity = IOKitHelpers.number(service, key: "DesignCapacity")
     let nominalCapacity = IOKitHelpers.number(service, key: "NominalChargeCapacity")
@@ -56,15 +72,19 @@ public struct BatteryProvider: SensorProvider {
     let amperageMilliamps = IOKitHelpers.number(service, key: "Amperage")
     let temperatureRaw = IOKitHelpers.number(service, key: "Temperature")
 
-    let percentage: Double? =
-      if let current, let maximum, maximum > 0 {
-        current / maximum * 100
-      } else {
-        nil
-      }
-    let voltage = voltageMillivolts.map { $0 / 1000 }
-    let currentAmps = amperageMilliamps.map { $0 / 1000 }
-    let power: Double? = if let voltage, let currentAmps { voltage * currentAmps } else { nil }
+    let percentage = BatteryMeasurements.chargePercentage(
+      current: currentCapacity,
+      maximum: maximum
+    )
+    let voltage = voltageMillivolts.flatMap { value -> Double? in
+      guard value.isFinite, value > 0 else { return nil }
+      return value / 1000
+    }
+    let currentAmps = amperageMilliamps.flatMap { value -> Double? in
+      guard value.isFinite else { return nil }
+      return value / 1000
+    }
+    let power = BatteryMeasurements.electricalPower(voltage: voltage, current: currentAmps)
     // AppleSmartBattery exposes Temperature in deci-kelvin (for example,
     // 3069 means 306.9 K, or roughly 33.8 °C).
     let temperature = temperatureRaw.map { $0 / 10 - 273.15 }
@@ -76,10 +96,12 @@ public struct BatteryProvider: SensorProvider {
           id: "charge", label: "Charge", value: percentage,
           formattedValue: SensorFormatting.percentage(percentage), unit: "%", kind: .derived))
     }
-    channels.append(
-      SensorChannel(
-        id: "power_source", label: "Power source", value: external ? 1 : 0,
-        formattedValue: external ? "AC power" : "Battery"))
+    if let external {
+      channels.append(
+        SensorChannel(
+          id: "power_source", label: "Power source", value: external ? 1 : 0,
+          formattedValue: external ? "AC power" : "Battery"))
+    }
     if let designCapacity, let nominalCapacity,
       let capacityRatio = BatteryMeasurements.capacityRatio(
         nominal: nominalCapacity, design: designCapacity)
@@ -91,15 +113,19 @@ public struct BatteryProvider: SensorProvider {
           note:
             "Reported full-charge capacity ÷ design capacity; not Apple's Battery Health status."))
     }
-    channels.append(
-      SensorChannel(
-        id: "charging", label: "Charging", value: charging ? 1 : 0,
-        formattedValue: charging ? "Yes" : "No"))
-    channels.append(
-      SensorChannel(
-        id: "fully_charged", label: "Fully charged", value: fullyCharged ? 1 : 0,
-        formattedValue: fullyCharged ? "Yes" : "No"))
-    if let cycles {
+    if let charging {
+      channels.append(
+        SensorChannel(
+          id: "charging", label: "Charging", value: charging ? 1 : 0,
+          formattedValue: charging ? "Yes" : "No"))
+    }
+    if let fullyCharged {
+      channels.append(
+        SensorChannel(
+          id: "fully_charged", label: "Fully charged", value: fullyCharged ? 1 : 0,
+          formattedValue: fullyCharged ? "Yes" : "No"))
+    }
+    if let cycles, cycles.isFinite, cycles >= 0 {
       channels.append(
         SensorChannel(
           id: "cycle_count", label: "Cycle count", value: cycles,
@@ -120,7 +146,7 @@ public struct BatteryProvider: SensorProvider {
           formattedValue: SensorFormatting.decimal(nominalCapacity, fractionDigits: 0), unit: "mAh",
           note: "Controller-reported capacity; it can change as the battery calibrates."))
     }
-    if !external, let timeRemaining {
+    if external == false, let timeRemaining {
       channels.append(
         SensorChannel(
           id: "time_remaining", label: "Estimated time remaining", value: timeRemaining,
@@ -129,7 +155,7 @@ public struct BatteryProvider: SensorProvider {
           kind: .estimated,
           note: "Controller estimate; unavailable sentinel values are omitted."))
     }
-    if charging, let averageTimeToFull {
+    if charging == true, let averageTimeToFull {
       channels.append(
         SensorChannel(
           id: "time_to_full", label: "Estimated time to full", value: averageTimeToFull,
@@ -166,9 +192,18 @@ public struct BatteryProvider: SensorProvider {
           kind: .derived, note: "Converted from the battery controller's raw deci-kelvin value."))
     }
 
+    let powerSource = external.map { $0 ? "AC power" : "Battery" }
     let summary =
-      percentage.map { "\(SensorFormatting.percentage($0)) • \(external ? "AC power" : "Battery")" }
-      ?? (external ? "AC power" : "Battery")
+      switch (percentage, powerSource) {
+      case (.some(let percentage), .some(let powerSource)):
+        "\(SensorFormatting.percentage(percentage)) • \(powerSource)"
+      case (.some(let percentage), .none):
+        SensorFormatting.percentage(percentage)
+      case (.none, .some(let powerSource)):
+        powerSource
+      case (.none, .none):
+        "Battery telemetry available"
+      }
     return SensorSnapshot(
       id: metadata.id,
       name: metadata.name,

@@ -467,15 +467,34 @@ final class SensorCoreTests: XCTestCase {
 
   func testBatteryMeasurementsValidateCapacityAndTime() throws {
     XCTAssertEqual(
+      try XCTUnwrap(BatteryMeasurements.chargePercentage(current: 4_000, maximum: 5_000)),
+      80,
+      accuracy: 0.000_001
+    )
+    XCTAssertNil(BatteryMeasurements.chargePercentage(current: nil, maximum: 5_000))
+    XCTAssertNil(BatteryMeasurements.chargePercentage(current: -1, maximum: 5_000))
+    XCTAssertNil(BatteryMeasurements.chargePercentage(current: 5_001, maximum: 5_000))
+    XCTAssertNil(BatteryMeasurements.chargePercentage(current: 1, maximum: 0))
+    XCTAssertNil(BatteryMeasurements.chargePercentage(current: .nan, maximum: 5_000))
+    XCTAssertEqual(
       try XCTUnwrap(BatteryMeasurements.capacityRatio(nominal: 5_000, design: 6_250)),
       80,
       accuracy: 0.000_001
     )
     XCTAssertNil(BatteryMeasurements.capacityRatio(nominal: 5_000, design: 0))
     XCTAssertNil(BatteryMeasurements.capacityRatio(nominal: .nan, design: 6_250))
+    XCTAssertNil(BatteryMeasurements.capacityRatio(nominal: .greatestFiniteMagnitude, design: 1))
     XCTAssertEqual(BatteryMeasurements.validMinutes(90), 90)
     XCTAssertNil(BatteryMeasurements.validMinutes(65_535))
     XCTAssertNil(BatteryMeasurements.validMinutes(-1))
+    XCTAssertEqual(
+      try XCTUnwrap(BatteryMeasurements.electricalPower(voltage: 12, current: -1.5)),
+      -18,
+      accuracy: 0.000_001
+    )
+    XCTAssertNil(BatteryMeasurements.electricalPower(voltage: nil, current: 1))
+    XCTAssertNil(
+      BatteryMeasurements.electricalPower(voltage: .greatestFiniteMagnitude, current: 2))
   }
 
   func testGPUPerformanceValueRejectsInvalidPercentages() {
