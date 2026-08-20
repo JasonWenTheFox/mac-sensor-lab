@@ -37,6 +37,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 ### Fixed
 
 - Duplicate provider IDs no longer trap while constructing read or dashboard ordering; they remain visible to the contract audit.
+- Network and disk rate baselines now reset when aggregate interface/device counts change or elapsed time is non-finite, preventing topology changes from becoming false throughput spikes.
 - CSV text fields now escape standalone carriage returns and formula-leading characters while preserving numeric `raw_value` cells.
 - Ambient-light calibration import now performs a bounded 64 KiB local-file read before strict decoding.
 - Concurrent initial and automatic recording flushes no longer duplicate an identical provider snapshot.

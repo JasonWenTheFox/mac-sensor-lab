@@ -317,6 +317,7 @@ final class SensorCoreTests: XCTestCase {
 
   func testNetworkRateCalculatorUsesMonotonicDeltas() throws {
     let previous = NetworkCounterSample(
+      activeInterfaceCount: 2,
       receivedBytes: 1_000,
       sentBytes: 2_000,
       receivedPackets: 10,
@@ -324,6 +325,7 @@ final class SensorCoreTests: XCTestCase {
       timestamp: 100
     )
     let current = NetworkCounterSample(
+      activeInterfaceCount: 2,
       receivedBytes: 3_000,
       sentBytes: 3_000,
       receivedPackets: 30,
@@ -336,10 +338,47 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertEqual(rates.receivedPacketsPerSecond, 10)
     XCTAssertEqual(rates.sentPacketsPerSecond, 5)
     XCTAssertNil(NetworkRateCalculator.rates(previous: current, current: previous))
+    let changedTopology = NetworkCounterSample(
+      activeInterfaceCount: 3,
+      receivedBytes: current.receivedBytes,
+      sentBytes: current.sentBytes,
+      receivedPackets: current.receivedPackets,
+      sentPackets: current.sentPackets,
+      timestamp: current.timestamp + 1
+    )
+    XCTAssertNil(NetworkRateCalculator.rates(previous: current, current: changedTopology))
+    let invalidTime = NetworkCounterSample(
+      activeInterfaceCount: current.activeInterfaceCount,
+      receivedBytes: current.receivedBytes,
+      sentBytes: current.sentBytes,
+      receivedPackets: current.receivedPackets,
+      sentPackets: current.sentPackets,
+      timestamp: .infinity
+    )
+    XCTAssertNil(NetworkRateCalculator.rates(previous: current, current: invalidTime))
+    let overflowingRate = NetworkCounterSample(
+      activeInterfaceCount: 1,
+      receivedBytes: .max,
+      sentBytes: .max,
+      receivedPackets: .max,
+      sentPackets: .max,
+      timestamp: .leastNonzeroMagnitude
+    )
+    let zeroNetworkSample = NetworkCounterSample(
+      activeInterfaceCount: 1,
+      receivedBytes: 0,
+      sentBytes: 0,
+      receivedPackets: 0,
+      sentPackets: 0,
+      timestamp: 0
+    )
+    XCTAssertNil(
+      NetworkRateCalculator.rates(previous: zeroNetworkSample, current: overflowingRate))
   }
 
   func testDiskIORateCalculatorUsesMonotonicDeltas() throws {
     let previous = DiskIOCounterSample(
+      deviceCount: 1,
       bytesRead: 1_000,
       bytesWritten: 2_000,
       readOperations: 10,
@@ -347,6 +386,7 @@ final class SensorCoreTests: XCTestCase {
       timestamp: 100
     )
     let current = DiskIOCounterSample(
+      deviceCount: 1,
       bytesRead: 5_000,
       bytesWritten: 4_000,
       readOperations: 30,
@@ -359,6 +399,41 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertEqual(rates.readOperationsPerSecond, 10)
     XCTAssertEqual(rates.writeOperationsPerSecond, 5)
     XCTAssertNil(DiskIORateCalculator.rates(previous: current, current: previous))
+    let changedTopology = DiskIOCounterSample(
+      deviceCount: 2,
+      bytesRead: current.bytesRead,
+      bytesWritten: current.bytesWritten,
+      readOperations: current.readOperations,
+      writeOperations: current.writeOperations,
+      timestamp: current.timestamp + 1
+    )
+    XCTAssertNil(DiskIORateCalculator.rates(previous: current, current: changedTopology))
+    let invalidTime = DiskIOCounterSample(
+      deviceCount: current.deviceCount,
+      bytesRead: current.bytesRead,
+      bytesWritten: current.bytesWritten,
+      readOperations: current.readOperations,
+      writeOperations: current.writeOperations,
+      timestamp: .infinity
+    )
+    XCTAssertNil(DiskIORateCalculator.rates(previous: current, current: invalidTime))
+    let overflowingRate = DiskIOCounterSample(
+      deviceCount: 1,
+      bytesRead: .max,
+      bytesWritten: .max,
+      readOperations: .max,
+      writeOperations: .max,
+      timestamp: .leastNonzeroMagnitude
+    )
+    let zeroDiskSample = DiskIOCounterSample(
+      deviceCount: 1,
+      bytesRead: 0,
+      bytesWritten: 0,
+      readOperations: 0,
+      writeOperations: 0,
+      timestamp: 0
+    )
+    XCTAssertNil(DiskIORateCalculator.rates(previous: zeroDiskSample, current: overflowingRate))
   }
 
   func testSnapshotSearchMatchesProvidersAndNarrowsChannels() throws {

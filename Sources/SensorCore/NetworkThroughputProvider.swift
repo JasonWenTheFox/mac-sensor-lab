@@ -2,6 +2,7 @@ import Darwin
 import Foundation
 
 struct NetworkCounterSample: Equatable {
+  let activeInterfaceCount: Int
   let receivedBytes: UInt64
   let sentBytes: UInt64
   let receivedPackets: UInt64
@@ -20,20 +21,27 @@ enum NetworkRateCalculator {
   static func rates(previous: NetworkCounterSample, current: NetworkCounterSample) -> NetworkRates?
   {
     let elapsed = current.timestamp - previous.timestamp
-    guard elapsed > 0,
+    guard elapsed.isFinite, elapsed > 0,
+      current.activeInterfaceCount == previous.activeInterfaceCount,
       current.receivedBytes >= previous.receivedBytes,
       current.sentBytes >= previous.sentBytes,
       current.receivedPackets >= previous.receivedPackets,
       current.sentPackets >= previous.sentPackets
     else { return nil }
 
-    return NetworkRates(
+    let rates = NetworkRates(
       receivedBytesPerSecond: Double(current.receivedBytes - previous.receivedBytes) / elapsed,
       sentBytesPerSecond: Double(current.sentBytes - previous.sentBytes) / elapsed,
       receivedPacketsPerSecond: Double(current.receivedPackets - previous.receivedPackets)
         / elapsed,
       sentPacketsPerSecond: Double(current.sentPackets - previous.sentPackets) / elapsed
     )
+    guard rates.receivedBytesPerSecond.isFinite,
+      rates.sentBytesPerSecond.isFinite,
+      rates.receivedPacketsPerSecond.isFinite,
+      rates.sentPacketsPerSecond.isFinite
+    else { return nil }
+    return rates
   }
 }
 
@@ -66,6 +74,7 @@ public final class NetworkThroughputProvider: SensorProvider, @unchecked Sendabl
     }
 
     let current = NetworkCounterSample(
+      activeInterfaceCount: aggregate.activeInterfaceCount,
       receivedBytes: aggregate.receivedBytes,
       sentBytes: aggregate.sentBytes,
       receivedPackets: aggregate.receivedPackets,
@@ -130,7 +139,7 @@ public final class NetworkThroughputProvider: SensorProvider, @unchecked Sendabl
       capability: metadata.capability,
       channels: channels,
       notes: [
-        "Rates need two samples; the first read establishes a baseline.",
+        "Rates need two samples; the first read or an active-interface count change establishes a baseline.",
         "Counters aggregate active non-loopback interfaces without exporting their names or addresses.",
         "Virtual or tunneled paths can represent the same traffic more than once.",
       ]

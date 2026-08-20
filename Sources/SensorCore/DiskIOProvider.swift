@@ -2,6 +2,7 @@ import Foundation
 import IOKit
 
 struct DiskIOCounterSample: Equatable {
+  let deviceCount: Int
   let bytesRead: UInt64
   let bytesWritten: UInt64
   let readOperations: UInt64
@@ -19,20 +20,27 @@ struct DiskIORates: Equatable {
 enum DiskIORateCalculator {
   static func rates(previous: DiskIOCounterSample, current: DiskIOCounterSample) -> DiskIORates? {
     let elapsed = current.timestamp - previous.timestamp
-    guard elapsed > 0,
+    guard elapsed.isFinite, elapsed > 0,
+      current.deviceCount == previous.deviceCount,
       current.bytesRead >= previous.bytesRead,
       current.bytesWritten >= previous.bytesWritten,
       current.readOperations >= previous.readOperations,
       current.writeOperations >= previous.writeOperations
     else { return nil }
 
-    return DiskIORates(
+    let rates = DiskIORates(
       readBytesPerSecond: Double(current.bytesRead - previous.bytesRead) / elapsed,
       writeBytesPerSecond: Double(current.bytesWritten - previous.bytesWritten) / elapsed,
       readOperationsPerSecond: Double(current.readOperations - previous.readOperations) / elapsed,
       writeOperationsPerSecond: Double(current.writeOperations - previous.writeOperations)
         / elapsed
     )
+    guard rates.readBytesPerSecond.isFinite,
+      rates.writeBytesPerSecond.isFinite,
+      rates.readOperationsPerSecond.isFinite,
+      rates.writeOperationsPerSecond.isFinite
+    else { return nil }
+    return rates
   }
 }
 
@@ -65,6 +73,7 @@ public final class DiskIOProvider: SensorProvider, @unchecked Sendable {
     }
 
     let current = DiskIOCounterSample(
+      deviceCount: aggregate.deviceCount,
       bytesRead: aggregate.bytesRead,
       bytesWritten: aggregate.bytesWritten,
       readOperations: aggregate.readOperations,
