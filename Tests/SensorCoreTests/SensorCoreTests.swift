@@ -518,6 +518,18 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertEqual(extremeStatistics.relativePosition ?? .nan, 1, accuracy: 0.000_001)
   }
 
+  func testMotionVariationStatisticsAreFiniteAndFactLimited() throws {
+    let statistics = try XCTUnwrap(
+      MotionVariationStatistics(values: [.nan, 0.9, 1.0, 1.1, .infinity]))
+    XCTAssertEqual(statistics.sampleCount, 3)
+    XCTAssertEqual(statistics.mean, 1, accuracy: 0.000_001)
+    XCTAssertEqual(statistics.rmsDeviation, sqrt(0.02 / 3), accuracy: 0.000_001)
+    XCTAssertEqual(statistics.peakToPeak, 0.2, accuracy: 0.000_001)
+    XCTAssertNil(MotionVariationStatistics(values: [.nan, 1]))
+    XCTAssertNil(
+      MotionVariationStatistics(values: [-.greatestFiniteMagnitude, .greatestFiniteMagnitude]))
+  }
+
   func testAmbientLuxCalibrationIsExplicitAndValidated() throws {
     let calibration = try XCTUnwrap(
       AmbientLuxCalibration(

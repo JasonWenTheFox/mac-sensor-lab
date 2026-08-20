@@ -42,6 +42,49 @@ public struct SensorSeriesStatistics: Equatable, Sendable {
   }
 }
 
+/// Low-rate variation statistics for acceleration-magnitude history.
+///
+/// These values describe the dashboard samples only. They do not estimate vibration frequency or
+/// replace a high-rate acquisition pipeline.
+public struct MotionVariationStatistics: Equatable, Sendable {
+  public let sampleCount: Int
+  public let mean: Double
+  public let rmsDeviation: Double
+  public let peakToPeak: Double
+
+  public init?(values: [Double]) {
+    let finiteValues = values.filter(\.isFinite)
+    guard finiteValues.count >= 2,
+      let minimum = finiteValues.min(),
+      let maximum = finiteValues.max()
+    else { return nil }
+
+    let magnitude = max(finiteValues.reduce(0) { max($0, abs($1)) }, 1)
+    let normalizedValues = finiteValues.map { $0 / magnitude }
+    var normalizedMean = 0.0
+    for (index, value) in normalizedValues.enumerated() {
+      normalizedMean += (value - normalizedMean) / Double(index + 1)
+    }
+
+    var normalizedMeanSquareDeviation = 0.0
+    for (index, value) in normalizedValues.enumerated() {
+      let squaredDeviation = (value - normalizedMean) * (value - normalizedMean)
+      normalizedMeanSquareDeviation +=
+        (squaredDeviation - normalizedMeanSquareDeviation) / Double(index + 1)
+    }
+
+    let mean = normalizedMean * magnitude
+    let rmsDeviation = sqrt(max(normalizedMeanSquareDeviation, 0)) * magnitude
+    let peakToPeak = (maximum / magnitude - minimum / magnitude) * magnitude
+    guard mean.isFinite, rmsDeviation.isFinite, peakToPeak.isFinite else { return nil }
+
+    self.sampleCount = finiteValues.count
+    self.mean = mean
+    self.rmsDeviation = rmsDeviation
+    self.peakToPeak = peakToPeak
+  }
+}
+
 /// A zero-offset, one-point illuminance estimate supplied by the user.
 ///
 /// This intentionally does not claim that the Apple SPU raw channel is lux.

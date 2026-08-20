@@ -74,6 +74,8 @@ The Overview, Raw Sensors, Experiments, and Diagnostics screens share the same n
   and capture time. Imports are local files capped at 64 KiB; invalid or oversized input cannot
   replace the current calibration.
 - Capture a local lid-angle reference and view signed relative opening/closing change.
+- Inspect low-rate acceleration-magnitude RMS variation and peak-to-peak motion without presenting
+  the 1–10 second dashboard cadence as vibration-frequency analysis.
 - Inspect value-free sampling health counters for completed cycles, latest duration, provider
   status transitions, and consecutive issue samples. An explicitly exported privacy-safe support
   report may include those counters and stable channel metadata, but no readings, summaries, notes,
@@ -135,7 +137,7 @@ rejects tracked build output, absolute user paths, common secret signatures, pro
 keys that this release does not implement, forbidden mutation/privilege APIs, missing release
 documents, or a privacy manifest inconsistent with the current offline behavior.
 
-GitHub Actions repeats formatting, audit, build, 39 XCTest cases, portable self-test, and app-bundle
+GitHub Actions repeats formatting, audit, build, 40 XCTest cases, portable self-test, and app-bundle
 assembly on `macos-26`.
 
 ## Repository layout

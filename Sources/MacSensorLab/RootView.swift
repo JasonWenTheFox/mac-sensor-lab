@@ -378,9 +378,9 @@ private struct ExperimentsView: View {
       channelID: "force_touch",
       description: "Requires a future raw Force Touch provider and calibration"),
     Experiment(
-      name: "Vibration Recorder", symbol: "waveform.path", providerID: "motion.spu_live",
+      name: "Motion Trend", symbol: "waveform.path", providerID: "motion.spu_live",
       channelID: "acceleration_magnitude",
-      description: "Uses live acceleration history when macOS publishes reports"),
+      description: "Low-rate acceleration variation; not a vibration spectrum analyzer"),
     Experiment(
       name: "Light Meter", symbol: "sun.max", providerID: "motion.spu_live",
       channelID: "ambient_intensity",
@@ -438,8 +438,23 @@ private struct ExperimentsView: View {
   }
 
   private func sourceState(isReady: Bool, snapshot: SensorSnapshot?) -> String {
-    guard isReady else { return "Foundation ready • provider pending" }
-    return snapshot?.status == .degraded ? "Recent data • source limited" : "Data source ready"
+    if isReady {
+      return snapshot?.status == .degraded ? "Recent data • source limited" : "Data source ready"
+    }
+    guard let snapshot else { return "Not implemented • provider pending" }
+    if snapshot.id == "diagnostics.hardware_capabilities",
+      snapshot.channels.contains(where: { ($0.value ?? 0) > 0 })
+    {
+      return "Hardware detected • measurement provider pending"
+    }
+    return switch snapshot.status {
+    case .loading: "Checking data source"
+    case .permissionRequired: "Permission required"
+    case .unavailable: "Data source unavailable"
+    case .error: "Provider error"
+    case .degraded: "Data source limited"
+    case .available: "Required measurement channel unavailable"
+    }
   }
 
   @ViewBuilder
@@ -496,6 +511,24 @@ private struct ExperimentsView: View {
             onImportCalibration: onImportAmbientCalibration
           )
         }
+      }
+
+      if channelID == "acceleration_magnitude",
+        let statistics = MotionVariationStatistics(values: points.map(\.value))
+      {
+        HStack(spacing: 8) {
+          ExperimentMetric(
+            label: "RMS variation",
+            value: "\(SensorFormatting.decimal(statistics.rmsDeviation, fractionDigits: 4)) g")
+          ExperimentMetric(
+            label: "Peak-to-peak",
+            value: "\(SensorFormatting.decimal(statistics.peakToPeak, fractionDigits: 4)) g")
+        }
+        Text(
+          "Calculated from \(statistics.sampleCount) dashboard samples. The 1–10 second cadence cannot measure vibration frequency."
+        )
+        .font(.caption2)
+        .foregroundStyle(.secondary)
       }
 
       if points.count >= 2 {
