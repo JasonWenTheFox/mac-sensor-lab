@@ -79,6 +79,7 @@ DEVELOPER_DIR=/Library/Developer/CommandLineTools swift run sensorlab-probe
 DEVELOPER_DIR=/Library/Developer/CommandLineTools swift run sensorlab-probe -- --demo
 DEVELOPER_DIR=/Library/Developer/CommandLineTools swift run sensorlab-probe -- --diagnostics
 ./scripts/build-app.sh
+./scripts/build-app.sh release
 ./scripts/release-audit.sh
 open "outputs/Mac Sensor Lab.app"
 open "outputs/Mac Sensor Lab.app" --args --demo
@@ -93,7 +94,7 @@ xcodebuild -checkFirstLaunchStatus
 swift test
 ```
 
-`scripts/build-app.sh` 会在 Xcode 尚不可用时自动回退到 Command Line Tools，生成并临时签名本地 `.app`，不会修改全局开发者目录。
+`scripts/build-app.sh` 会在 Xcode 尚不可用时自动回退到 Command Line Tools，生成并临时签名本地 Debug `.app`；传入 `release` 会从优化后的 Release 可执行文件组装 App。两种模式都不会修改全局开发者目录，CI 使用 Release 模式复验。
 
 `scripts/release-audit.sh` 只检查本仓库的已跟踪文件和发布资源：阻止构建产物、绝对用户路径、密钥特征、未实现的受保护权限、危险写入 API 或与当前离线行为不一致的 Privacy Manifest 进入发布分支。
 

@@ -133,13 +133,14 @@ swift run sensorlab-probe
 swift run sensorlab-probe -- --demo
 swift run sensorlab-probe -- --diagnostics
 ./scripts/build-app.sh
+./scripts/build-app.sh release
 ./scripts/release-audit.sh
 open "outputs/Mac Sensor Lab.app"
 ```
 
-`scripts/build-app.sh` assembles and ad-hoc signs a local app bundle, validates `Info.plist`, and
-packages and validates `PrivacyInfo.xcprivacy`. It does not change the globally selected developer
-directory.
+`scripts/build-app.sh` assembles and ad-hoc signs a local Debug app bundle; passing `release` uses
+the optimized Release executable. Both modes validate `Info.plist` and `PrivacyInfo.xcprivacy`
+without changing the globally selected developer directory. CI verifies the Release mode.
 
 `scripts/release-audit.sh` examines only tracked files and release resources in this repository. It
 rejects tracked build output, absolute user paths, common secret signatures, protected permission

@@ -25,8 +25,11 @@ jobs:
       - name: Check formatting
         run: xcrun swift-format lint --recursive Sources Tests Package.swift
 
-      - name: Build
+      - name: Build debug
         run: swift build
+
+      - name: Build optimized release
+        run: swift build -c release
 
       - name: Run unit tests
         run: swift test
@@ -34,5 +37,5 @@ jobs:
       - name: Run portable integration self-test
         run: swift run sensorlab-selftest --portable
 
-      - name: Assemble and verify local app bundle
-        run: ./scripts/build-app.sh
+      - name: Assemble and verify optimized app bundle
+        run: ./scripts/build-app.sh release
