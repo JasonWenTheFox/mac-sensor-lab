@@ -15,8 +15,23 @@ cd "$project_root"
 swift build -c "$configuration" --product MacSensorLab
 
 binary_path="$(swift build -c "$configuration" --show-bin-path)/MacSensorLab"
+output_directory="$project_root/outputs"
 app_path="$project_root/outputs/Mac Sensor Lab.app"
-contents_path="$app_path/Contents"
+if [[ -L "$output_directory" ]]; then
+    echo "outputs must be a real directory, not a symbolic link" >&2
+    exit 1
+fi
+mkdir -p "$output_directory"
+staging_directory="$(mktemp -d "$output_directory/.app-staging.XXXXXX")"
+staged_app_path="$staging_directory/Mac Sensor Lab.app"
+contents_path="$staged_app_path/Contents"
+
+cleanup() {
+    if [[ -d "$staging_directory" && "$staging_directory" == "$output_directory"/.app-staging.* ]]; then
+        rm -rf -- "$staging_directory"
+    fi
+}
+trap cleanup EXIT
 
 mkdir -p "$contents_path/MacOS" "$contents_path/Resources"
 cp "$binary_path" "$contents_path/MacOS/MacSensorLab"
@@ -41,17 +56,29 @@ codesign_options=(--force --sign - --timestamp=none)
 if [[ "$configuration" == "release" ]]; then
     codesign_options+=(--options runtime)
 fi
-/usr/bin/codesign "${codesign_options[@]}" "$app_path"
+/usr/bin/codesign "${codesign_options[@]}" "$staged_app_path"
 /usr/bin/plutil -lint "$contents_path/Info.plist"
-/usr/bin/codesign --verify --deep --strict "$app_path"
+/usr/bin/codesign --verify --deep --strict "$staged_app_path"
 if [[ "$configuration" == "release" ]]; then
-    if /usr/bin/codesign --display --verbose=4 "$app_path" 2>&1 \
+    if /usr/bin/codesign --display --verbose=4 "$staged_app_path" 2>&1 \
         | /usr/bin/grep -E 'flags=.*runtime' >/dev/null; then
         :
     else
         echo "release app signature is missing Hardened Runtime" >&2
         exit 1
     fi
+fi
+
+previous_app_path="$staging_directory/previous.app"
+if [[ -e "$app_path" || -L "$app_path" ]]; then
+    mv "$app_path" "$previous_app_path"
+fi
+if ! mv "$staged_app_path" "$app_path"; then
+    if [[ -e "$previous_app_path" || -L "$previous_app_path" ]]; then
+        mv "$previous_app_path" "$app_path"
+    fi
+    echo "could not replace the assembled app bundle" >&2
+    exit 1
 fi
 
 print -r -- "$app_path"

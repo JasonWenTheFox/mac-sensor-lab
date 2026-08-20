@@ -163,7 +163,9 @@ open "outputs/Mac Sensor Lab.app"
 
 `scripts/build-app.sh` assembles and ad-hoc signs a local Debug app bundle; passing `release` uses
 the optimized Release executable. Both modes validate `Info.plist` and `PrivacyInfo.xcprivacy`
-without changing the globally selected developer directory. CI verifies the Release mode.
+without changing the globally selected developer directory. Each run assembles and verifies a
+fresh staging bundle on the output filesystem before replacing the previous generated bundle, so
+removed or renamed resources cannot survive from an older build. CI verifies the Release mode.
 
 `scripts/release-audit.sh` examines only tracked files and release resources in this repository. It
 rejects tracked build output, absolute user paths, common secret signatures, protected permission

@@ -44,6 +44,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ### Changed
 
+- App assembly now builds and verifies a fresh same-output-filesystem staging bundle before replacing the previous generated bundle, preventing removed or renamed resources from leaking into later builds.
 - System-volume storage now uses public Foundation resource keys and keeps ordinary, important-use, and opportunistic availability as separate bounded facts.
 - CI now avoids duplicate feature-branch `push` runs, cancels stale pull-request runs, and defers the macOS runner while a pull request remains a draft; marking it ready requests one complete validation.
 - Optimized Release app bundles now enable and verify Hardened Runtime even under local ad-hoc signing; the deterministic Demo also passes a local launch-survival smoke test.
