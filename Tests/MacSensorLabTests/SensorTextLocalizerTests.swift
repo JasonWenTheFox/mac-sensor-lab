@@ -184,6 +184,14 @@ final class SensorTextLocalizerTests: XCTestCase {
     let disk = try XCTUnwrap(snapshots["storage.disk_io"])
     XCTAssertEqual(packagedLocalizer.localized(disk.summary), "读取 18 MB/s • 写入 4 MB/s")
 
+    let storage = try XCTUnwrap(snapshots["storage.system_volume"])
+    XCTAssertEqual(
+      packagedLocalizer.localized(
+        try XCTUnwrap(storage.channels.first(where: { $0.id == "available_important" })).label
+      ),
+      "可用于重要用途"
+    )
+
     let publicPower = try XCTUnwrap(snapshots["power.source"])
     XCTAssertEqual(packagedLocalizer.localized(publicPower.name), "系统电源来源")
     XCTAssertEqual(packagedLocalizer.localized(publicPower.summary), "78% • 电池")

@@ -46,7 +46,7 @@ The current build has 15 providers:
 | Thermal | public thermal pressure and Low Power Mode | A pressure state is not a temperature |
 | SMC | generation-specific M1–M5 temperatures, fan RPM, and internal power channels | Fixed read-only catalogs; CPU brand is reduced to a generation and never retained/exported; no key writes or fan control |
 | Display | active display count, current pixel and logical-point dimensions, derived backing scale, refresh rate | Public CoreGraphics mode data; no persistent display identifiers |
-| Storage | system-volume capacity and free/used space | No paths in exports |
+| Storage | system-volume total, ordinary/important/opportunistic availability, derived used space | Public Foundation volume keys; no names, IDs, mount paths, or error text |
 | Disk activity | aggregate bytes, operations, rates, and driver errors | No device name, serial, volume name, mount point, or file path |
 | SPU discovery | presence of known motion and ambient-light sensor types | Presence does not imply a live data stream |
 | SPU live | best-effort acceleration, level, angular velocity, raw ambient intensity, and four spectral channels | Reads only reports already published by macOS; never writes driver state |

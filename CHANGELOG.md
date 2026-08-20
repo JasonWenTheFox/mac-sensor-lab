@@ -40,6 +40,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ### Changed
 
+- System-volume storage now uses public Foundation resource keys and keeps ordinary, important-use, and opportunistic availability as separate bounded facts.
 - CI now avoids duplicate feature-branch `push` runs, cancels stale pull-request runs, and defers the macOS runner while a pull request remains a draft; marking it ready requests one complete validation.
 - Optimized Release app bundles now enable and verify Hardened Runtime even under local ad-hoc signing; the deterministic Demo also passes a local launch-survival smoke test.
 - Existing ambient-light calibration now accepts up to eight strictly monotonic reference points, supports undoing the last point, and preserves legacy single-point JSON/UserDefaults compatibility.
@@ -54,6 +55,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ### Fixed
 
+- Storage failures no longer echo system error text that could contain a local path, and impossible capacity relationships are omitted instead of becoming used-space claims.
 - Display telemetry now distinguishes current-mode pixel dimensions from logical point dimensions and only derives a backing scale from consistent, bounded axes.
 - Settings no longer claims that existing automatically sampled read-only HID providers are opt-in.
 - The former Vibration Recorder placeholder no longer implies that 1–10 second dashboard samples can measure vibration frequency.

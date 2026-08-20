@@ -96,6 +96,10 @@
 	<string>已恢复自动采样</string>
 	<key>Available</key>
 	<string>可用</string>
+	<key>Available for important usage</key>
+	<string>可用于重要用途</string>
+	<key>Available for opportunistic usage</key>
+	<string>可用于机会性用途</string>
 	<key>Average</key>
 	<string>平均</string>
 	<key>Average number of processes in the system run queue; not CPU percent.</key>
@@ -168,6 +172,8 @@
 	<string>校准点无效、不单调，或超过了 8 点上限</string>
 	<key>Capacity</key>
 	<string>容量</string>
+	<key>Capacity semantics come from public Foundation volume resource keys.</key>
+	<string>容量语义来自公开的 Foundation 卷资源键。</string>
 	<key>Charge</key>
 	<string>电量</string>
 	<key>Charging</key>
@@ -206,6 +212,8 @@
 	<string>控制器报告的容量；它可能随电池校准而变化。</string>
 	<key>Converted from the battery controller's raw deci-kelvin value.</key>
 	<string>由电池控制器的原始十分之一开尔文值换算。</string>
+	<key>Could not read system-volume capacity</key>
+	<string>无法读取系统卷容量</string>
 	<key>Could not read the system volume</key>
 	<string>无法读取系统卷</string>
 	<key>Could not start recording: %@</key>
@@ -322,6 +330,12 @@
 	<string>固定白名单中的 AppleSmartBattery 字段。</string>
 	<key>Force Touch trackpad</key>
 	<string>Force Touch 触控板</string>
+	<key>Foundation URLResourceValues</key>
+	<string>Foundation URLResourceValues</string>
+	<key>Foundation estimate for nonessential work; it can be lower than ordinary free space.</key>
+	<string>Foundation 对非必要工作的估算值；它可能低于普通可用空间。</string>
+	<key>Foundation estimate that may include purgeable space for important usage.</key>
+	<string>Foundation 估算值，可能包含可为重要用途清理的空间。</string>
 	<key>Four uncalibrated ambient spectral channels</key>
 	<string>4 个未校准的环境光谱通道</string>
 	<key>Fully charged</key>
@@ -474,6 +488,8 @@
 	<string>此构建不采集序列号、硬件 UUID、UDID、主机名、用户名、位置、进程列表、SSID 或录音。</string>
 	<key>No sudo, driver-property writes, or permission bypass was attempted.</key>
 	<string>未尝试 sudo、写入驱动属性或绕过权限。</string>
+	<key>No volume path or system error text is exported.</key>
+	<string>不导出卷路径或系统错误文本。</string>
 	<key>No warning</key>
 	<string>无告警</string>
 	<key>Nominal</key>
@@ -698,6 +714,8 @@
 	<string>已停止 %@，共 %lld 行（%@）</string>
 	<key>Storage</key>
 	<string>存储</string>
+	<key>Storage capacity available</key>
+	<string>存储容量可用</string>
 	<key>Support</key>
 	<string>支持</string>
 	<key>Swap encrypted</key>
@@ -794,6 +812,8 @@
 	<string>虚拟或隧道路径可能会重复表示同一流量。</string>
 	<key>Voltage × current; not wall-plug power.</key>
 	<string>电压 × 电流；并非插座侧功率。</string>
+	<key>Volume names, identifiers, mount paths, and system error text are intentionally omitted.</key>
+	<string>有意省略卷名称、标识符、挂载路径和系统错误文本。</string>
 	<key>Waiting for at least five minutes and a measurable charge drop.</key>
 	<string>正在等待至少五分钟和可测量的电量下降。</string>
 	<key>Write errors</key>

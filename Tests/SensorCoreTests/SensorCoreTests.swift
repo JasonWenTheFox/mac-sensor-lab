@@ -1591,6 +1591,66 @@ final class SensorCoreTests: XCTestCase {
     )
   }
 
+  func testStorageSnapshotKeepsPublicCapacitySemanticsSeparate() throws {
+    let snapshot = StorageProvider().snapshot(
+      reading: PublicStorageCapacityReading(
+        total: 1_000,
+        available: 300,
+        availableForImportantUsage: 450,
+        availableForOpportunisticUsage: 200
+      )
+    )
+    let channels = Dictionary(uniqueKeysWithValues: snapshot.channels.map { ($0.id, $0) })
+
+    XCTAssertEqual(snapshot.status, .available)
+    XCTAssertEqual(try XCTUnwrap(channels["total"]?.value), 1_000, accuracy: 0.001)
+    XCTAssertEqual(try XCTUnwrap(channels["available"]?.value), 300, accuracy: 0.001)
+    XCTAssertEqual(try XCTUnwrap(channels["available_important"]?.value), 450, accuracy: 0.001)
+    XCTAssertEqual(
+      try XCTUnwrap(channels["available_opportunistic"]?.value),
+      200,
+      accuracy: 0.001
+    )
+    XCTAssertEqual(try XCTUnwrap(channels["used"]?.value), 700, accuracy: 0.001)
+    XCTAssertEqual(try XCTUnwrap(channels["used_percent"]?.value), 70, accuracy: 0.001)
+    XCTAssertEqual(channels["used"]?.kind, .derived)
+  }
+
+  func testStorageMeasurementsRejectInvalidOrImpossibleCapacities() {
+    XCTAssertNil(PublicStorageCapacityMeasurements.bytes(Int(-1)))
+    XCTAssertNil(PublicStorageCapacityMeasurements.bytes(Int64(-1)))
+    XCTAssertEqual(PublicStorageCapacityMeasurements.bytes(Int(42)), 42)
+    XCTAssertEqual(PublicStorageCapacityMeasurements.bytes(Int64(42)), 42)
+    XCTAssertNil(PublicStorageCapacityMeasurements.boundedAvailable(1_001, total: 1_000))
+    XCTAssertNil(PublicStorageCapacityMeasurements.used(total: 0, available: 0))
+    XCTAssertNil(PublicStorageCapacityMeasurements.usedPercentage(total: 1_000, available: 1_001))
+
+    let degraded = StorageProvider().snapshot(
+      reading: PublicStorageCapacityReading(
+        total: 1_000,
+        available: 1_001,
+        availableForImportantUsage: 900,
+        availableForOpportunisticUsage: 1_001
+      )
+    )
+    let channelIDs = Set(degraded.channels.map(\.id))
+    XCTAssertEqual(degraded.status, .degraded)
+    XCTAssertEqual(channelIDs, ["total", "available_important"])
+    XCTAssertFalse(degraded.notes.joined().contains("/"))
+
+    let unavailable = StorageProvider().snapshot(
+      reading: PublicStorageCapacityReading(
+        total: nil,
+        available: 1,
+        availableForImportantUsage: nil,
+        availableForOpportunisticUsage: nil
+      )
+    )
+    XCTAssertEqual(unavailable.status, .unavailable)
+    XCTAssertTrue(unavailable.channels.isEmpty)
+    XCTAssertFalse(unavailable.notes.joined().contains("/"))
+  }
+
   func testGPUPerformanceValueRejectsInvalidPercentages() {
     XCTAssertEqual(GPUPerformanceValue.percentage(64), 64)
     XCTAssertNil(GPUPerformanceValue.percentage(-1))

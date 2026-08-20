@@ -112,6 +112,8 @@ public enum SensorDemoProviderRegistry {
         [
           bytes("total", "Capacity", 1_000_000_000_000),
           bytes("available", "Available", 438_000_000_000),
+          bytes("available_important", "Available for important usage", 500_000_000_000),
+          bytes("available_opportunistic", "Available for opportunistic usage", 300_000_000_000),
           bytes("used", "Used", 562_000_000_000),
           percent("used_percent", "Used", 56.2, .derived),
         ]),
