@@ -346,18 +346,19 @@ final class SensorCoreTests: XCTestCase {
     )
     XCTAssertEqual(batteryHistory["power.source/battery_charge"]?.map(\.value), [78])
 
-    var pairedRateHistory: [String: [SensorHistoryPoint]] = [:]
-    for channelID in ["network_send_rate", "disk_write_rate"] {
+    var pairedHistory: [String: [SensorHistoryPoint]] = [:]
+    for channelID in ["network_send_rate", "disk_write_rate", "gpu_hotspot"] {
       SensorHistoryRetention.append(
         snapshot(providerID: "rate.fixture", channelID: channelID, value: 42, timestamp: 6),
-        to: &pairedRateHistory,
-        maximumSeriesCount: 2,
+        to: &pairedHistory,
+        maximumSeriesCount: 3,
         maximumPointsPerSeries: 2
       )
     }
-    XCTAssertEqual(pairedRateHistory.count, 2)
-    XCTAssertEqual(pairedRateHistory["rate.fixture/network_send_rate"]?.map(\.value), [42])
-    XCTAssertEqual(pairedRateHistory["rate.fixture/disk_write_rate"]?.map(\.value), [42])
+    XCTAssertEqual(pairedHistory.count, 3)
+    XCTAssertEqual(pairedHistory["rate.fixture/network_send_rate"]?.map(\.value), [42])
+    XCTAssertEqual(pairedHistory["rate.fixture/disk_write_rate"]?.map(\.value), [42])
+    XCTAssertEqual(pairedHistory["rate.fixture/gpu_hotspot"]?.map(\.value), [42])
 
     var malformedHistory: [String: [SensorHistoryPoint]] = [:]
     SensorHistoryRetention.append(

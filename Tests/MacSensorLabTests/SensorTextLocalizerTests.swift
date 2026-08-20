@@ -211,6 +211,8 @@ final class SensorTextLocalizerTests: XCTestCase {
     )
     XCTAssertEqual(packagedLocalizer.localized(thermalLevel.label), "热压力等级")
     XCTAssertEqual(packagedLocalizer.localized(thermalLevel.formattedValue), "正常")
+    XCTAssertEqual(packagedLocalizer.localized("Component Thermals"), "部件温度")
+    XCTAssertEqual(packagedLocalizer.localized("System Power Trend"), "系统功耗趋势")
 
     let publicPower = try XCTUnwrap(snapshots["power.source"])
     XCTAssertEqual(packagedLocalizer.localized(publicPower.name), "系统电源来源")

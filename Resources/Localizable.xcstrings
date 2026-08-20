@@ -11,9 +11,9 @@
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%@ 小时" } }
       }
     },
-    "%@ and %@ recent rate trends" : {
+    "%@ and %@ recent trends" : {
       "localizations" : {
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%@与%@的近期速率趋势" } }
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%@与%@的近期趋势" } }
       }
     },
     "50 MB safety limit" : {
@@ -84,6 +84,16 @@
     "Compares aggregate receive and send rates without exposing interface identity" : {
       "localizations" : {
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "对比汇总收发速率，不暴露接口身份" } }
+      }
+    },
+    "Compares internal CPU and GPU hotspots; not ambient temperature" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "对比内部 CPU 与 GPU 热点；不是环境温度" } }
+      }
+    },
+    "Component Thermals" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "部件温度" } }
       }
     },
     "Chart history stays in memory only and can be cleared from the toolbar." : {
@@ -1136,11 +1146,13 @@
     "Volume names, identifiers, mount paths, and system error text are intentionally omitted." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "有意省略卷名称、标识符、挂载路径和系统错误文本。" } } } },
     "Swap encrypted" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Swap 已加密" } } } },
     "System" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "系统" } } } },
+    "System Power Trend" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "系统功耗趋势" } } } },
     "System uptime" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "系统运行时间" } } } },
     "Thermal pressure" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "热压力" } } } },
     "Thermal pressure level" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "热压力等级" } } } },
     "Thermal Trend" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "热压力趋势" } } } },
     "Tracks public pressure states as an ordinal history, not temperature" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "将公开热压力状态记录为序数历史，而非温度" } } } },
+    "Tracks internal SMC power telemetry; not wall-plug power" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "跟踪内部 SMC 功耗遥测；不是插座侧功率" } } } },
     "Highest recent pressure" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "近期最高热压力" } } } },
     "State changes" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "状态变化" } } } },
     "%lld samples retained. Ordinal spacing is not physical and no temperature is inferred." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "保留 %lld 个样本。序数间距没有物理意义，也不推断温度。" } } } },

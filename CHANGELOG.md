@@ -6,6 +6,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ### Added
 
+- Component Thermals and System Power Trend experiments that reuse the fixed read-only SMC allowlist for bounded CPU/GPU comparisons and recent power averages/peaks, with internal-versus-ambient/wall-power caveats.
 - Network Throughput and Disk Activity experiments with bounded, dual-series receive/send and read/write history, recent averages, and explicit aggregate-identity caveats.
 - A Thermal Trend experiment that retains the public pressure-state order, recent peak, and transition count without presenting the 0–3 ordinal as temperature or a linear physical scale.
 - A conservative Battery Trend experiment derived from bounded in-memory public charge history, gated on an explicit discharging state, minimum duration/sample/drop thresholds, and safe handling of charging transitions or malformed data.

@@ -39,6 +39,7 @@ public enum SensorHistoryRetention {
         "acceleration_magnitude",
         "battery_charge",
         "thermal_pressure_level",
+        "gpu_hotspot",
         "network_send_rate",
         "disk_write_rate",
       ]

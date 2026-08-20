@@ -96,6 +96,8 @@ raw sensor payloads do not change with the selected language.
   drain rate and time-to-empty remain labeled as recent-history estimates.
 - Track public thermal-pressure state changes and the highest recent state using an explicitly
   ordinal history that never presents pressure levels as degrees or a linear physical scale.
+- Compare bounded CPU/GPU hotspot histories in Component Thermals and summarize recent internal
+  SMC power averages/peaks in System Power Trend; neither is presented as room or wall-plug data.
 - Compare bounded receive/send and read/write histories with recent averages in Network Throughput
   and Disk Activity, while retaining only aggregate rates and no interface or device identity.
 - Inspect low-rate acceleration-magnitude RMS variation and peak-to-peak motion without presenting

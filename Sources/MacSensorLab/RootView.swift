@@ -552,6 +552,18 @@ private struct ExperimentsView: View {
         "Tracks public pressure states as an ordinal history, not temperature"
       )),
     Experiment(
+      name: L10n.text("Component Thermals"), symbol: "cpu",
+      providerID: "thermal.smc", channelID: "cpu_hotspot",
+      description: L10n.text(
+        "Compares internal CPU and GPU hotspots; not ambient temperature"
+      )),
+    Experiment(
+      name: L10n.text("System Power Trend"), symbol: "bolt.circle",
+      providerID: "thermal.smc", channelID: "system_power",
+      description: L10n.text(
+        "Tracks internal SMC power telemetry; not wall-plug power"
+      )),
+    Experiment(
       name: L10n.text("Network Throughput"), symbol: "arrow.up.arrow.down",
       providerID: "system.network_throughput", channelID: "network_receive_rate",
       description: L10n.text(
@@ -778,15 +790,47 @@ private struct ExperimentsView: View {
         .foregroundStyle(.secondary)
       }
 
-      if let pair = pairedRateDefinition(for: channelID),
+      if channelID == "system_power",
+        let statistics = SensorSeriesStatistics(values: points.map(\.value))
+      {
+        HStack(spacing: 8) {
+          ExperimentMetric(
+            label: L10n.text("Average"),
+            value: "\(SensorFormatting.decimal(statistics.average, fractionDigits: 2)) W"
+          )
+          ExperimentMetric(
+            label: L10n.text("Max"),
+            value: "\(SensorFormatting.decimal(statistics.maximum, fractionDigits: 2)) W"
+          )
+        }
+        Text(L10n.sensorText("Internal SMC telemetry; not wall-plug power."))
+          .font(.caption2)
+          .foregroundStyle(.secondary)
+      }
+
+      if channelID == "cpu_hotspot",
+        let gpuChannel = snapshot.channels.first(where: { $0.id == "gpu_hotspot" })
+      {
+        PairedSeriesPanel(
+          primaryChannel: channel,
+          primaryPoints: points,
+          secondaryChannel: gpuChannel,
+          secondaryPoints: history["\(snapshot.id)/gpu_hotspot", default: []],
+          caution: "Internal component temperature, not ambient room temperature.",
+          formatAverage: {
+            "\(SensorFormatting.decimal($0, fractionDigits: 1)) °C"
+          }
+        )
+      } else if let pair = pairedRateDefinition(for: channelID),
         let secondaryChannel = snapshot.channels.first(where: { $0.id == pair.channelID })
       {
-        DuplexRatePanel(
+        PairedSeriesPanel(
           primaryChannel: channel,
           primaryPoints: points,
           secondaryChannel: secondaryChannel,
           secondaryPoints: history["\(snapshot.id)/\(pair.channelID)", default: []],
-          caution: pair.caution
+          caution: pair.caution,
+          formatAverage: SensorFormatting.bytesPerSecond
         )
       } else if points.count >= 2 {
         Chart(points) { point in
@@ -847,12 +891,13 @@ private struct ExperimentsView: View {
   }
 }
 
-private struct DuplexRatePanel: View {
+private struct PairedSeriesPanel: View {
   let primaryChannel: SensorChannel
   let primaryPoints: [SensorHistoryPoint]
   let secondaryChannel: SensorChannel
   let secondaryPoints: [SensorHistoryPoint]
   let caution: String
+  let formatAverage: (Double) -> String
 
   private var primaryStatistics: SensorSeriesStatistics? {
     SensorSeriesStatistics(values: primaryPoints.map(\.value))
@@ -870,14 +915,14 @@ private struct DuplexRatePanel: View {
             label: L10n.sensorText(primaryChannel.label),
             value: L10n.format(
               "Average %@",
-              SensorFormatting.bytesPerSecond(primaryStatistics.average)
+              formatAverage(primaryStatistics.average)
             )
           )
           ExperimentMetric(
             label: L10n.sensorText(secondaryChannel.label),
             value: L10n.format(
               "Average %@",
-              SensorFormatting.bytesPerSecond(secondaryStatistics.average)
+              formatAverage(secondaryStatistics.average)
             )
           )
         }
@@ -915,7 +960,7 @@ private struct DuplexRatePanel: View {
         .frame(height: 44)
         .accessibilityLabel(
           L10n.format(
-            "%@ and %@ recent rate trends",
+            "%@ and %@ recent trends",
             L10n.sensorText(primaryChannel.label),
             L10n.sensorText(secondaryChannel.label)
           )

@@ -6,8 +6,8 @@
 	<string>%@ %%/小时</string>
 	<key>%@ %@</key>
 	<string>%@ %@</string>
-	<key>%@ and %@ recent rate trends</key>
-	<string>%@与%@的近期速率趋势</string>
+	<key>%@ and %@ recent trends</key>
+	<string>%@与%@的近期趋势</string>
 	<key>%@ available</key>
 	<string>可用空间 %@</string>
 	<key>%@ experiment trend</key>
@@ -210,10 +210,14 @@
 	<string>对比汇总读写速率，不暴露设备身份</string>
 	<key>Compares aggregate receive and send rates without exposing interface identity</key>
 	<string>对比汇总收发速率，不暴露接口身份</string>
+	<key>Compares internal CPU and GPU hotspots; not ambient temperature</key>
+	<string>对比内部 CPU 与 GPU 热点；不是环境温度</string>
 	<key>Compatible SPU interfaces were not exposed</key>
 	<string>系统未暴露兼容的 SPU 接口</string>
 	<key>Completed refreshes</key>
 	<string>已完成刷新</string>
+	<key>Component Thermals</key>
+	<string>部件温度</string>
 	<key>Continuous recording</key>
 	<string>连续记录</string>
 	<key>Controller estimate; unavailable sentinel values are omitted.</key>
@@ -742,6 +746,8 @@
 	<string>系统</string>
 	<key>System Power Source</key>
 	<string>系统电源来源</string>
+	<key>System Power Trend</key>
+	<string>系统功耗趋势</string>
 	<key>System low-battery warning</key>
 	<string>系统低电量告警</string>
 	<key>System performance counters were unavailable</key>
@@ -782,6 +788,8 @@
 	<string>总计是跨块存储驱动汇总的驱动生命周期计数器。</string>
 	<key>Trackpad Scale</key>
 	<string>触控板秤</string>
+	<key>Tracks internal SMC power telemetry; not wall-plug power</key>
+	<string>跟踪内部 SMC 功耗遥测；不是插座侧功率</string>
 	<key>Tracks public pressure states as an ordinal history, not temperature</key>
 	<string>将公开热压力状态记录为序数历史，而非温度</string>
 	<key>Trend estimate pauses while connected to power or charging.</key>
