@@ -114,6 +114,12 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertEqual(SensorNumericSafety.uint64(42.9), 42)
     XCTAssertNil(SensorNumericSafety.uint64(-1))
     XCTAssertNil(SensorNumericSafety.uint64(Double(UInt64.max)))
+    XCTAssertEqual(SensorNumericSafety.uint64(NSNumber(value: 42)), 42)
+    XCTAssertEqual(SensorNumericSafety.uint64(NSNumber(value: UInt64.max)), .max)
+    XCTAssertNil(SensorNumericSafety.uint64(NSNumber(value: -1)))
+    XCTAssertNil(SensorNumericSafety.uint64(NSNumber(value: 1.5)))
+    XCTAssertNil(SensorNumericSafety.uint64(NSNumber(value: Double.nan)))
+    XCTAssertNil(SensorNumericSafety.uint64(NSNumber(value: true)))
     XCTAssertEqual(SensorNumericSafety.boundedNonnegativeInteger(99, maximum: 4), 4)
     XCTAssertNil(SensorNumericSafety.boundedNonnegativeInteger(.infinity, maximum: 4))
 

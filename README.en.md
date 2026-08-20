@@ -219,6 +219,8 @@ network expansion requires a new design and privacy review.
 ## Known limits
 
 - Undocumented HID, SMC, and AGX keys can change between macOS releases and Mac generations.
+- GPU-memory and disk-driver registry counters are accepted only as exact nonnegative integers;
+  malformed signed or fractional values are omitted rather than coerced into unsigned readings.
 - Only one current Apple Silicon Mac has received full hardware regression testing so far.
 - Virtual interfaces and tunnels can cause aggregate network traffic to count the same bytes on
   multiple paths; the chart is a trend, not ISP billing data.

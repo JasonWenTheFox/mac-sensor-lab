@@ -128,8 +128,12 @@ public struct GPUPerformanceProvider: SensorProvider {
         (values["Renderer Utilization %"] as? NSNumber)?.doubleValue)
       let tiler = GPUPerformanceValue.percentage(
         (values["Tiler Utilization %"] as? NSNumber)?.doubleValue)
-      let memoryInUse = (values["In use system memory"] as? NSNumber)?.uint64Value
-      let memoryAllocated = (values["Alloc system memory"] as? NSNumber)?.uint64Value
+      let memoryInUse = SensorNumericSafety.uint64(
+        values["In use system memory"] as? NSNumber
+      )
+      let memoryAllocated = SensorNumericSafety.uint64(
+        values["Alloc system memory"] as? NSNumber
+      )
       guard
         [device, renderer, tiler].contains(where: { $0 != nil })
           || memoryInUse != nil || memoryAllocated != nil

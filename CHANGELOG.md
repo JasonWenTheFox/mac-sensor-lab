@@ -60,6 +60,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ### Fixed
 
+- GPU-memory and disk-driver counters now require exact nonnegative integer `NSNumber` payloads, preventing negative or fractional registry values from wrapping into enormous unsigned readings.
 - Storage failures no longer echo system error text that could contain a local path, and impossible capacity relationships are omitted instead of becoming used-space claims.
 - Display telemetry now distinguishes current-mode pixel dimensions from logical point dimensions and only derives a backing scale from consistent, bounded axes.
 - Settings no longer claims that existing automatically sampled read-only HID providers are opt-in.

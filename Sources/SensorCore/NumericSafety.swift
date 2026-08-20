@@ -17,6 +17,17 @@ enum SensorNumericSafety {
     return UInt64(value)
   }
 
+  /// Preserves integer registry counters without allowing signed values to wrap through
+  /// `NSNumber.uint64Value` or accepting fractional/floating-point payloads.
+  static func uint64(_ value: NSNumber?) -> UInt64? {
+    guard let value, CFGetTypeID(value) != CFBooleanGetTypeID() else { return nil }
+    let text = value.stringValue
+    guard !text.isEmpty, text.utf8.allSatisfy({ (48...57).contains($0) }) else {
+      return nil
+    }
+    return UInt64(text)
+  }
+
   static func boundedNonnegativeInteger(_ value: Double, maximum: Int) -> Int? {
     guard value.isFinite, value >= 0, maximum >= 0 else { return nil }
     return Int(min(value.rounded(.down), Double(maximum)))

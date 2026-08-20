@@ -206,10 +206,18 @@ public final class DiskIOProvider: SensorProvider, @unchecked Sendable {
           0
         ),
         let statistics = unmanaged.takeRetainedValue() as? [String: Any],
-        let bytesRead = (statistics["Bytes (Read)"] as? NSNumber)?.uint64Value,
-        let bytesWritten = (statistics["Bytes (Write)"] as? NSNumber)?.uint64Value,
-        let readOperations = (statistics["Operations (Read)"] as? NSNumber)?.uint64Value,
-        let writeOperations = (statistics["Operations (Write)"] as? NSNumber)?.uint64Value
+        let bytesRead = SensorNumericSafety.uint64(statistics["Bytes (Read)"] as? NSNumber),
+        let bytesWritten = SensorNumericSafety.uint64(
+          statistics["Bytes (Write)"] as? NSNumber
+        ),
+        let readOperations = SensorNumericSafety.uint64(
+          statistics["Operations (Read)"] as? NSNumber
+        ),
+        let writeOperations = SensorNumericSafety.uint64(
+          statistics["Operations (Write)"] as? NSNumber
+        ),
+        let readErrors = Self.optionalCounter(statistics["Errors (Read)"]),
+        let writeErrors = Self.optionalCounter(statistics["Errors (Write)"])
       else { continue }
 
       guard
@@ -221,11 +229,11 @@ public final class DiskIOProvider: SensorProvider, @unchecked Sendable {
           aggregate.writeOperations, writeOperations),
         let nextReadErrors = SensorNumericSafety.sum(
           aggregate.readErrors,
-          (statistics["Errors (Read)"] as? NSNumber)?.uint64Value ?? 0
+          readErrors
         ),
         let nextWriteErrors = SensorNumericSafety.sum(
           aggregate.writeErrors,
-          (statistics["Errors (Write)"] as? NSNumber)?.uint64Value ?? 0
+          writeErrors
         )
       else { return nil }
       aggregate.deviceCount += 1
@@ -237,6 +245,11 @@ public final class DiskIOProvider: SensorProvider, @unchecked Sendable {
       aggregate.writeErrors = nextWriteErrors
     }
     return aggregate
+  }
+
+  private static func optionalCounter(_ value: Any?) -> UInt64? {
+    guard let value else { return 0 }
+    return SensorNumericSafety.uint64(value as? NSNumber)
   }
 
   private static func byteChannel(_ id: String, _ label: String, _ value: UInt64) -> SensorChannel {
