@@ -100,7 +100,7 @@ swift test
 
 `scripts/release-audit.sh` 只检查本仓库的已跟踪文件和发布资源：阻止构建产物、绝对用户路径、密钥特征、未实现的受保护权限、危险写入 API、失配的本地化产物或与当前离线行为不一致的 Privacy Manifest 进入发布分支。
 
-原生 UI 当前支持英文和简体中文，跟随 macOS 的 App 语言设置。界面本地化只作用于显示层；Provider/Channel 稳定 ID、JSON/CSV 字段与原始传感器数据不会随语言变化。
+原生 UI 当前支持英文和简体中文，跟随 macOS 的 App 语言设置。Provider 名称、动态摘要、通道标签、枚举值、单位和项目自有说明均在白名单展示层中本地化；Provider/Channel 稳定 ID、JSON/CSV 字段与原始传感器数据不会随语言变化。
 
 显式 `--demo` 启动参数使用 14 个内置、确定性且无机器标识的 Provider fixture。全界面会显示 Demo 横幅，并使用独立的采样、光照校准和上盖参考偏好键，适合截图、UI 回归和无对应硬件的演示；它绝不会伪装成实时读数。
 
@@ -159,7 +159,7 @@ Dashboard 还会在每个 Provider 结果进入 UI、历史或记录前执行同
 - [x] 添加 macOS 26 / Xcode 26 CI 和 Pull Request 安全检查模板。
 - [x] 建立私有 GitHub 仓库并通过首轮 CI。
 - [x] 用户接受 Xcode 许可。
-- [x] 完成 Xcode 首次组件初始化并在本机通过 57 项 XCTest。
+- [x] 完成 Xcode 首次组件初始化并在本机通过 62 项 XCTest。
 - [x] 加入可调采样、暂停/恢复、历史清空和 50 MB 上限的连续 CSV 记录。
 - [x] 加入环境光滚动统计、可选 Estimated lux 和上盖相对角度实验。
 - [x] 加入严格校验且不含设备标识的 1–8 点光照拟合、RMSE、撤销，以及兼容旧单点格式的 JSON 导入/导出。

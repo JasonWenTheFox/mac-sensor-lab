@@ -40,5 +40,9 @@ let package = Package(
       name: "SensorCoreTests",
       dependencies: ["SensorCore"]
     ),
+    .testTarget(
+      name: "MacSensorLabTests",
+      dependencies: ["MacSensorLab", "SensorCore"]
+    ),
   ]
 )

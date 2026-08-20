@@ -177,9 +177,9 @@ private struct SensorCard: View {
     VStack(alignment: .leading, spacing: 14) {
       HStack(alignment: .top) {
         VStack(alignment: .leading, spacing: 5) {
-          Text(L10n.text(snapshot.name))
+          Text(L10n.sensorText(snapshot.name))
             .font(.headline)
-          Text(L10n.text(snapshot.summary))
+          Text(L10n.sensorText(snapshot.summary))
             .font(.title3.weight(.semibold))
             .lineLimit(2)
         }
@@ -193,13 +193,13 @@ private struct SensorCard: View {
       } else {
         ForEach(snapshot.channels.prefix(4)) { channel in
           HStack(alignment: .firstTextBaseline) {
-            Text(L10n.text(channel.label))
+            Text(L10n.sensorText(channel.label))
               .foregroundStyle(.secondary)
             Spacer()
-            Text(channel.formattedValue)
+            Text(L10n.sensorText(channel.formattedValue))
               .monospacedDigit()
             if let unit = channel.unit, shouldDisplayUnit(unit, for: channel) {
-              Text(unit).foregroundStyle(.secondary)
+              Text(L10n.sensorText(unit)).foregroundStyle(.secondary)
             }
           }
           .font(.callout)
@@ -208,19 +208,19 @@ private struct SensorCard: View {
 
       if let channel = chartChannel, chartPoints.count >= 2 {
         VStack(alignment: .leading, spacing: 4) {
-          Text(L10n.format("%@ • recent samples", L10n.text(channel.label)))
+          Text(L10n.format("%@ • recent samples", L10n.sensorText(channel.label)))
             .font(.caption2)
             .foregroundStyle(.secondary)
           Chart(chartPoints) { point in
             LineMark(
               x: .value("Time", point.timestamp),
-              y: .value(channel.label, point.value)
+              y: .value(L10n.sensorText(channel.label), point.value)
             )
             .interpolationMethod(.catmullRom)
             .foregroundStyle(Color.accentColor)
             AreaMark(
               x: .value("Time", point.timestamp),
-              y: .value(channel.label, point.value)
+              y: .value(L10n.sensorText(channel.label), point.value)
             )
             .foregroundStyle(
               .linearGradient(
@@ -237,7 +237,7 @@ private struct SensorCard: View {
         .accessibilityLabel(
           L10n.format(
             "%@ trend with %lld samples",
-            L10n.text(channel.label),
+            L10n.sensorText(channel.label),
             Int64(chartPoints.count)
           )
         )
@@ -262,7 +262,7 @@ private struct SensorCard: View {
       .font(.caption)
       .foregroundStyle(.tertiary)
 
-      Text(L10n.format("Source: %@", snapshot.source))
+      Text(L10n.format("Source: %@", L10n.sensorText(snapshot.source)))
         .font(.caption)
         .foregroundStyle(.tertiary)
         .lineLimit(1)
@@ -311,7 +311,7 @@ private struct RawSensorsView: View {
     SensorSnapshotSearch.filter(
       snapshots,
       query: query,
-      localizedDisplayText: L10n.text
+      localizedDisplayText: L10n.sensorText
     )
   }
 
@@ -331,17 +331,17 @@ private struct RawSensorsView: View {
           ForEach(snapshot.channels) { channel in
             VStack(alignment: .leading, spacing: 5) {
               HStack(alignment: .firstTextBaseline) {
-                Text(L10n.text(channel.label))
+                Text(L10n.sensorText(channel.label))
                 Spacer()
-                Text(channel.formattedValue).monospacedDigit()
+                Text(L10n.sensorText(channel.formattedValue)).monospacedDigit()
                 if let unit = channel.unit, shouldDisplayUnit(unit, for: channel) {
-                  Text(unit).foregroundStyle(.secondary)
+                  Text(L10n.sensorText(unit)).foregroundStyle(.secondary)
                 }
               }
               HStack(spacing: 8) {
                 Text(channel.id).monospaced()
                 Text(L10n.text(channel.kind.displayName))
-                if let note = channel.note { Text(L10n.text(note)) }
+                if let note = channel.note { Text(L10n.sensorText(note)) }
               }
               .font(.caption)
               .foregroundStyle(.secondary)
@@ -349,16 +349,16 @@ private struct RawSensorsView: View {
             .padding(.vertical, 3)
           }
           if snapshot.channels.isEmpty {
-            Text(L10n.text(snapshot.summary)).foregroundStyle(.secondary)
+            Text(L10n.sensorText(snapshot.summary)).foregroundStyle(.secondary)
           }
           ForEach(snapshot.notes, id: \.self) { note in
-            Label(L10n.text(note), systemImage: "info.circle")
+            Label(L10n.sensorText(note), systemImage: "info.circle")
               .font(.caption)
               .foregroundStyle(.secondary)
           }
         } header: {
           HStack {
-            Text(L10n.text(snapshot.name))
+            Text(L10n.sensorText(snapshot.name))
             Spacer()
             StatusPill(status: snapshot.status)
           }
@@ -367,7 +367,7 @@ private struct RawSensorsView: View {
             L10n.format(
               "Updated %@ • Source: %@ • %@",
               snapshot.timestamp.formatted(date: .omitted, time: .standard),
-              snapshot.source,
+              L10n.sensorText(snapshot.source),
               L10n.text(snapshot.capability.displayName)
             )
           )
@@ -515,11 +515,11 @@ private struct ExperimentsView: View {
     {
       let points = history["\(snapshot.id)/\(channelID)", default: []]
       HStack(alignment: .firstTextBaseline) {
-        Text(channel.formattedValue)
+        Text(L10n.sensorText(channel.formattedValue))
           .font(.title2.bold())
           .monospacedDigit()
         if let unit = channel.unit, shouldDisplayUnit(unit, for: channel) {
-          Text(unit).foregroundStyle(.secondary)
+          Text(L10n.sensorText(unit)).foregroundStyle(.secondary)
         }
         Spacer()
         Text(L10n.text(channel.kind.displayName))
@@ -602,7 +602,7 @@ private struct ExperimentsView: View {
         .chartYAxis(.hidden)
         .frame(height: 34)
         .accessibilityLabel(
-          L10n.format("%@ experiment trend", L10n.text(channel.label))
+          L10n.format("%@ experiment trend", L10n.sensorText(channel.label))
         )
       }
     }
@@ -618,7 +618,7 @@ private struct ExperimentsView: View {
             RoundedRectangle(cornerRadius: 3)
               .fill(Color.accentColor.gradient)
               .frame(height: max(4, (channel.value ?? 0) / maximum * 30))
-            Text(channel.formattedValue)
+            Text(L10n.sensorText(channel.formattedValue))
               .font(.system(size: 9, design: .monospaced))
               .foregroundStyle(.secondary)
           }

@@ -56,8 +56,9 @@ The Overview, Raw Sensors, Experiments, and Diagnostics screens share the same n
 `SensorSnapshot` and `SensorChannel` model.
 
 The native UI follows the macOS per-app language setting and currently includes English and
-Simplified Chinese. Localization is display-only: stable provider/channel IDs, JSON/CSV fields,
-and raw sensor payloads do not change with the selected language.
+Simplified Chinese. A bounded display adapter localizes provider names, dynamic summaries, channel
+labels, enum values, units, and app-owned notes. Stable provider/channel IDs, JSON/CSV fields, and
+raw sensor payloads do not change with the selected language.
 
 ## Sampling, experiments, and export
 
@@ -154,7 +155,7 @@ rejects tracked build output, absolute user paths, common secret signatures, pro
 keys that this release does not implement, forbidden mutation/privilege APIs, missing release
 documents, or a privacy manifest inconsistent with the current offline behavior.
 
-GitHub Actions repeats formatting, audit, build, 57 XCTest cases, portable self-test, and app-bundle
+GitHub Actions repeats formatting, audit, build, 62 XCTest cases, portable self-test, and app-bundle
 assembly on `macos-26`.
 
 ## Repository layout

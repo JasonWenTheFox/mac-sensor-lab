@@ -54,7 +54,7 @@ final class SensorCoreTests: XCTestCase {
     let source = try sourceURLs.map { try String(contentsOf: $0, encoding: .utf8) }
       .joined(separator: "\n")
     let expression = try NSRegularExpression(
-      pattern: #"L10n\.(?:text|format)\(\s*\"([^\"]+)\""#
+      pattern: #"(?:L10n\.(?:text|format)|formatted)\(\s*\"([^\"]+)\""#
     )
     let sourceRange = NSRange(source.startIndex..<source.endIndex, in: source)
     let usedKeys: Set<String> = Set(

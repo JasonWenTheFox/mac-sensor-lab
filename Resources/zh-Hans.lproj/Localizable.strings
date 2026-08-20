@@ -2,22 +2,46 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>%@ %@</key>
+	<string>%@ %@</string>
+	<key>%@ available</key>
+	<string>可用空间 %@</string>
 	<key>%@ experiment trend</key>
 	<string>%@ 实验趋势</string>
 	<key>%@ trend with %lld samples</key>
 	<string>%@ 趋势，共 %lld 个样本</string>
+	<key>%@ • %@</key>
+	<string>%@ • %@</string>
+	<key>%@ • %@ memory</key>
+	<string>%@ • %@ 内存</string>
+	<key>%@ • %lld active</key>
+	<string>%@ • %lld 台活动显示器</string>
 	<key>%@ • recent samples</key>
 	<string>%@ • 最近样本</string>
 	<key>%lld changes</key>
 	<string>%lld 次变化</string>
+	<key>%lld experimental sensor types detected</key>
+	<string>检测到 %lld 类实验性传感器</string>
+	<key>%lld of %lld capabilities detected</key>
+	<string>已检测到 %lld/%lld 项能力</string>
+	<key>%lld read-only channels</key>
+	<string>%lld 个只读通道</string>
 	<key>%lld rows • %@</key>
 	<string>%lld 行 • %@</string>
+	<key>, </key>
+	<string>、</string>
 	<key>50 MB safety limit</key>
 	<string>50 MB 安全上限</string>
+	<key>AC power</key>
+	<string>交流电源</string>
+	<key>AGX PerformanceStatistics keys are undocumented and may change across macOS or GPU generations.</key>
+	<string>AGX PerformanceStatistics 键未文档化，可能随 macOS 或 GPU 代际而变化。</string>
 	<key>Acceleration</key>
 	<string>加速度</string>
 	<key>Acceleration magnitude</key>
 	<string>加速度模长</string>
+	<key>Accelerometer</key>
+	<string>加速度计</string>
 	<key>Active displays</key>
 	<string>活动显示器</string>
 	<key>Active non-loopback interfaces</key>
@@ -26,16 +50,30 @@
 	<string>活动处理器</string>
 	<key>Add Calibration Point</key>
 	<string>添加校准点</string>
+	<key>Aggregate network counters were unavailable</key>
+	<string>汇总网络计数器不可用</string>
+	<key>Aggregate non-idle Mach CPU ticks between consecutive samples.</key>
+	<string>连续采样之间的 Mach CPU 非空闲时钟计数汇总。</string>
 	<key>Aggregated block devices</key>
 	<string>汇总块设备</string>
 	<key>All readings stay on this Mac unless you explicitly export a snapshot, recording, calibration, or diagnostics file.</key>
 	<string>所有读数都保留在这台 Mac 上，除非你主动导出快照、记录、校准或诊断文件。</string>
 	<key>Ambient intensity</key>
 	<string>环境光强度</string>
+	<key>Ambient light</key>
+	<string>环境光</string>
 	<key>Angular velocity</key>
 	<string>角速度</string>
+	<key>Apple GPU performance statistics were unavailable</key>
+	<string>Apple GPU 性能统计不可用</string>
+	<key>Apple SMC</key>
+	<string>Apple SMC</string>
+	<key>Apple SPU Discovery</key>
+	<string>Apple SPU 发现</string>
 	<key>Apple SPU Sensors</key>
 	<string>Apple SPU 传感器</string>
+	<key>AppleSMC is present but its user client could not be opened</key>
+	<string>AppleSMC 存在，但无法打开其用户客户端</string>
 	<key>Architecture</key>
 	<string>架构</string>
 	<key>Automatic sampling</key>
@@ -50,24 +88,46 @@
 	<string>可用</string>
 	<key>Average</key>
 	<string>平均</string>
+	<key>Average number of processes in the system run queue; not CPU percent.</key>
+	<string>系统运行队列中的平均进程数；不是 CPU 百分比。</string>
+	<key>Battery</key>
+	<string>电池</string>
 	<key>Battery current</key>
 	<string>电池电流</string>
+	<key>Battery telemetry available</key>
+	<string>电池遥测可用</string>
 	<key>Battery temperature</key>
 	<string>电池温度</string>
 	<key>Battery voltage</key>
 	<string>电池电压</string>
 	<key>Battery-side power</key>
 	<string>电池侧功率</string>
+	<key>Battery-side power is not whole-system wall power.</key>
+	<string>电池侧功率并非整机插座侧功率。</string>
+	<key>Block-storage statistics were unavailable</key>
+	<string>块存储统计不可用</string>
 	<key>Build</key>
 	<string>构建</string>
 	<key>Built-in demo fixtures</key>
 	<string>内置演示样本</string>
+	<key>Built-in deterministic demo fixture</key>
+	<string>内置确定性演示夹具</string>
+	<key>CPU %@</key>
+	<string>CPU %@</string>
 	<key>CPU average</key>
 	<string>CPU 平均温度</string>
+	<key>CPU generation selects an allowlist only; the brand string is not retained or exported.</key>
+	<string>CPU 代际仅用于选择白名单；品牌字符串不会被保留或导出。</string>
+	<key>CPU generation was not recognized; only fixed generation-neutral temperature, fan and power keys were read.</key>
+	<string>未识别 CPU 代际；仅读取固定的代际中立温度、风扇和功率键。</string>
 	<key>CPU hotspot</key>
 	<string>CPU 热点</string>
+	<key>CPU hotspot %@ °C</key>
+	<string>CPU 热点 %@ °C</string>
 	<key>CPU utilization</key>
 	<string>CPU 利用率</string>
+	<key>CPU utilization needs two samples; the first read establishes a baseline.</key>
+	<string>CPU 利用率需要两次采样；首次读取用于建立基线。</string>
 	<key>CSV Channels</key>
 	<string>CSV 通道</string>
 	<key>Calculated from %lld dashboard samples. The 1–10 second cadence cannot measure vibration frequency.</key>
@@ -104,14 +164,34 @@
 	<string>已清除内存中的图表历史</string>
 	<key>Closed from reference</key>
 	<string>相对参考角度已合上</string>
+	<key>Collecting CPU baseline • load %@</key>
+	<string>正在建立 CPU 基线 • 负载 %@</string>
+	<key>Collecting activity baseline • %lld block devices</key>
+	<string>正在建立活动基线 • %lld 个块设备</string>
+	<key>Collecting network baseline • %lld active interfaces</key>
+	<string>正在建立网络基线 • %lld 个活动接口</string>
+	<key>Compatible SPU interfaces were not exposed</key>
+	<string>系统未暴露兼容的 SPU 接口</string>
 	<key>Completed refreshes</key>
 	<string>已完成刷新</string>
 	<key>Continuous recording</key>
 	<string>连续记录</string>
+	<key>Controller estimate; unavailable sentinel values are omitted.</key>
+	<string>控制器估算值；不可用的哨兵值已省略。</string>
+	<key>Controller-reported capacity; it can change as the battery calibrates.</key>
+	<string>控制器报告的容量；它可能随电池校准而变化。</string>
+	<key>Converted from the battery controller's raw deci-kelvin value.</key>
+	<string>由电池控制器的原始十分之一开尔文值换算。</string>
+	<key>Could not read the system volume</key>
+	<string>无法读取系统卷</string>
 	<key>Could not start recording: %@</key>
 	<string>无法开始记录：%@</string>
+	<key>Counters aggregate active non-loopback interfaces without exporting their names or addresses.</key>
+	<string>计数器汇总活动的非回环接口，不导出其名称或地址。</string>
 	<key>Create an ambient-light calibration before exporting it</key>
 	<string>请先创建环境光校准再导出</string>
+	<key>Critical</key>
+	<string>严重</string>
 	<key>Cycle count</key>
 	<string>循环计数</string>
 	<key>Data mode</key>
@@ -126,18 +206,28 @@
 	<string>演示数据 — 未读取硬件</string>
 	<key>Demo data — not live sensor readings</key>
 	<string>演示数据 — 不是实时传感器读数</string>
+	<key>Demo fixture</key>
+	<string>演示夹具</string>
 	<key>Derived</key>
 	<string>派生</string>
 	<key>Derived tools unlock only when their data source is verified.</key>
 	<string>只有数据源经过验证后，派生工具才会解锁。</string>
 	<key>Design capacity</key>
 	<string>设计容量</string>
+	<key>Desktop Macs may not expose AppleSmartBattery.</key>
+	<string>桌面 Mac 可能不暴露 AppleSmartBattery。</string>
+	<key>Detected</key>
+	<string>已检测到</string>
+	<key>Detection does not prove continuous read permission.</key>
+	<string>检测到硬件并不证明拥有连续读取权限。</string>
 	<key>Deterministic fixture readings for screenshots and UI review.</key>
 	<string>用于截图和界面审查的确定性演示读数。</string>
 	<key>Development</key>
 	<string>开发版</string>
 	<key>Development executable</key>
 	<string>开发用可执行文件</string>
+	<key>Device names and unique identifiers are intentionally omitted.</key>
+	<string>有意省略设备名称和唯一标识符。</string>
 	<key>Diagnostics</key>
 	<string>诊断</string>
 	<key>Diagnostics export failed: %@</key>
@@ -192,10 +282,20 @@
 	<string>已导出光照校准 %@</string>
 	<key>Exported privacy-safe diagnostics %@</key>
 	<string>已导出隐私安全诊断 %@</string>
+	<key>Fair</key>
+	<string>轻度</string>
+	<key>Fan %lld</key>
+	<string>风扇 %lld</string>
+	<key>Fixed allowlisted AppleSmartBattery field.</key>
+	<string>固定白名单中的 AppleSmartBattery 字段。</string>
+	<key>Force Touch trackpad</key>
+	<string>Force Touch 触控板</string>
 	<key>Four uncalibrated ambient spectral channels</key>
 	<string>4 个未校准的环境光谱通道</string>
 	<key>Fully charged</key>
 	<string>已充满</string>
+	<key>GPU %@</key>
+	<string>GPU %@</string>
 	<key>GPU Performance</key>
 	<string>GPU 性能</string>
 	<key>GPU average</key>
@@ -204,8 +304,20 @@
 	<string>GPU 驱动实例</string>
 	<key>GPU hotspot</key>
 	<string>GPU 热点</string>
+	<key>GPU memory counters available</key>
+	<string>GPU 内存计数器可用</string>
+	<key>Gravity-derived; axis orientation is model-dependent.</key>
+	<string>由重力派生；坐标轴方向取决于机型。</string>
+	<key>Gyroscope</key>
+	<string>陀螺仪</string>
+	<key>HID manager could not be opened</key>
+	<string>无法打开 HID 管理器</string>
+	<key>HID open result: %@.</key>
+	<string>HID 打开结果：%@。</string>
 	<key>Hardware detected • measurement provider pending</key>
 	<string>已检测到硬件 • 等待测量 Provider</string>
+	<key>Hardware/service presence only.</key>
+	<string>仅表示硬件或服务存在。</string>
 	<key>Import Ambient-Light Calibration</key>
 	<string>导入环境光校准</string>
 	<key>Import Calibration…</key>
@@ -216,6 +328,10 @@
 	<string>已包含</string>
 	<key>Includes provider status and stable channel metadata, but no sensor readings or machine identifiers.</key>
 	<string>包含 Provider 状态和稳定的通道元数据，但不包含传感器读数或机器标识。</string>
+	<key>Internal SMC telemetry; not wall-plug power.</key>
+	<string>内部 SMC 遥测；并非插座侧功率。</string>
+	<key>Internal component temperature, not ambient room temperature.</key>
+	<string>内部组件温度，并非室内环境温度。</string>
 	<key>JSON Snapshot</key>
 	<string>JSON 快照</string>
 	<key>Last action</key>
@@ -232,18 +348,30 @@
 	<string>上盖量角器</string>
 	<key>Lid angle</key>
 	<string>上盖角度</string>
+	<key>Lid sensor detected but could not be opened</key>
+	<string>检测到上盖传感器，但无法打开</string>
+	<key>Lid sensor did not return a feature report</key>
+	<string>上盖传感器未返回功能报告</string>
+	<key>Lid sensor returned an out-of-range value</key>
+	<string>上盖传感器返回了超出范围的值</string>
 	<key>Light Meter</key>
 	<string>照度计</string>
 	<key>Limited</key>
 	<string>受限</string>
 	<key>Linear fit from %lld points • RMSE %@ lux.</key>
 	<string>由 %lld 个点线性拟合 • RMSE %@ lux。</string>
+	<key>Live %@ data</key>
+	<string>实时%@数据</string>
+	<key>Live acceleration, level, ambient data</key>
+	<string>实时加速度、水平与环境光数据</string>
 	<key>Live hardware</key>
 	<string>实时硬件</string>
 	<key>Live local readings, with source and confidence kept visible.</key>
 	<string>实时本地读数，始终显示数据源和可信度。</string>
 	<key>Live sampling attempts ordinary read-only access. If macOS denies an interface, its provider reports Permission required; this app does not request administrator access or bypass privacy controls.</key>
 	<string>实时采样只尝试普通的只读访问。如果 macOS 拒绝某个接口，对应 Provider 会报告“需要权限”；本 App 不请求管理员权限，也不绕过隐私控制。</string>
+	<key>Load average (%lld min)</key>
+	<string>平均负载（%lld 分钟）</string>
 	<key>Loading</key>
 	<string>加载中</string>
 	<key>Logical processors</key>
@@ -258,8 +386,14 @@
 	<string>Mac Sensor Lab 在本机读取传感器，此构建不请求管理员权限。</string>
 	<key>Main display (logical)</key>
 	<string>主显示器（逻辑分辨率）</string>
+	<key>Malformed provider output was discarded before display or export.</key>
+	<string>格式异常的 Provider 输出已在显示或导出前丢弃。</string>
 	<key>Max</key>
 	<string>最大</string>
+	<key>Memory and swap counters available</key>
+	<string>内存与 Swap 计数器可用</string>
+	<key>Memory channels are raw Mach page categories and may overlap conceptually with UI labels used by other tools.</key>
+	<string>内存通道是原始 Mach 页面类别，在概念上可能与其他工具的 UI 标签重叠。</string>
 	<key>Microphone access will be opt-in</key>
 	<string>麦克风访问将始终需要主动选择</string>
 	<key>Min</key>
@@ -268,16 +402,62 @@
 	<string>运动与环境光</string>
 	<key>Motion Trend</key>
 	<string>运动趋势</string>
+	<key>Multiple driver instances use the maximum utilization and summed memory counters.</key>
+	<string>存在多个驱动实例时，利用率取最大值，内存计数器求和。</string>
 	<key>Network Throughput</key>
 	<string>网络吞吐量</string>
+	<key>No</key>
+	<string>否</string>
+	<key>No Apple SPU driver properties were changed.</key>
+	<string>没有更改任何 Apple SPU 驱动属性。</string>
+	<key>No SMC write or fan-control method exists in this target.</key>
+	<string>此 Target 中不存在 SMC 写入或风扇控制方法。</string>
 	<key>No Sensors Found</key>
 	<string>未找到传感器</string>
+	<key>No active display detected</key>
+	<string>未检测到活动显示器</string>
+	<key>No compatible Apple SPU report devices found</key>
+	<string>未发现兼容的 Apple SPU 报告设备</string>
+	<key>No device names, serial numbers, volume names, or file paths are read or exported.</key>
+	<string>不读取或导出设备名称、序列号、卷名称或文件路径。</string>
+	<key>No device names, serial numbers, volume names, or file paths are read.</key>
+	<string>不读取设备名称、序列号、卷名称或文件路径。</string>
+	<key>No driver properties were changed and no privileged access was attempted.</key>
+	<string>未更改驱动属性，也未尝试特权访问。</string>
+	<key>No driver state was changed and no privileged access was attempted.</key>
+	<string>未更改驱动状态，也未尝试特权访问。</string>
+	<key>No interface names or network addresses were exported.</key>
+	<string>未导出接口名称或网络地址。</string>
+	<key>No internal battery detected</key>
+	<string>未检测到内置电池</string>
+	<key>No known Apple SPU sensors detected</key>
+	<string>未检测到已知的 Apple SPU 传感器</string>
+	<key>No private data fields are read during capability discovery.</key>
+	<string>能力发现期间不读取私有数据字段。</string>
+	<key>No process list or identifying information was requested.</key>
+	<string>未请求进程列表或身份识别信息。</string>
 	<key>No serial number, hardware UUID, UDID, host name, user name, location, process list, SSID or audio recording is collected by this build.</key>
 	<string>此构建不采集序列号、硬件 UUID、UDID、主机名、用户名、位置、进程列表、SSID 或录音。</string>
+	<key>No sudo, driver-property writes, or permission bypass was attempted.</key>
+	<string>未尝试 sudo、写入驱动属性或绕过权限。</string>
+	<key>Nominal</key>
+	<string>正常</string>
+	<key>Not detected</key>
+	<string>未检测到</string>
 	<key>Not implemented • provider pending</key>
 	<string>尚未实现 • 等待 Provider</string>
 	<key>Off</key>
 	<string>已关闭</string>
+	<key>On</key>
+	<string>开</string>
+	<key>Only a fixed %@ and generation-neutral allowlist of temperature, fan and power keys was read.</key>
+	<string>仅读取固定的 %@ 与代际中立温度、风扇和功率键白名单。</string>
+	<key>Only a fixed allowlist of non-identifying registry keys is read.</key>
+	<string>仅读取不含身份信息的固定注册表键白名单。</string>
+	<key>Only a fixed allowlist of utilization and memory counters is requested; no device identity fields are read.</key>
+	<string>仅请求固定白名单中的利用率和内存计数器；不读取设备身份字段。</string>
+	<key>Only fixed allowlisted counters are read; no registry names, IDs, or device identity fields are exported.</key>
+	<string>仅读取固定白名单计数器；不导出注册表名称、ID 或设备身份字段。</string>
 	<key>Opened from reference</key>
 	<string>相对参考角度已张开</string>
 	<key>Opening angle</key>
@@ -308,6 +488,8 @@
 	<string>电源与电池</string>
 	<key>Power source</key>
 	<string>电源</string>
+	<key>Presence only; continuous access may require additional permission.</key>
+	<string>仅表示存在；连续访问可能需要额外权限。</string>
 	<key>Privacy</key>
 	<string>隐私</string>
 	<key>Privacy manifest</key>
@@ -318,6 +500,8 @@
 	<string>Provider 错误</string>
 	<key>Provider health</key>
 	<string>Provider 健康状态</string>
+	<key>Provider output rejected by the safety contract</key>
+	<string>Provider 输出被安全契约拒绝</string>
 	<key>Provider, channel, source, status, or ID</key>
 	<string>Provider、通道、来源、状态或 ID</string>
 	<key>Public API</key>
@@ -326,20 +510,34 @@
 	<string>公开 API + 权限</string>
 	<key>RMS variation</key>
 	<string>RMS 变化</string>
+	<key>Rates need two samples; a counter reset or device change starts a new baseline.</key>
+	<string>速率需要两次采样；计数器重置或设备变化会开始新的基线。</string>
+	<key>Rates need two samples; the first read or an active-interface count change establishes a baseline.</key>
+	<string>速率需要两次采样；首次读取或活动接口数量变化时会建立基线。</string>
 	<key>Raw</key>
 	<string>原始</string>
 	<key>Raw Sensors</key>
 	<string>原始传感器</string>
+	<key>Raw read-only SMC key %@; model-specific meaning.</key>
+	<string>原始只读 SMC 键 %@；含义因机型而异。</string>
+	<key>Read %@ • Write %@</key>
+	<string>读取 %@ • 写入 %@</string>
+	<key>Read 18 MB/s • write 4 MB/s</key>
+	<string>读取 18 MB/s • 写入 4 MB/s</string>
 	<key>Read errors</key>
 	<string>读取错误</string>
 	<key>Read operation rate</key>
 	<string>读操作速率</string>
 	<key>Read operations</key>
 	<string>读操作</string>
+	<key>Reading in the background…</key>
+	<string>正在后台读取…</string>
 	<key>Receive packet rate</key>
 	<string>接收包速率</string>
 	<key>Recent data • source limited</key>
 	<string>最近数据 • 数据源受限</string>
+	<key>Recent live data • waiting for a new SPU report</key>
+	<string>最近的实时数据 • 正在等待新的 SPU 报告</string>
 	<key>Recording</key>
 	<string>正在记录</string>
 	<key>Recording is local, append-only, and stops automatically at 50 MB.</key>
@@ -368,18 +566,32 @@
 	<string>报告容量比</string>
 	<key>Reported full-charge capacity</key>
 	<string>报告满充容量</string>
+	<key>Reported full-charge capacity ÷ design capacity; not Apple's Battery Health status.</key>
+	<string>报告满充容量 ÷ 设计容量；并非 Apple 的电池健康状态。</string>
 	<key>Required measurement channel unavailable</key>
 	<string>所需测量通道不可用</string>
 	<key>Requires a future raw Force Touch provider and calibration</key>
 	<string>需要未来的 Force Touch 原始 Provider 和校准</string>
 	<key>Requires an external lux reference. Add up to eight strictly increasing points; every result remains an estimate, not a certified meter.</key>
 	<string>需要外部 lux 参考。最多添加 8 个严格递增的点；所有结果仍是估算，不是认证照度计。</string>
+	<key>Resolution is the current logical mode. Persistent display identifiers are intentionally omitted.</key>
+	<string>分辨率为当前逻辑模式；有意省略持久显示器标识符。</string>
 	<key>Resume Automatic Sampling</key>
 	<string>恢复自动采样</string>
 	<key>Roll %@°</key>
 	<string>横滚 %@°</string>
 	<key>SMC Sensors</key>
 	<string>SMC 传感器</string>
+	<key>SMC opened, but common keys returned no readings</key>
+	<string>SMC 已打开，但常用键没有返回读数</string>
+	<key>SMC opened, but the %@ key allowlist returned no readings</key>
+	<string>SMC 已打开，但 %@ 键白名单没有返回读数</string>
+	<key>SPU enumeration failed</key>
+	<string>SPU 枚举失败</string>
+	<key>SPU interfaces are temporarily busy</key>
+	<string>SPU 接口暂时繁忙</string>
+	<key>SPU interfaces were detected but could not be opened</key>
+	<string>检测到 SPU 接口，但无法打开</string>
 	<key>Safety</key>
 	<string>安全</string>
 	<key>Sampling</key>
@@ -394,16 +606,28 @@
 	<string>发送包速率</string>
 	<key>Sensor providers</key>
 	<string>传感器 Provider</string>
+	<key>Sensors detected, but macOS is not currently publishing reports</key>
+	<string>检测到传感器，但 macOS 当前未发布报告</string>
+	<key>Serious</key>
+	<string>较高</string>
 	<key>Set Current as Reference</key>
 	<string>将当前值设为参考</string>
+	<key>Showing the last successful sample from %@ seconds ago; its original timestamp is preserved.</key>
+	<string>显示 %@ 秒前最后一次成功采样；保留其原始时间戳。</string>
 	<key>Shows raw light first; lux requires model-specific calibration</key>
 	<string>先显示原始光照值；lux 需要特定机型的校准</string>
 	<key>Single-point scale: %@ lux at raw %@.</key>
 	<string>单点缩放：%@ lux（原始值 %@）。</string>
+	<key>Smart battery</key>
+	<string>智能电池</string>
 	<key>Sound Lab</key>
 	<string>声音实验室</string>
 	<key>Source: %@</key>
 	<string>来源：%@</string>
+	<key>Spectral channel %lld</key>
+	<string>光谱通道 %lld</string>
+	<key>Standard lid-angle HID interface not found</key>
+	<string>未找到标准上盖角度 HID 接口</string>
 	<key>Start Continuous CSV Recording…</key>
 	<string>开始连续 CSV 记录…</string>
 	<key>Start Continuous Sensor Recording</key>
@@ -426,30 +650,58 @@
 	<string>支持</string>
 	<key>Swap encrypted</key>
 	<string>Swap 已加密</string>
+	<key>Synthetic demo data; not a hardware reading.</key>
+	<string>合成演示数据；并非硬件读数。</string>
 	<key>System</key>
 	<string>系统</string>
+	<key>System performance counters were unavailable</key>
+	<string>系统性能计数器不可用</string>
 	<key>System uptime</key>
 	<string>系统运行时间</string>
+	<key>The App will not request sudo or alter HID driver properties.</key>
+	<string>本 App 不会请求 sudo 或更改 HID 驱动属性。</string>
+	<key>The App will not request sudo or attempt a privileged helper in this build.</key>
+	<string>此构建不会请求 sudo，也不会尝试特权 Helper。</string>
 	<key>The interval is remembered. Pause state is intentionally reset on every launch.</key>
 	<string>采样间隔会被记住；每次启动时会有意重置暂停状态。</string>
+	<key>The safe reader did not wake or reconfigure the SPU.</key>
+	<string>安全读取器没有唤醒或重新配置 SPU。</string>
 	<key>The support report contains provider status and stable channel metadata, never sensor readings, notes, source strings, machine identifiers, or file paths.</key>
 	<string>支持报告只包含 Provider 状态和稳定的通道元数据，不包含传感器读数、备注、来源字符串、机器标识或文件路径。</string>
 	<key>Thermal pressure</key>
 	<string>热压力</string>
+	<key>Thermal pressure %@</key>
+	<string>热压力%@</string>
+	<key>Thermal pressure is a public system state, not a temperature in degrees.</key>
+	<string>热压力是公开的系统状态，不是以度数表示的温度。</string>
 	<key>Thermals</key>
 	<string>散热状态</string>
 	<key>This build never runs as root, changes fan settings, writes SMC values, or modifies Apple SPU driver state.</key>
 	<string>此构建绝不以 root 身份运行，不改变风扇设置、不写入 SMC 值，也不修改 Apple SPU 驱动状态。</string>
+	<key>Totals are driver-lifetime counters aggregated across block-storage drivers.</key>
+	<string>总计是跨块存储驱动汇总的驱动生命周期计数器。</string>
 	<key>Trackpad Scale</key>
 	<string>触控板秤</string>
 	<key>Try a provider, channel, source, status, or stable ID.</key>
 	<string>尝试搜索 Provider、通道、来源、状态或稳定 ID。</string>
 	<key>Unavailable</key>
 	<string>不可用</string>
+	<key>Uncalibrated raw channel.</key>
+	<string>未校准的原始通道。</string>
+	<key>Uncalibrated raw intensity; not asserted to be lux.</key>
+	<string>未校准的原始强度；不声称单位为 lux。</string>
 	<key>Undo Last Point</key>
 	<string>撤销最后一点</string>
 	<key>Undocumented</key>
 	<string>未文档化</string>
+	<key>Undocumented formats are provisional and must be validated per model.</key>
+	<string>未文档化的格式是暂定的，必须按机型验证。</string>
+	<key>Undocumented hardware interface; model-specific validation is required.</key>
+	<string>未文档化的硬件接口；需要按机型验证。</string>
+	<key>Undocumented key meanings require anonymous cross-model validation.</key>
+	<string>未文档化的键含义需要匿名跨机型验证。</string>
+	<key>Unknown</key>
+	<string>未知</string>
 	<key>Unsupported</key>
 	<string>不支持</string>
 	<key>Update Reference</key>
@@ -466,15 +718,39 @@
 	<string>使用未文档化的上盖角度传感器</string>
 	<key>Version</key>
 	<string>版本</string>
+	<key>Virtual or tunneled paths can represent the same traffic more than once.</key>
+	<string>虚拟或隧道路径可能会重复表示同一流量。</string>
+	<key>Voltage × current; not wall-plug power.</key>
+	<string>电压 × 电流；并非插座侧功率。</string>
 	<key>Write errors</key>
 	<string>写入错误</string>
 	<key>Write operation rate</key>
 	<string>写操作速率</string>
 	<key>Write operations</key>
 	<string>写操作</string>
+	<key>Yes</key>
+	<string>是</string>
+	<key>accelerometer</key>
+	<string>加速度计</string>
+	<key>ambient light</key>
+	<string>环境光</string>
+	<key>cycles</key>
+	<string>次</string>
+	<key>gyroscope</key>
+	<string>陀螺仪</string>
+	<key>hours</key>
+	<string>小时</string>
 	<key>macOS</key>
 	<string>macOS</string>
 	<key>macOS denied ordinary read access for %lld provider(s). Raw Sensors shows the provider-specific reason.</key>
 	<string>macOS 拒绝了 %lld 个 Provider 的普通只读访问。“原始传感器”会显示各 Provider 的具体原因。</string>
+	<key>minutes</key>
+	<string>分钟</string>
+	<key>operations/s</key>
+	<string>次/秒</string>
+	<key>ops/s</key>
+	<string>次/秒</string>
+	<key>pixels</key>
+	<string>像素</string>
 </dict>
 </plist>
