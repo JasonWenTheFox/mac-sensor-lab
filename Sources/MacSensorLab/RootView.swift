@@ -552,6 +552,18 @@ private struct ExperimentsView: View {
         "Tracks public pressure states as an ordinal history, not temperature"
       )),
     Experiment(
+      name: L10n.text("Network Throughput"), symbol: "arrow.up.arrow.down",
+      providerID: "system.network_throughput", channelID: "network_receive_rate",
+      description: L10n.text(
+        "Compares aggregate receive and send rates without exposing interface identity"
+      )),
+    Experiment(
+      name: L10n.text("Disk Activity"), symbol: "internaldrive",
+      providerID: "storage.disk_io", channelID: "disk_read_rate",
+      description: L10n.text(
+        "Compares aggregate read and write rates without exposing device identity"
+      )),
+    Experiment(
       name: L10n.text("Level"), symbol: "level", providerID: "motion.spu_live",
       channelID: "level_roll",
       description: L10n.text(
@@ -766,7 +778,17 @@ private struct ExperimentsView: View {
         .foregroundStyle(.secondary)
       }
 
-      if points.count >= 2 {
+      if let pair = pairedRateDefinition(for: channelID),
+        let secondaryChannel = snapshot.channels.first(where: { $0.id == pair.channelID })
+      {
+        DuplexRatePanel(
+          primaryChannel: channel,
+          primaryPoints: points,
+          secondaryChannel: secondaryChannel,
+          secondaryPoints: history["\(snapshot.id)/\(pair.channelID)", default: []],
+          caution: pair.caution
+        )
+      } else if points.count >= 2 {
         Chart(points) { point in
           LineMark(x: .value("Time", point.timestamp), y: .value(channel.label, point.value))
             .interpolationMethod(
@@ -781,6 +803,23 @@ private struct ExperimentsView: View {
           L10n.format("%@ experiment trend", L10n.sensorText(channel.label))
         )
       }
+    }
+  }
+
+  private func pairedRateDefinition(for channelID: String) -> (channelID: String, caution: String)?
+  {
+    switch channelID {
+    case "network_receive_rate":
+      (
+        "network_send_rate",
+        "Virtual or tunneled paths can represent the same traffic more than once."
+      )
+    case "disk_read_rate":
+      (
+        "disk_write_rate",
+        "Totals are driver-lifetime counters aggregated across block-storage drivers."
+      )
+    default: nil
     }
   }
 
@@ -805,6 +844,89 @@ private struct ExperimentsView: View {
       .accessibilityElement(children: .ignore)
       .accessibilityLabel(L10n.text("Four uncalibrated ambient spectral channels"))
     }
+  }
+}
+
+private struct DuplexRatePanel: View {
+  let primaryChannel: SensorChannel
+  let primaryPoints: [SensorHistoryPoint]
+  let secondaryChannel: SensorChannel
+  let secondaryPoints: [SensorHistoryPoint]
+  let caution: String
+
+  private var primaryStatistics: SensorSeriesStatistics? {
+    SensorSeriesStatistics(values: primaryPoints.map(\.value))
+  }
+
+  private var secondaryStatistics: SensorSeriesStatistics? {
+    SensorSeriesStatistics(values: secondaryPoints.map(\.value))
+  }
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      if let primaryStatistics, let secondaryStatistics {
+        HStack(spacing: 8) {
+          ExperimentMetric(
+            label: L10n.sensorText(primaryChannel.label),
+            value: L10n.format(
+              "Average %@",
+              SensorFormatting.bytesPerSecond(primaryStatistics.average)
+            )
+          )
+          ExperimentMetric(
+            label: L10n.sensorText(secondaryChannel.label),
+            value: L10n.format(
+              "Average %@",
+              SensorFormatting.bytesPerSecond(secondaryStatistics.average)
+            )
+          )
+        }
+      }
+
+      if primaryPoints.count >= 2, secondaryPoints.count >= 2 {
+        HStack(spacing: 12) {
+          Label(L10n.sensorText(primaryChannel.label), systemImage: "circle.fill")
+            .foregroundStyle(.blue)
+          Label(L10n.sensorText(secondaryChannel.label), systemImage: "circle.fill")
+            .foregroundStyle(.purple)
+        }
+        .font(.caption2)
+
+        Chart {
+          ForEach(primaryPoints) { point in
+            LineMark(
+              x: .value("Time", point.timestamp),
+              y: .value(primaryChannel.label, point.value)
+            )
+            .interpolationMethod(.linear)
+            .foregroundStyle(.blue)
+          }
+          ForEach(secondaryPoints) { point in
+            LineMark(
+              x: .value("Time", point.timestamp),
+              y: .value(secondaryChannel.label, point.value)
+            )
+            .interpolationMethod(.linear)
+            .foregroundStyle(.purple)
+          }
+        }
+        .chartXAxis(.hidden)
+        .chartYAxis(.hidden)
+        .frame(height: 44)
+        .accessibilityLabel(
+          L10n.format(
+            "%@ and %@ recent rate trends",
+            L10n.sensorText(primaryChannel.label),
+            L10n.sensorText(secondaryChannel.label)
+          )
+        )
+      }
+
+      Text(L10n.sensorText(caution))
+        .font(.caption2)
+        .foregroundStyle(.secondary)
+    }
+    .padding(.top, 4)
   }
 }
 

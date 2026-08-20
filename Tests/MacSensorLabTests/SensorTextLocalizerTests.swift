@@ -183,6 +183,19 @@ final class SensorTextLocalizerTests: XCTestCase {
 
     let disk = try XCTUnwrap(snapshots["storage.disk_io"])
     XCTAssertEqual(packagedLocalizer.localized(disk.summary), "读取 18 MB/s • 写入 4 MB/s")
+    XCTAssertEqual(
+      packagedLocalizer.localized(
+        "Compares aggregate read and write rates without exposing device identity"
+      ),
+      "对比汇总读写速率，不暴露设备身份"
+    )
+
+    XCTAssertEqual(
+      packagedLocalizer.localized(
+        "Compares aggregate receive and send rates without exposing interface identity"
+      ),
+      "对比汇总收发速率，不暴露接口身份"
+    )
 
     let storage = try XCTUnwrap(snapshots["storage.system_volume"])
     XCTAssertEqual(

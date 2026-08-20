@@ -11,6 +11,11 @@
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%@ 小时" } }
       }
     },
+    "%@ and %@ recent rate trends" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%@与%@的近期速率趋势" } }
+      }
+    },
     "50 MB safety limit" : {
       "localizations" : {
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "50 MB 安全上限" } }
@@ -41,6 +46,11 @@
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "平均" } }
       }
     },
+    "Average %@" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "平均 %@" } }
+      }
+    },
     "Battery Trend" : {
       "localizations" : {
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "电池趋势" } }
@@ -64,6 +74,16 @@
     "Calibrated" : {
       "localizations" : {
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已校准" } }
+      }
+    },
+    "Compares aggregate read and write rates without exposing device identity" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "对比汇总读写速率，不暴露设备身份" } }
+      }
+    },
+    "Compares aggregate receive and send rates without exposing interface identity" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "对比汇总收发速率，不暴露接口身份" } }
       }
     },
     "Chart history stays in memory only and can be cleared from the toolbar." : {

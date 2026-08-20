@@ -6,6 +6,8 @@
 	<string>%@ %%/小时</string>
 	<key>%@ %@</key>
 	<string>%@ %@</string>
+	<key>%@ and %@ recent rate trends</key>
+	<string>%@与%@的近期速率趋势</string>
 	<key>%@ available</key>
 	<string>可用空间 %@</string>
 	<key>%@ experiment trend</key>
@@ -104,6 +106,8 @@
 	<string>可用于机会性用途</string>
 	<key>Average</key>
 	<string>平均</string>
+	<key>Average %@</key>
+	<string>平均 %@</string>
 	<key>Average number of processes in the system run queue; not CPU percent.</key>
 	<string>系统运行队列中的平均进程数；不是 CPU 百分比。</string>
 	<key>Backing scale</key>
@@ -202,6 +206,10 @@
 	<string>正在建立活动基线 • %lld 个块设备</string>
 	<key>Collecting network baseline • %lld active interfaces</key>
 	<string>正在建立网络基线 • %lld 个活动接口</string>
+	<key>Compares aggregate read and write rates without exposing device identity</key>
+	<string>对比汇总读写速率，不暴露设备身份</string>
+	<key>Compares aggregate receive and send rates without exposing interface identity</key>
+	<string>对比汇总收发速率，不暴露接口身份</string>
 	<key>Compatible SPU interfaces were not exposed</key>
 	<string>系统未暴露兼容的 SPU 接口</string>
 	<key>Completed refreshes</key>

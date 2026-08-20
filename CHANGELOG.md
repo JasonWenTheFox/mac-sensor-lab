@@ -6,6 +6,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ### Added
 
+- Network Throughput and Disk Activity experiments with bounded, dual-series receive/send and read/write history, recent averages, and explicit aggregate-identity caveats.
 - A Thermal Trend experiment that retains the public pressure-state order, recent peak, and transition count without presenting the 0–3 ordinal as temperature or a linear physical scale.
 - A conservative Battery Trend experiment derived from bounded in-memory public charge history, gated on an explicit discharging state, minimum duration/sample/drop thresholds, and safe handling of charging transitions or malformed data.
 - A separate public `IOPowerSources` provider for the active AC/battery/UPS source, public charge/charging state, OS low-battery warning level, and valid time estimates without reading power-source identity or adapter metadata.

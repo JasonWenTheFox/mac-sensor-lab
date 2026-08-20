@@ -96,6 +96,8 @@ raw sensor payloads do not change with the selected language.
   drain rate and time-to-empty remain labeled as recent-history estimates.
 - Track public thermal-pressure state changes and the highest recent state using an explicitly
   ordinal history that never presents pressure levels as degrees or a linear physical scale.
+- Compare bounded receive/send and read/write histories with recent averages in Network Throughput
+  and Disk Activity, while retaining only aggregate rates and no interface or device identity.
 - Inspect low-rate acceleration-magnitude RMS variation and peak-to-peak motion without presenting
   the 1–10 second dashboard cadence as vibration-frequency analysis.
 - Inspect value-free sampling health counters for completed cycles, latest duration, provider
