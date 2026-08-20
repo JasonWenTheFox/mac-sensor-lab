@@ -28,6 +28,8 @@
 	<string>%lld 个只读通道</string>
 	<key>%lld rows • %@</key>
 	<string>%lld 行 • %@</string>
+	<key>%lld status changes this launch</key>
+	<string>本次启动发生 %lld 次状态切换</string>
 	<key>, </key>
 	<string>、</string>
 	<key>50 MB safety limit</key>
@@ -720,6 +722,8 @@
 	<string>使用未文档化的上盖角度传感器</string>
 	<key>Version</key>
 	<string>版本</string>
+	<key>View Diagnostics</key>
+	<string>查看诊断</string>
 	<key>Virtual or tunneled paths can represent the same traffic more than once.</key>
 	<string>虚拟或隧道路径可能会重复表示同一流量。</string>
 	<key>Voltage × current; not wall-plug power.</key>

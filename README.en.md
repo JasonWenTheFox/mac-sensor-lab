@@ -79,7 +79,8 @@ raw sensor payloads do not change with the selected language.
 - Search Raw Sensors by provider, channel, source, status, stable ID, or translated display name
   without mutating sampling, history, or export data.
 - Scan provider health on Overview with distinct loading, available, limited, permission-required,
-  unavailable, and error counts, then jump directly to Raw Sensors when review is needed.
+  unavailable, and error counts plus the launch's status-transition total. Current issues link to
+  Raw Sensors; intermittent changes link to Diagnostics for per-provider counters.
 - Overview cards show each snapshot's original timestamp as a live relative age, so a retained
   degraded SPU sample cannot look newly collected.
 - Use rolling raw ambient-light statistics. A lux value appears only after an explicit external

@@ -1064,6 +1064,16 @@
     "Write operation rate" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "写操作速率" } } } },
     "Write operations" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "写操作" } } } },
     "macOS" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "macOS" } } } },
+    "%lld status changes this launch" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "本次启动发生 %lld 次状态切换" } }
+      }
+    },
+    "View Diagnostics" : {
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "查看诊断" } }
+      }
+    },
     "Version" : {
       "localizations" : {
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "版本" } }

@@ -31,7 +31,9 @@ struct RootView: View {
               snapshots: model.snapshots,
               history: model.history,
               isDemoMode: model.isDemoMode,
-              onReviewIssues: { model.selection = .rawSensors }
+              samplingHealth: model.samplingHealth,
+              onReviewIssues: { model.selection = .rawSensors },
+              onViewDiagnostics: { model.selection = .diagnostics }
             )
           case .rawSensors:
             RawSensorsView(snapshots: model.snapshots)
@@ -129,7 +131,9 @@ private struct OverviewView: View {
   let snapshots: [SensorSnapshot]
   let history: [String: [SensorHistoryPoint]]
   let isDemoMode: Bool
+  let samplingHealth: SensorSamplingHealth
   let onReviewIssues: () -> Void
+  let onViewDiagnostics: () -> Void
   private let columns = [GridItem(.adaptive(minimum: 300), spacing: 16)]
 
   var body: some View {
@@ -149,8 +153,13 @@ private struct OverviewView: View {
       .frame(maxWidth: .infinity, alignment: .leading)
       .padding(.bottom, 12)
 
-      ProviderHealthSummary(snapshots: snapshots, onReviewIssues: onReviewIssues)
-        .padding(.bottom, 16)
+      ProviderHealthSummary(
+        snapshots: snapshots,
+        samplingHealth: samplingHealth,
+        onReviewIssues: onReviewIssues,
+        onViewDiagnostics: onViewDiagnostics
+      )
+      .padding(.bottom, 16)
 
       LazyVGrid(columns: columns, spacing: 16) {
         ForEach(snapshots) { snapshot in
@@ -173,8 +182,9 @@ struct ProviderHealthSummaryState {
 
   let metrics: [Metric]
   let hasReviewableIssues: Bool
+  let statusTransitionCount: Int
 
-  init(snapshots: [SensorSnapshot]) {
+  init(snapshots: [SensorSnapshot], samplingHealth: SensorSamplingHealth) {
     let counts = SensorStatusCounts(snapshots: snapshots)
     metrics = [
       Metric(status: .available, count: counts.available),
@@ -186,15 +196,18 @@ struct ProviderHealthSummaryState {
     ].filter { $0.count > 0 }
     hasReviewableIssues =
       counts.degraded + counts.permissionRequired + counts.unavailable + counts.error > 0
+    statusTransitionCount = samplingHealth.totalStatusTransitionCount
   }
 }
 
 private struct ProviderHealthSummary: View {
   let snapshots: [SensorSnapshot]
+  let samplingHealth: SensorSamplingHealth
   let onReviewIssues: () -> Void
+  let onViewDiagnostics: () -> Void
 
   private var state: ProviderHealthSummaryState {
-    ProviderHealthSummaryState(snapshots: snapshots)
+    ProviderHealthSummaryState(snapshots: snapshots, samplingHealth: samplingHealth)
   }
 
   var body: some View {
@@ -218,6 +231,23 @@ private struct ProviderHealthSummary: View {
           ForEach(state.metrics) { metric in
             ProviderHealthMetric(status: metric.status, count: metric.count)
           }
+        }
+      }
+      if state.statusTransitionCount > 0 {
+        HStack {
+          Label(
+            L10n.format(
+              "%lld status changes this launch",
+              Int64(state.statusTransitionCount)
+            ),
+            systemImage: "arrow.triangle.2.circlepath"
+          )
+          .font(.caption)
+          .foregroundStyle(.secondary)
+          Spacer()
+          Button(L10n.text("View Diagnostics"), action: onViewDiagnostics)
+            .buttonStyle(.link)
+            .font(.caption)
         }
       }
     }

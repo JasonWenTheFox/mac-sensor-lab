@@ -217,10 +217,23 @@ final class SensorTextLocalizerTests: XCTestCase {
       )
     }
 
-    let loading = ProviderHealthSummaryState(snapshots: [snapshot("loading", .loading)])
+    let loading = ProviderHealthSummaryState(
+      snapshots: [snapshot("loading", .loading)],
+      samplingHealth: .empty
+    )
     XCTAssertEqual(loading.metrics.map(\.status.rawValue), ["loading"])
     XCTAssertFalse(loading.hasReviewableIssues)
+    XCTAssertEqual(loading.statusTransitionCount, 0)
 
+    var tracker = SensorSamplingHealthTracker()
+    _ = tracker.observe(
+      snapshots: [snapshot("available", .permissionRequired)],
+      cycleDuration: 0.1
+    )
+    let recoveredHealth = tracker.observe(
+      snapshots: [snapshot("available", .available)],
+      cycleDuration: 0.1
+    )
     let mixed = ProviderHealthSummaryState(
       snapshots: [
         snapshot("available", .available),
@@ -228,7 +241,8 @@ final class SensorTextLocalizerTests: XCTestCase {
         snapshot("permission", .permissionRequired),
         snapshot("unavailable", .unavailable),
         snapshot("error", .error),
-      ]
+      ],
+      samplingHealth: recoveredHealth
     )
     XCTAssertEqual(
       mixed.metrics.map(\.status.rawValue),
@@ -236,5 +250,6 @@ final class SensorTextLocalizerTests: XCTestCase {
     )
     XCTAssertEqual(mixed.metrics.map(\.count), [1, 1, 1, 1, 1])
     XCTAssertTrue(mixed.hasReviewableIssues)
+    XCTAssertEqual(mixed.statusTransitionCount, 1)
   }
 }
