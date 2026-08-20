@@ -593,6 +593,86 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertLessThanOrEqual(progress.byteCount, limit)
   }
 
+  func testCSVRecorderRejectsMalformedSnapshotBeforeWriting() async throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
+      UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let destination = directory.appendingPathComponent("unsafe.csv")
+    let recorder = try SensorCSVRecorder(destinationURL: destination)
+    let malformed = SensorSnapshot(
+      id: "test.unsafe",
+      name: "Fixture",
+      category: .diagnostics,
+      summary: "Fixture",
+      status: .available,
+      source: "Fixture",
+      capability: .publicAPI,
+      channels: [
+        SensorChannel(id: "value", label: "Value", value: .nan, formattedValue: "nan")
+      ]
+    )
+
+    await assertThrowsErrorAsync(try await recorder.append([malformed])) { error in
+      XCTAssertEqual(
+        error as? SensorCSVRecorderError,
+        .unsafeSnapshot(code: .nonFiniteValue, path: "snapshots[0].channels[0].value")
+      )
+    }
+    let progress = try await recorder.finish()
+    XCTAssertEqual(progress.rowCount, 0)
+    XCTAssertEqual(
+      try Data(contentsOf: destination),
+      Data(SensorCSVStreamEncoder.header.utf8)
+    )
+  }
+
+  func testCSVRecorderBoundsProviderDeduplicationStateAcrossBatches() async throws {
+    func snapshot(id: String, timestamp: TimeInterval) -> SensorSnapshot {
+      SensorSnapshot(
+        id: id,
+        name: "Fixture",
+        category: .diagnostics,
+        summary: "Fixture",
+        status: .unavailable,
+        source: "Fixture",
+        capability: .publicAPI,
+        timestamp: Date(timeIntervalSinceReferenceDate: timestamp)
+      )
+    }
+
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
+      UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let destination = directory.appendingPathComponent("bounded-markers.csv")
+    let recorder = try SensorCSVRecorder(destinationURL: destination)
+    let initialBatch = (0..<SensorCSVRecorder.maximumTrackedProviderCount).map { index in
+      snapshot(id: "fixture.provider_\(index)", timestamp: 1)
+    }
+
+    let initialProgress = try await recorder.appendNewSnapshots(initialBatch)
+    XCTAssertEqual(initialProgress.rowCount, SensorCSVRecorder.maximumTrackedProviderCount)
+
+    let overflowSnapshot = snapshot(id: "fixture.provider_overflow", timestamp: 1)
+    await assertThrowsErrorAsync(
+      try await recorder.appendNewSnapshots([overflowSnapshot])
+    ) { error in
+      XCTAssertEqual(
+        error as? SensorCSVRecorderError,
+        .trackedProviderLimitReached(limit: SensorCSVRecorder.maximumTrackedProviderCount)
+      )
+    }
+
+    let existingProviderUpdate = snapshot(id: "fixture.provider_0", timestamp: 2)
+    let finalProgress = try await recorder.appendNewSnapshots([existingProviderUpdate])
+    XCTAssertEqual(
+      finalProgress.rowCount,
+      SensorCSVRecorder.maximumTrackedProviderCount + 1
+    )
+    _ = try await recorder.finish()
+  }
+
   func testCSVRecorderPreflightsTheWholeBatchBeforeWritingRows() async throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
       UUID().uuidString, isDirectory: true)
@@ -672,7 +752,7 @@ final class SensorCoreTests: XCTestCase {
     try externalHandle.truncate(atOffset: 0)
     try externalHandle.close()
     let snapshot = makeSPUSnapshot(
-      status: .available,
+      status: .unavailable,
       timestamp: Date(timeIntervalSince1970: 1_000)
     )
 

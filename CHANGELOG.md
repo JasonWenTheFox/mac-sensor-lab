@@ -50,6 +50,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - Chart history now retains only plotted/derived channels, caps total series at 256 and points per series at 600, and rejects stale or malformed samples.
 - Snapshot, diagnostics, calibration, and recording files now use same-directory atomic replacement through an owner-only `0600` temporary file.
 - Dashboard provider results now pass a fail-closed snapshot gate before reaching UI, history, or recording; malformed payloads become a fixed, non-echoing error snapshot at their registered position.
+- Continuous recording now rejects contract-invalid batches before row encoding and caps cross-batch deduplication state at 256 Provider identities.
 - Corrupt or extreme counters can no longer overflow CPU totals, network/disk/GPU aggregation, memory page conversion, fan-count conversion, sampling duration, or byte-rate formatting.
 - Continuous CSV recording now preflights the complete batch size and then encodes/writes one row at a time instead of retaining a second full-batch copy in memory.
 - Duplicate provider IDs no longer trap while constructing read or dashboard ordering; they remain visible to the contract audit.

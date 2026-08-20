@@ -55,7 +55,8 @@ public enum SensorCSVStreamEncoder {
 
   public static func rowCount(for snapshots: [SensorSnapshot]) -> Int {
     snapshots.reduce(0) { total, snapshot in
-      total + max(snapshot.channels.count, 1)
+      let (sum, overflow) = total.addingReportingOverflow(max(snapshot.channels.count, 1))
+      return overflow ? Int.max : sum
     }
   }
 
@@ -103,6 +104,8 @@ public enum SensorCSVRecorderError: LocalizedError, Equatable {
   case destinationTruncated
   case alreadyClosed
   case sizeLimitReached(limit: Int)
+  case unsafeSnapshot(code: SensorContractIssue.Code, path: String)
+  case trackedProviderLimitReached(limit: Int)
 
   public var errorDescription: String? {
     switch self {
@@ -114,6 +117,10 @@ public enum SensorCSVRecorderError: LocalizedError, Equatable {
       "The recording has already stopped."
     case .sizeLimitReached(let limit):
       "The recording reached its \(SensorFormatting.bytes(UInt64(limit))) safety limit."
+    case .unsafeSnapshot(let code, let path):
+      "Recording refused unsafe provider output (\(code.rawValue) at \(path))."
+    case .trackedProviderLimitReached(let limit):
+      "Recording cannot track more than \(limit) provider identities."
     }
   }
 }
@@ -121,6 +128,7 @@ public enum SensorCSVRecorderError: LocalizedError, Equatable {
 /// Append-only CSV recording with a hard byte limit and a synchronized file after every batch.
 public actor SensorCSVRecorder {
   public static let defaultByteLimit = 50 * 1_024 * 1_024
+  public static let maximumTrackedProviderCount = SensorContractAudit.maximumProviderCount
 
   public nonisolated let destinationURL: URL
   public nonisolated let startedAt: Date
@@ -163,6 +171,7 @@ public actor SensorCSVRecorder {
   public func append(_ snapshots: [SensorSnapshot]) throws -> SensorCSVRecordingProgress {
     guard let handle else { throw SensorCSVRecorderError.alreadyClosed }
     guard !snapshots.isEmpty else { return progress() }
+    try validate(snapshots)
 
     let actualByteCount = try handle.seekToEnd()
     guard actualByteCount <= UInt64(Int.max) else {
@@ -206,6 +215,21 @@ public actor SensorCSVRecorder {
     _ snapshots: [SensorSnapshot]
   ) throws -> SensorCSVRecordingProgress {
     guard handle != nil else { throw SensorCSVRecorderError.alreadyClosed }
+    guard !snapshots.isEmpty else { return progress() }
+    try validate(snapshots)
+
+    let newProviderCount = snapshots.lazy.filter {
+      self.lastSnapshotMarkers[$0.id] == nil
+    }.count
+    let (trackedProviderCount, overflow) = lastSnapshotMarkers.count.addingReportingOverflow(
+      newProviderCount
+    )
+    guard !overflow, trackedProviderCount <= Self.maximumTrackedProviderCount else {
+      throw SensorCSVRecorderError.trackedProviderLimitReached(
+        limit: Self.maximumTrackedProviderCount
+      )
+    }
+
     let batch = snapshots.filter { snapshot in
       lastSnapshotMarkers[snapshot.id]
         != SnapshotMarker(timestamp: snapshot.timestamp, status: snapshot.status)
@@ -238,5 +262,11 @@ public actor SensorCSVRecorder {
       byteCount: byteCount,
       byteLimit: byteLimit
     )
+  }
+
+  private func validate(_ snapshots: [SensorSnapshot]) throws {
+    if let issue = SensorContractAudit.issues(for: snapshots).first {
+      throw SensorCSVRecorderError.unsafeSnapshot(code: issue.code, path: issue.path)
+    }
   }
 }
