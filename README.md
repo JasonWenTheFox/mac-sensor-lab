@@ -149,7 +149,7 @@ swift test
 - [x] 添加 macOS 26 / Xcode 26 CI 和 Pull Request 安全检查模板。
 - [x] 建立私有 GitHub 仓库并通过首轮 CI。
 - [x] 用户接受 Xcode 许可。
-- [x] 完成 Xcode 首次组件初始化并在本机通过 28 项 XCTest。
+- [x] 完成 Xcode 首次组件初始化并在本机通过 29 项 XCTest。
 - [x] 加入可调采样、暂停/恢复、历史清空和 50 MB 上限的连续 CSV 记录。
 - [x] 加入环境光滚动统计、可选 Estimated lux 和上盖相对角度实验。
 - [x] 加入严格校验且不含设备标识的单点光照校准 JSON 导入/导出。
@@ -164,6 +164,7 @@ swift test
 - [x] 在 CI 中加入项目范围的发布边界与隐私清单审计。
 - [x] 加入明确标识且与真实偏好隔离的确定性 Demo Provider 模式。
 - [x] 加入可复用的 Provider/Snapshot 数据契约审计，并接入本地及 CI portable 自检。
+- [x] Provider 排序对重复 ID 安全降级，不会在契约审计报告问题前触发运行时崩溃。
 - [ ] 用户确认正式名称后公开 GitHub 仓库。
 
 ## 重要边界

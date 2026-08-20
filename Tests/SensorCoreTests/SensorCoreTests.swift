@@ -416,6 +416,21 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertGreaterThanOrEqual(ids.count, 14)
   }
 
+  func testReadAllKeepsDuplicateProviderIDsVisibleForContractAudit() async {
+    let provider = SensorDemoProviderRegistry.providers()[0]
+    let providers: [any SensorProvider] = [provider, provider]
+
+    let snapshots = await SensorProviderRegistry.readAll(providers)
+
+    XCTAssertEqual(snapshots.count, 2)
+    XCTAssertEqual(snapshots.map(\.id), [provider.metadata.id, provider.metadata.id])
+    let duplicateIssues = SensorContractAudit.issues(
+      providers: providers,
+      snapshots: snapshots
+    ).filter { $0.code == .duplicateProviderIdentifier }
+    XCTAssertEqual(duplicateIssues.count, 2)
+  }
+
   func testDemoRegistryIsCompleteFiniteAndClearlyLabeled() async {
     let providers = SensorDemoProviderRegistry.providers()
     XCTAssertEqual(providers.count, SensorProviderRegistry.providers().count)

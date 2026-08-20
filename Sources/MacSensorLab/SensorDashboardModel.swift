@@ -126,8 +126,7 @@ final class SensorDashboardModel: ObservableObject {
     guard !isRefreshing else { return }
     isRefreshing = true
 
-    let order = Dictionary(
-      uniqueKeysWithValues: providers.enumerated().map { ($0.element.metadata.id, $0.offset) })
+    let order = SensorProviderRegistry.registrationOrder(for: providers)
     await withTaskGroup(of: SensorSnapshot.self) { group in
       for provider in providers {
         group.addTask { await provider.read() }
