@@ -70,7 +70,7 @@ The Overview, Raw Sensors, Experiments, and Diagnostics screens share the same n
   columns, spreadsheet-formula protection for text fields, per-batch synchronization,
   actor-isolated duplicate suppression, a fresh end-of-file/size check before every batch, full
   snapshot-contract validation, batch-size preflight followed by row-at-a-time encoding/writes,
-  256 cross-batch provider markers, and a 50 MB hard limit.
+  256 cross-batch provider markers, final file-end recounting, and a 50 MB hard limit.
 - Search Raw Sensors by provider, channel, source, status, or stable ID without mutating sampling,
   history, or export data.
 - Use rolling raw ambient-light statistics. A lux value appears only after an explicit one-point
@@ -146,7 +146,7 @@ rejects tracked build output, absolute user paths, common secret signatures, pro
 keys that this release does not implement, forbidden mutation/privilege APIs, missing release
 documents, or a privacy manifest inconsistent with the current offline behavior.
 
-GitHub Actions repeats formatting, audit, build, 47 XCTest cases, portable self-test, and app-bundle
+GitHub Actions repeats formatting, audit, build, 48 XCTest cases, portable self-test, and app-bundle
 assembly on `macos-26`.
 
 ## Repository layout

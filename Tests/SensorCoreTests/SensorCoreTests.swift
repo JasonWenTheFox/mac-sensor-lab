@@ -741,6 +741,32 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertEqual(progress.rowCount, 1)
   }
 
+  func testCSVRecorderFinishRefreshesFinalFileSizeAfterExternalAppend() async throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
+      UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let destination = directory.appendingPathComponent("finish-recount.csv")
+    let recorder = try SensorCSVRecorder(destinationURL: destination)
+    let externalData = Data("external-final-append\n".utf8)
+    let externalHandle = try FileHandle(forWritingTo: destination)
+    try externalHandle.seekToEnd()
+    try externalHandle.write(contentsOf: externalData)
+    try externalHandle.synchronize()
+    try externalHandle.close()
+
+    let progress = try await recorder.finish()
+    XCTAssertEqual(progress.rowCount, 0)
+    XCTAssertEqual(progress.byteCount, try Data(contentsOf: destination).count)
+    XCTAssertEqual(
+      progress.byteCount,
+      SensorCSVStreamEncoder.header.utf8.count + externalData.count
+    )
+    await assertThrowsErrorAsync(try await recorder.finish()) { error in
+      XCTAssertEqual(error as? SensorCSVRecorderError, .alreadyClosed)
+    }
+  }
+
   func testCSVRecorderRejectsExternallyTruncatedDestination() async throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
       UUID().uuidString, isDirectory: true)

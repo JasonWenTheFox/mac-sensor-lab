@@ -248,9 +248,27 @@ public actor SensorCSVRecorder {
 
   public func finish() throws -> SensorCSVRecordingProgress {
     guard let handle else { throw SensorCSVRecorderError.alreadyClosed }
-    try handle.synchronize()
-    try handle.close()
     self.handle = nil
+    var finalizationError: (any Error)?
+
+    do {
+      try handle.synchronize()
+      let actualByteCount = try handle.seekToEnd()
+      guard actualByteCount <= UInt64(Int.max) else {
+        throw SensorCSVRecorderError.sizeLimitReached(limit: byteLimit)
+      }
+      byteCount = Int(actualByteCount)
+    } catch {
+      finalizationError = error
+    }
+
+    do {
+      try handle.close()
+    } catch {
+      if finalizationError == nil { finalizationError = error }
+    }
+
+    if let finalizationError { throw finalizationError }
     return progress()
   }
 
