@@ -36,12 +36,6 @@ enum SamplingCadence: Double, CaseIterable, Identifiable {
   var shortLabel: String { "\(Int(rawValue)) s" }
 }
 
-struct SensorHistoryPoint: Identifiable {
-  let id = UUID()
-  let timestamp: Date
-  let value: Double
-}
-
 @MainActor
 final class SensorDashboardModel: ObservableObject {
   let isDemoMode: Bool
@@ -67,7 +61,6 @@ final class SensorDashboardModel: ObservableObject {
   @Published var lastActionMessage: String?
 
   private let providers: [any SensorProvider]
-  private let maximumHistoryPoints = 600
   private var recorder: SensorCSVRecorder?
   private var samplingHealthTracker = SensorSamplingHealthTracker()
 
@@ -158,17 +151,7 @@ final class SensorDashboardModel: ObservableObject {
   }
 
   private func appendHistory(_ snapshot: SensorSnapshot) {
-    for channel in snapshot.channels {
-      guard let value = channel.value, value.isFinite else { continue }
-      let key = "\(snapshot.id)/\(channel.id)"
-      var points = history[key, default: []]
-      guard points.last?.timestamp != snapshot.timestamp else { continue }
-      points.append(SensorHistoryPoint(timestamp: snapshot.timestamp, value: value))
-      if points.count > maximumHistoryPoints {
-        points.removeFirst(points.count - maximumHistoryPoints)
-      }
-      history[key] = points
-    }
+    SensorHistoryRetention.append(snapshot, to: &history)
   }
 
   func export(_ format: ExportFormat) {

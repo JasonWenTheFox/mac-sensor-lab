@@ -31,7 +31,7 @@ Overview / Raw Sensors / Experiments / Diagnostics
 
 - AppModel 在主线程只发布轻量状态；
 - 硬件读取在独立 Task/线程完成；
-- 当前 UI 最快每 1 秒采样一次，历史按通道限制为 600 个不同时间戳，不直接按潜在高频 HID 回调重绘；
+- 当前 UI 最快每 1 秒采样一次，历史只保存绘图/派生通道并限制为 256 条序列、每条 600 个严格递增时间戳，不直接按潜在高频 HID 回调重绘；
 - 取消 Dashboard Task 会停止安排新的刷新；可能阻塞的 Provider 必须自行限定读取时间，当前 SPU 报告等待有 250 ms 边界，本项目不宣称存在能强杀任意同步 API 的全局超时；
 - 当前 Provider 使用短生命周期 IOKit/HID/SMC 句柄；关闭 Dashboard 会取消采样并安全结束活动中的连续记录；
 - 若未来加入真正的高频 Provider，必须先设计有界环形缓冲、降采样和休眠/唤醒生命周期测试。

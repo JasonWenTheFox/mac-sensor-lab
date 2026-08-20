@@ -156,11 +156,7 @@ private struct SensorCard: View {
   let history: [String: [SensorHistoryPoint]]
 
   private var chartChannel: SensorChannel? {
-    let liveChannelIDs = [
-      "cpu_utilization", "gpu_device_utilization", "network_receive_rate", "disk_read_rate",
-      "cpu_hotspot", "system_power", "charge", "angle", "ambient_intensity",
-    ]
-    return liveChannelIDs.lazy.compactMap { id in
+    SensorHistoryRetention.overviewChannelPriority.lazy.compactMap { id in
       snapshot.channels.first(where: { $0.id == id && $0.value != nil })
     }.first
   }

@@ -174,6 +174,126 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertFalse(text.contains("\"timestamp\""))
   }
 
+  func testHistoryRetentionBoundsSeriesPointsAndRejectsMalformedSamples() {
+    func snapshot(
+      providerID: String,
+      channelID: String = "cpu_utilization",
+      value: Double,
+      timestamp: TimeInterval
+    ) -> SensorSnapshot {
+      SensorSnapshot(
+        id: providerID,
+        name: "Fixture",
+        category: .diagnostics,
+        summary: "Fixture",
+        status: .available,
+        source: "Fixture",
+        capability: .publicAPI,
+        channels: [
+          SensorChannel(
+            id: channelID,
+            label: "Value",
+            value: value,
+            formattedValue: "\(value)"
+          )
+        ],
+        timestamp: Date(timeIntervalSinceReferenceDate: timestamp)
+      )
+    }
+
+    var history: [String: [SensorHistoryPoint]] = [:]
+    for index in 0..<4 {
+      SensorHistoryRetention.append(
+        snapshot(providerID: "provider.0", value: Double(index), timestamp: Double(index)),
+        to: &history,
+        maximumSeriesCount: 2,
+        maximumPointsPerSeries: 2
+      )
+    }
+    XCTAssertEqual(history["provider.0/cpu_utilization"]?.map(\.value), [2, 3])
+
+    SensorHistoryRetention.append(
+      snapshot(providerID: "provider.0", value: 99, timestamp: 3),
+      to: &history,
+      maximumSeriesCount: 2,
+      maximumPointsPerSeries: 2
+    )
+    SensorHistoryRetention.append(
+      snapshot(providerID: "provider.0", value: 98, timestamp: 2.5),
+      to: &history,
+      maximumSeriesCount: 2,
+      maximumPointsPerSeries: 2
+    )
+    XCTAssertEqual(history["provider.0/cpu_utilization"]?.map(\.value), [2, 3])
+
+    for providerIndex in 1...2 {
+      SensorHistoryRetention.append(
+        snapshot(
+          providerID: "provider.\(providerIndex)",
+          value: Double(providerIndex),
+          timestamp: 4
+        ),
+        to: &history,
+        maximumSeriesCount: 2,
+        maximumPointsPerSeries: 2
+      )
+    }
+    XCTAssertEqual(history.count, 2)
+    XCTAssertNotNil(history["provider.1/cpu_utilization"])
+    XCTAssertNil(history["provider.2/cpu_utilization"])
+
+    var malformedHistory: [String: [SensorHistoryPoint]] = [:]
+    SensorHistoryRetention.append(
+      snapshot(providerID: "ignored", channelID: "not_retained", value: 1, timestamp: 5),
+      to: &malformedHistory,
+      maximumSeriesCount: 2,
+      maximumPointsPerSeries: 2
+    )
+    SensorHistoryRetention.append(
+      snapshot(providerID: String(repeating: "a", count: 129), value: 1, timestamp: 5),
+      to: &malformedHistory,
+      maximumSeriesCount: 2,
+      maximumPointsPerSeries: 2
+    )
+    SensorHistoryRetention.append(
+      snapshot(providerID: "invalid.value", value: .infinity, timestamp: 5),
+      to: &malformedHistory,
+      maximumSeriesCount: 2,
+      maximumPointsPerSeries: 2
+    )
+    SensorHistoryRetention.append(
+      snapshot(providerID: "invalid.time", value: 1, timestamp: .infinity),
+      to: &malformedHistory,
+      maximumSeriesCount: 2,
+      maximumPointsPerSeries: 2
+    )
+    XCTAssertTrue(malformedHistory.isEmpty)
+
+    var clampedHistory: [String: [SensorHistoryPoint]] = [:]
+    for providerIndex in 0...SensorHistoryRetention.maximumSeriesCount {
+      SensorHistoryRetention.append(
+        snapshot(providerID: "clamped.\(providerIndex)", value: 1, timestamp: 1),
+        to: &clampedHistory,
+        maximumSeriesCount: .max,
+        maximumPointsPerSeries: .max
+      )
+    }
+    XCTAssertEqual(clampedHistory.count, SensorHistoryRetention.maximumSeriesCount)
+
+    for index in 2...(SensorHistoryRetention.maximumPointsPerSeries + 1) {
+      SensorHistoryRetention.append(
+        snapshot(providerID: "clamped.0", value: Double(index), timestamp: Double(index)),
+        to: &clampedHistory,
+        maximumSeriesCount: .max,
+        maximumPointsPerSeries: .max
+      )
+    }
+    let retainedPoints = clampedHistory["clamped.0/cpu_utilization"]
+    XCTAssertEqual(retainedPoints?.count, SensorHistoryRetention.maximumPointsPerSeries)
+    XCTAssertEqual(retainedPoints?.first?.value, 2)
+    XCTAssertEqual(retainedPoints?.last?.value, 601)
+  }
+
   func testSamplingHealthHandlesDuplicateIDsAndInvalidDurationsDefensively() {
     let first = SensorSnapshot(
       id: "test.provider",
