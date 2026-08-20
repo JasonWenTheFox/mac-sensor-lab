@@ -546,6 +546,12 @@ private struct ExperimentsView: View {
         "Uses recent public charge history; shown only while discharging"
       )),
     Experiment(
+      name: L10n.text("Thermal Trend"), symbol: "thermometer.medium",
+      providerID: "thermal.pressure", channelID: "thermal_pressure_level",
+      description: L10n.text(
+        "Tracks public pressure states as an ordinal history, not temperature"
+      )),
+    Experiment(
       name: L10n.text("Level"), symbol: "level", providerID: "motion.spu_live",
       channelID: "level_roll",
       description: L10n.text(
@@ -737,10 +743,35 @@ private struct ExperimentsView: View {
         )
       }
 
+      if channelID == "thermal_pressure_level",
+        let trend = ThermalPressureTrend(points: points)
+      {
+        HStack(spacing: 8) {
+          ExperimentMetric(
+            label: L10n.text("Highest recent pressure"),
+            value: L10n.sensorText(trend.highest.displayName)
+          )
+          ExperimentMetric(
+            label: L10n.text("State changes"),
+            value: "\(trend.transitionCount)"
+          )
+        }
+        Text(
+          L10n.format(
+            "%lld samples retained. Ordinal spacing is not physical and no temperature is inferred.",
+            Int64(trend.sampleCount)
+          )
+        )
+        .font(.caption2)
+        .foregroundStyle(.secondary)
+      }
+
       if points.count >= 2 {
         Chart(points) { point in
           LineMark(x: .value("Time", point.timestamp), y: .value(channel.label, point.value))
-            .interpolationMethod(.catmullRom)
+            .interpolationMethod(
+              channelID == "thermal_pressure_level" ? .stepEnd : .catmullRom
+            )
             .foregroundStyle(Color.accentColor)
         }
         .chartXAxis(.hidden)

@@ -34,7 +34,8 @@ public enum SensorHistoryRetention {
   ]
 
   public static let retainedChannelIDs = Set(
-    overviewChannelPriority + ["acceleration_magnitude", "battery_charge"]
+    overviewChannelPriority
+      + ["acceleration_magnitude", "battery_charge", "thermal_pressure_level"]
   )
 
   public static func append(

@@ -43,7 +43,7 @@ The current build has 15 providers:
 | Network | aggregate active-interface bytes, packet rates, and throughput | No interface names, addresses, SSID, BSSID, or MAC address |
 | System power source | active AC/battery/UPS source, public charge/charging state, OS low-battery warning level, and valid time estimates | Public `IOPowerSources`; ignores names, IDs, serial numbers, transport details, and adapter metadata |
 | Extended battery | charge, source, charging state, cycles, electrical data, temperature, capacities, valid time estimates | Fixed non-identifying AppleSmartBattery key allowlist |
-| Thermal | public thermal pressure and Low Power Mode | A pressure state is not a temperature |
+| Thermal | public thermal pressure, derived 0–3 ordinal trend, and Low Power Mode | Ordinal spacing is not physical and no temperature is inferred |
 | SMC | generation-specific M1–M5 temperatures, fan RPM, and internal power channels | Fixed read-only catalogs; CPU brand is reduced to a generation and never retained/exported; no key writes or fan control |
 | Display | active display count, current pixel and logical-point dimensions, derived backing scale, refresh rate | Public CoreGraphics mode data; no persistent display identifiers |
 | Storage | system-volume total, ordinary/important/opportunistic availability, derived used space | Public Foundation volume keys; no names, IDs, mount paths, or error text |
@@ -94,6 +94,8 @@ raw sensor payloads do not change with the selected language.
 - Observe an in-memory Battery Trend from the public charge channel. It appears only while the Mac
   is explicitly discharging and after at least five minutes, four samples, and a measurable drop;
   drain rate and time-to-empty remain labeled as recent-history estimates.
+- Track public thermal-pressure state changes and the highest recent state using an explicitly
+  ordinal history that never presents pressure levels as degrees or a linear physical scale.
 - Inspect low-rate acceleration-magnitude RMS variation and peak-to-peak motion without presenting
   the 1–10 second dashboard cadence as vibration-frequency analysis.
 - Inspect value-free sampling health counters for completed cycles, latest duration, provider

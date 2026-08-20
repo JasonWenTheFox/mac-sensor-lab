@@ -1651,6 +1651,46 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertFalse(unavailable.notes.joined().contains("/"))
   }
 
+  func testThermalProviderKeepsStateAndOrdinalEncodingSeparate() throws {
+    XCTAssertEqual(SystemThermalPressure(systemState: .nominal), .nominal)
+    XCTAssertEqual(SystemThermalPressure(systemState: .fair), .fair)
+    XCTAssertEqual(SystemThermalPressure(systemState: .serious), .serious)
+    XCTAssertEqual(SystemThermalPressure(systemState: .critical), .critical)
+
+    let snapshot = ThermalProvider().snapshot(
+      reading: PublicThermalReading(pressure: .serious, lowPowerModeEnabled: true)
+    )
+    let channels = Dictionary(uniqueKeysWithValues: snapshot.channels.map { ($0.id, $0) })
+
+    XCTAssertEqual(channels["thermal_state"]?.formattedValue, "Serious")
+    XCTAssertNil(channels["thermal_state"]?.value)
+    XCTAssertEqual(try XCTUnwrap(channels["thermal_pressure_level"]?.value), 2, accuracy: 0.001)
+    XCTAssertEqual(channels["thermal_pressure_level"]?.formattedValue, "Serious")
+    XCTAssertEqual(channels["thermal_pressure_level"]?.kind, .derived)
+    XCTAssertEqual(channels["low_power_mode"]?.value, 1)
+  }
+
+  func testThermalPressureTrendRejectsNonOrdinalOrMalformedHistory() throws {
+    let start = Date(timeIntervalSinceReferenceDate: 3_000)
+    func point(_ offset: Double, _ value: Double) -> SensorHistoryPoint {
+      SensorHistoryPoint(timestamp: start.addingTimeInterval(offset), value: value)
+    }
+    let trend = try XCTUnwrap(
+      ThermalPressureTrend(
+        points: [point(0, 0), point(1, 0), point(2, 1), point(3, 2), point(4, 1)]
+      )
+    )
+
+    XCTAssertEqual(trend.sampleCount, 5)
+    XCTAssertEqual(trend.latest, .fair)
+    XCTAssertEqual(trend.highest, .serious)
+    XCTAssertEqual(trend.transitionCount, 3)
+    XCTAssertNil(ThermalPressureTrend(points: [point(0, 0.5)]))
+    XCTAssertNil(ThermalPressureTrend(points: [point(0, 4)]))
+    XCTAssertNil(ThermalPressureTrend(points: [point(1, 0), point(0, 1)]))
+    XCTAssertNil(ThermalPressureTrend(points: [point(0, .nan)]))
+  }
+
   func testGPUPerformanceValueRejectsInvalidPercentages() {
     XCTAssertEqual(GPUPerformanceValue.percentage(64), 64)
     XCTAssertNil(GPUPerformanceValue.percentage(-1))

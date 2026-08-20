@@ -83,6 +83,7 @@ public enum SensorDemoProviderRegistry {
         "Thermal pressure nominal",
         [
           text("thermal_state", "Thermal pressure", "Nominal"),
+          text("thermal_pressure_level", "Thermal pressure level", "Nominal", 0, nil, .derived),
           text("low_power_mode", "Low Power Mode", "Off", 0),
         ]),
       provider(

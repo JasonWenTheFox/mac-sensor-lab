@@ -173,6 +173,42 @@ public struct BatteryDischargeEstimate: Equatable, Sendable {
   }
 }
 
+/// Summary of the public thermal-pressure ordinal retained for UI trend display.
+///
+/// The 0...3 encoding preserves order only. It is not a temperature, percentage, or linear scale.
+public struct ThermalPressureTrend: Equatable, Sendable {
+  public let sampleCount: Int
+  public let latest: SystemThermalPressure
+  public let highest: SystemThermalPressure
+  public let transitionCount: Int
+
+  public init?(points input: [SensorHistoryPoint]) {
+    let points = Array(input.suffix(SensorHistoryRetention.maximumPointsPerSeries))
+    guard !points.isEmpty else { return nil }
+
+    var levels: [SystemThermalPressure] = []
+    levels.reserveCapacity(points.count)
+    for (index, point) in points.enumerated() {
+      guard point.timestamp.timeIntervalSinceReferenceDate.isFinite,
+        point.value.isFinite,
+        (0...3).contains(point.value),
+        point.value.rounded() == point.value,
+        index == 0 || points[index - 1].timestamp < point.timestamp,
+        let level = SystemThermalPressure(rawValue: Int(point.value))
+      else { return nil }
+      levels.append(level)
+    }
+    guard let latest = levels.last,
+      let highest = levels.max(by: { $0.rawValue < $1.rawValue })
+    else { return nil }
+
+    self.sampleCount = levels.count
+    self.latest = latest
+    self.highest = highest
+    self.transitionCount = zip(levels, levels.dropFirst()).count { $0 != $1 }
+  }
+}
+
 public struct AmbientLuxCalibrationPoint: Codable, Equatable, Sendable {
   public let rawReference: Double
   public let luxReference: Double

@@ -192,6 +192,13 @@ final class SensorTextLocalizerTests: XCTestCase {
       "可用于重要用途"
     )
 
+    let thermal = try XCTUnwrap(snapshots["thermal.pressure"])
+    let thermalLevel = try XCTUnwrap(
+      thermal.channels.first(where: { $0.id == "thermal_pressure_level" })
+    )
+    XCTAssertEqual(packagedLocalizer.localized(thermalLevel.label), "热压力等级")
+    XCTAssertEqual(packagedLocalizer.localized(thermalLevel.formattedValue), "正常")
+
     let publicPower = try XCTUnwrap(snapshots["power.source"])
     XCTAssertEqual(packagedLocalizer.localized(publicPower.name), "系统电源来源")
     XCTAssertEqual(packagedLocalizer.localized(publicPower.summary), "78% • 电池")

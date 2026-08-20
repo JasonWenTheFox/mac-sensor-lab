@@ -34,6 +34,8 @@
 	<string>%lld 个只读通道</string>
 	<key>%lld rows • %@</key>
 	<string>%lld 行 • %@</string>
+	<key>%lld samples retained. Ordinal spacing is not physical and no temperature is inferred.</key>
+	<string>保留 %lld 个样本。序数间距没有物理意义，也不推断温度。</string>
 	<key>%lld status changes this launch</key>
 	<string>本次启动发生 %lld 次状态切换</string>
 	<key>, </key>
@@ -364,6 +366,8 @@
 	<string>已检测到硬件 • 等待测量 Provider</string>
 	<key>Hardware/service presence only.</key>
 	<string>仅表示硬件或服务存在。</string>
+	<key>Highest recent pressure</key>
+	<string>近期最高热压力</string>
 	<key>Import Ambient-Light Calibration</key>
 	<string>导入环境光校准</string>
 	<key>Import Calibration…</key>
@@ -518,6 +522,8 @@
 	<string>张开角度</string>
 	<key>Operating-system warning level; time thresholds are estimates, not guarantees.</key>
 	<string>操作系统告警级别；时间阈值是估算，不是保证。</string>
+	<key>Ordinal encoding for trend display only; level spacing is not physical and no temperature is inferred.</key>
+	<string>序数编码仅用于趋势显示；等级间距没有物理意义，也不推断温度。</string>
 	<key>Original sample time: %@</key>
 	<string>原始采样时间：%@</string>
 	<key>Overview</key>
@@ -702,6 +708,8 @@
 	<string>开始连续传感器记录</string>
 	<key>Started recording %@</key>
 	<string>已开始记录 %@</string>
+	<key>State changes</key>
+	<string>状态变化</string>
 	<key>Status changes this launch</key>
 	<string>本次启动的状态变化</string>
 	<key>Stop Continuous Recording</key>
@@ -746,12 +754,16 @@
 	<string>安全读取器没有唤醒或重新配置 SPU。</string>
 	<key>The support report contains provider status and stable channel metadata, never sensor readings, notes, source strings, machine identifiers, or file paths.</key>
 	<string>支持报告只包含 Provider 状态和稳定的通道元数据，不包含传感器读数、备注、来源字符串、机器标识或文件路径。</string>
+	<key>Thermal Trend</key>
+	<string>热压力趋势</string>
 	<key>Thermal pressure</key>
 	<string>热压力</string>
 	<key>Thermal pressure %@</key>
 	<string>热压力%@</string>
 	<key>Thermal pressure is a public system state, not a temperature in degrees.</key>
 	<string>热压力是公开的系统状态，不是以度数表示的温度。</string>
+	<key>Thermal pressure level</key>
+	<string>热压力等级</string>
 	<key>Thermals</key>
 	<string>散热状态</string>
 	<key>This build never runs as root, changes fan settings, writes SMC values, or modifies Apple SPU driver state.</key>
@@ -762,6 +774,8 @@
 	<string>总计是跨块存储驱动汇总的驱动生命周期计数器。</string>
 	<key>Trackpad Scale</key>
 	<string>触控板秤</string>
+	<key>Tracks public pressure states as an ordinal history, not temperature</key>
+	<string>将公开热压力状态记录为序数历史，而非温度</string>
 	<key>Trend estimate pauses while connected to power or charging.</key>
 	<string>连接电源或充电时暂停趋势估算。</string>
 	<key>Try a provider, channel, source, status, or stable ID.</key>
