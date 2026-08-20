@@ -434,6 +434,97 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertEqual(snapshots.map(\.id), providers.map(\.metadata.id))
   }
 
+  func testContractAuditAcceptsDemoRegistryAndDetectsMetadataDrift() async {
+    let providers = SensorDemoProviderRegistry.providers()
+    var snapshots = await SensorProviderRegistry.readAll(providers)
+    XCTAssertEqual(
+      SensorContractAudit.issues(providers: providers, snapshots: snapshots),
+      []
+    )
+
+    let original = snapshots[0]
+    snapshots[0] = SensorSnapshot(
+      id: original.id,
+      name: "Drifted name",
+      category: original.category,
+      summary: original.summary,
+      status: original.status,
+      source: original.source,
+      capability: original.capability,
+      channels: original.channels,
+      notes: original.notes,
+      timestamp: original.timestamp
+    )
+    let driftIssues = SensorContractAudit.issues(providers: providers, snapshots: snapshots)
+    XCTAssertEqual(driftIssues.map(\.code), [.providerMetadataMismatch])
+    XCTAssertEqual(driftIssues.first?.path, "snapshots[0].name")
+
+    snapshots[0] = SensorSnapshot(
+      id: "system.alternate",
+      name: original.name,
+      category: original.category,
+      summary: original.summary,
+      status: original.status,
+      source: original.source,
+      capability: original.capability,
+      channels: original.channels,
+      notes: original.notes,
+      timestamp: original.timestamp
+    )
+    let linkageCodes = Set(
+      SensorContractAudit.issues(providers: providers, snapshots: snapshots).map(\.code))
+    XCTAssertEqual(linkageCodes, [.missingProviderSnapshot, .unexpectedProviderIdentifier])
+  }
+
+  func testContractAuditRejectsMalformedSnapshotStructure() {
+    let now = Date(timeIntervalSinceReferenceDate: 10_000)
+    let malformed = SensorSnapshot(
+      id: "Bad ID",
+      name: "Fixture",
+      category: .diagnostics,
+      summary: "Fixture",
+      status: .available,
+      source: "Fixture",
+      capability: .publicAPI,
+      channels: [
+        SensorChannel(
+          id: "duplicate", label: "One", value: .nan,
+          formattedValue: "", unit: " "
+        ),
+        SensorChannel(
+          id: "duplicate", label: "Two", value: 1,
+          formattedValue: "1"
+        ),
+        SensorChannel(
+          id: "device_uuid", label: "Forbidden", value: 1,
+          formattedValue: "1"
+        ),
+      ],
+      timestamp: now.addingTimeInterval(6)
+    )
+    let duplicate = SensorSnapshot(
+      id: malformed.id,
+      name: malformed.name,
+      category: malformed.category,
+      summary: malformed.summary,
+      status: malformed.status,
+      source: malformed.source,
+      capability: malformed.capability,
+      timestamp: now
+    )
+
+    let codes = Set(
+      SensorContractAudit.issues(for: [malformed, duplicate], now: now).map(\.code))
+    XCTAssertTrue(codes.contains(.invalidStableIdentifier))
+    XCTAssertTrue(codes.contains(.duplicateProviderIdentifier))
+    XCTAssertTrue(codes.contains(.duplicateChannelIdentifier))
+    XCTAssertTrue(codes.contains(.forbiddenIdentifier))
+    XCTAssertTrue(codes.contains(.nonFiniteValue))
+    XCTAssertTrue(codes.contains(.emptyFormattedValue))
+    XCTAssertTrue(codes.contains(.emptyUnit))
+    XCTAssertTrue(codes.contains(.futureTimestamp))
+  }
+
   func testSPUVectorReportDecoding() {
     var report = [UInt8](repeating: 0, count: 22)
     writeLittleEndian(UInt32(bitPattern: 65_536), to: &report, at: 6)

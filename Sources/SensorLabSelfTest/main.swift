@@ -9,11 +9,7 @@ struct SensorLabSelfTest {
     let portableMode = CommandLine.arguments.contains("--portable")
     let spuStabilityMode = CommandLine.arguments.contains("--spu-stability")
     let providers = SensorProviderRegistry.providers()
-    let providerIDs = providers.map(\.metadata.id)
 
-    if Set(providerIDs).count != providerIDs.count {
-      failures.append("provider IDs are not unique")
-    }
     if providers.count < 14 {
       failures.append("expected at least 14 providers, found \(providers.count)")
     }
@@ -28,14 +24,10 @@ struct SensorLabSelfTest {
       failures.append("fewer than \(minimumAvailable) providers returned real available data")
     }
 
-    let forbiddenIDs = ["serial", "uuid", "udid", "username", "hostname", "ssid", "bssid"]
-    for snapshot in snapshots {
-      let allIDs = [snapshot.id] + snapshot.channels.map(\.id)
-      for id in allIDs
-      where forbiddenIDs.contains(where: { id.localizedCaseInsensitiveContains($0) }) {
-        failures.append("forbidden identifying field ID exported: \(id)")
-      }
-    }
+    failures += SensorContractAudit.issues(
+      providers: providers,
+      snapshots: snapshots
+    ).map(\.description)
 
     if let lid = snapshots.first(where: { $0.id == "motion.lid_angle" }),
       lid.status == .available,
@@ -46,9 +38,6 @@ struct SensorLabSelfTest {
     }
 
     for channel in snapshots.flatMap(\.channels) {
-      if let value = channel.value, !value.isFinite {
-        failures.append("non-finite value: \(channel.id)")
-      }
       if channel.unit == "°C", let value = channel.value, !(-20...110).contains(value) {
         failures.append("temperature is out of range: \(channel.id)=\(value)")
       }

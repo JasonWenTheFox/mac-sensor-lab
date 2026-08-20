@@ -25,6 +25,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - An explicit `--demo` mode with 14 deterministic, identity-free provider fixtures, a persistent on-screen banner, and preferences isolated from live mode.
 - A complete English project overview alongside the original Chinese planning and implementation documentation.
 - Probe CLI options for deterministic demo snapshots, value-free diagnostics, help, and strict unknown-option rejection.
+- A reusable provider/snapshot contract audit for stable IDs, registry consistency, finite values, complete display metadata, timestamps, and identifying-field exclusions.
 
 ### Changed
 

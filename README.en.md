@@ -93,6 +93,12 @@ use separate keys, so they do not change live-mode preferences.
 The probe CLI also accepts `--demo`. Add `--diagnostics` to output only the privacy-safe provider
 metadata report; without options it retains the original live, full-snapshot behavior.
 
+`sensorlab-selftest` applies a reusable structural contract audit to registered metadata and live
+snapshots. It checks stable and unique provider/channel IDs, registry metadata consistency, finite
+numeric values, nonblank formatted values and explicit units, future timestamps, and identifying
+field names that must never become IDs. The audit does not scan free-text summaries or notes and
+does not collect additional data.
+
 ## Build and test
 
 Xcode must have completed its first-launch setup. The project never invokes `sudo` itself.
@@ -120,7 +126,7 @@ rejects tracked build output, absolute user paths, common secret signatures, pro
 keys that this release does not implement, forbidden mutation/privilege APIs, missing release
 documents, or a privacy manifest inconsistent with the current offline behavior.
 
-GitHub Actions repeats formatting, audit, build, 26 XCTest cases, portable self-test, and app-bundle
+GitHub Actions repeats formatting, audit, build, 28 XCTest cases, portable self-test, and app-bundle
 assembly on `macos-26`.
 
 ## Repository layout
