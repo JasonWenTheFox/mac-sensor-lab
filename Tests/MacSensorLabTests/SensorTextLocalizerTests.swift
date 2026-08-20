@@ -11,6 +11,7 @@ final class SensorTextLocalizerTests: XCTestCase {
     "%@ • %@": "%@ • %@",
     "%@ • %@ memory": "%@ • %@ 内存",
     "%@ • %lld active": "%@ • %lld 台活动显示器",
+    "%lld active displays": "%lld 台活动显示器",
     "%lld experimental sensor types detected": "检测到 %lld 类实验性传感器",
     "%lld of %lld capabilities detected": "已检测到 %lld/%lld 项能力",
     "%lld read-only channels": "%lld 个只读通道",
@@ -64,7 +65,11 @@ final class SensorTextLocalizerTests: XCTestCase {
       localizer.localized("Apple Silicon • 32 GB memory"),
       "Apple Silicon • 32 GB 内存"
     )
-    XCTAssertEqual(localizer.localized("1512 × 982 • 1 active"), "1512 × 982 • 1 台活动显示器")
+    XCTAssertEqual(
+      localizer.localized("3024 × 1964 px • 1 active"),
+      "3024 × 1964 px • 1 台活动显示器"
+    )
+    XCTAssertEqual(localizer.localized("2 active displays"), "2 台活动显示器")
     XCTAssertEqual(localizer.localized("CPU 38%"), "CPU 38%")
     XCTAssertEqual(localizer.localized("GPU 27%"), "GPU 27%")
     XCTAssertEqual(localizer.localized("Thermal pressure nominal"), "热压力正常")
@@ -191,6 +196,22 @@ final class SensorTextLocalizerTests: XCTestCase {
     )
     XCTAssertEqual(packagedLocalizer.localized(warning.label), "系统低电量告警")
     XCTAssertEqual(packagedLocalizer.localized(warning.formattedValue), "无告警")
+
+    let display = try XCTUnwrap(snapshots["display.active"])
+    XCTAssertEqual(packagedLocalizer.localized(display.summary), "3024 × 1964 px • 1 台活动显示器")
+    XCTAssertEqual(
+      packagedLocalizer.localized(
+        try XCTUnwrap(display.channels.first(where: { $0.id == "main_resolution" })).label
+      ),
+      "主显示器像素尺寸"
+    )
+    XCTAssertEqual(
+      packagedLocalizer.localized(
+        try XCTUnwrap(display.channels.first(where: { $0.id == "main_logical_resolution" })).unit
+          ?? ""
+      ),
+      "点"
+    )
 
     let motion = try XCTUnwrap(snapshots["motion.spu_live"])
     XCTAssertEqual(packagedLocalizer.localized(motion.summary), "实时加速度、水平与环境光数据")

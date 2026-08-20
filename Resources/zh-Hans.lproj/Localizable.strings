@@ -18,6 +18,8 @@
 	<string>%@ • %lld 台活动显示器</string>
 	<key>%@ • recent samples</key>
 	<string>%@ • 最近样本</string>
+	<key>%lld active displays</key>
+	<string>%lld 台活动显示器</string>
 	<key>%lld changes</key>
 	<string>%lld 次变化</string>
 	<key>%lld experimental sensor types detected</key>
@@ -94,6 +96,8 @@
 	<string>平均</string>
 	<key>Average number of processes in the system run queue; not CPU percent.</key>
 	<string>系统运行队列中的平均进程数；不是 CPU 百分比。</string>
+	<key>Backing scale</key>
+	<string>缩放倍率</string>
 	<key>Battery</key>
 	<string>电池</string>
 	<key>Battery charge (public API)</key>
@@ -404,8 +408,10 @@
 	<string>Mac Sensor Lab 不请求管理员权限、不改变驱动状态，也不绕过 macOS 隐私控制。</string>
 	<key>Mac Sensor Lab reads sensors locally and does not request administrator access in this build.</key>
 	<string>Mac Sensor Lab 在本机读取传感器，此构建不请求管理员权限。</string>
-	<key>Main display (logical)</key>
-	<string>主显示器（逻辑分辨率）</string>
+	<key>Main display logical size</key>
+	<string>主显示器逻辑尺寸</string>
+	<key>Main display pixels</key>
+	<string>主显示器像素尺寸</string>
 	<key>Malformed provider output was discarded before display or export.</key>
 	<string>格式异常的 Provider 输出已在显示或导出前丢弃。</string>
 	<key>Max</key>
@@ -506,6 +512,8 @@
 	<string>物理内存</string>
 	<key>Pitch %@°</key>
 	<string>俯仰 %@°</string>
+	<key>Pixel and point dimensions are the current display mode; scale is derived. Persistent display identifiers are intentionally omitted.</key>
+	<string>像素与点尺寸来自当前显示模式，缩放倍率为派生值；有意省略持久显示器标识符。</string>
 	<key>Position in observed raw range</key>
 	<string>在已观测原始范围中的位置</string>
 	<key>Power &amp; Battery</key>
@@ -606,8 +614,6 @@
 	<string>需要未来的 Force Touch 原始 Provider 和校准</string>
 	<key>Requires an external lux reference. Add up to eight strictly increasing points; every result remains an estimate, not a certified meter.</key>
 	<string>需要外部 lux 参考。最多添加 8 个严格递增的点；所有结果仍是估算，不是认证照度计。</string>
-	<key>Resolution is the current logical mode. Persistent display identifiers are intentionally omitted.</key>
-	<string>分辨率为当前逻辑模式；有意省略持久显示器标识符。</string>
 	<key>Resume Automatic Sampling</key>
 	<string>恢复自动采样</string>
 	<key>Review Raw Sensors</key>
@@ -802,5 +808,9 @@
 	<string>次/秒</string>
 	<key>pixels</key>
 	<string>像素</string>
+	<key>points</key>
+	<string>点</string>
+	<key>×</key>
+	<string>×</string>
 </dict>
 </plist>

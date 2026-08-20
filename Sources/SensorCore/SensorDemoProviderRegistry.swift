@@ -97,10 +97,14 @@ public enum SensorDemoProviderRegistry {
           number("gpu_power", "GPU power", 4.1, "W"),
         ]),
       provider(
-        "display.active", "Display", .display, .publicAPI, "1512 × 982 • 1 active",
+        "display.active", "Display", .display, .publicAPI, "3024 × 1964 px • 1 active",
         [
           number("display_count", "Active displays", 1),
-          text("main_resolution", "Main display (logical)", "1512 × 982"),
+          text("main_resolution", "Main display pixels", "3024 × 1964", nil, "pixels"),
+          text(
+            "main_logical_resolution", "Main display logical size", "1512 × 982", nil, "points"
+          ),
+          number("backing_scale", "Backing scale", 2, "×", .derived),
           number("refresh_rate", "Refresh rate", 120, "Hz"),
         ]),
       provider(
@@ -176,9 +180,12 @@ public enum SensorDemoProviderRegistry {
   }
 
   private static func text(
-    _ id: String, _ label: String, _ formattedValue: String, _ value: Double? = nil
+    _ id: String, _ label: String, _ formattedValue: String, _ value: Double? = nil,
+    _ unit: String? = nil, _ kind: SensorValueKind = .raw
   ) -> SensorChannel {
-    SensorChannel(id: id, label: label, value: value, formattedValue: formattedValue)
+    SensorChannel(
+      id: id, label: label, value: value, formattedValue: formattedValue, unit: unit, kind: kind
+    )
   }
 
   private static func number(

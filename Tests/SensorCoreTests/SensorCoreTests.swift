@@ -1445,6 +1445,59 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertNil(PublicBatteryWarning(systemValue: IOPSLowBatteryWarningLevel(rawValue: 99)))
   }
 
+  func testDisplaySnapshotSeparatesPixelsPointsAndDerivedScale() throws {
+    let snapshot = DisplayProvider().snapshot(
+      displayCount: 2,
+      reading: PublicDisplayModeReading(
+        pixelWidth: 3_024,
+        pixelHeight: 1_964,
+        pointWidth: 1_512,
+        pointHeight: 982,
+        refreshRate: 120
+      )
+    )
+    let channels = Dictionary(uniqueKeysWithValues: snapshot.channels.map { ($0.id, $0) })
+
+    XCTAssertEqual(snapshot.status, .available)
+    XCTAssertEqual(snapshot.summary, "3024 × 1964 px • 2 active")
+    XCTAssertEqual(channels["main_resolution"]?.formattedValue, "3024 × 1964")
+    XCTAssertEqual(channels["main_resolution"]?.unit, "pixels")
+    XCTAssertEqual(channels["main_logical_resolution"]?.formattedValue, "1512 × 982")
+    XCTAssertEqual(channels["main_logical_resolution"]?.unit, "points")
+    XCTAssertEqual(try XCTUnwrap(channels["backing_scale"]?.value), 2, accuracy: 0.001)
+    XCTAssertEqual(channels["backing_scale"]?.kind, .derived)
+    XCTAssertEqual(try XCTUnwrap(channels["refresh_rate"]?.value), 120, accuracy: 0.001)
+  }
+
+  func testDisplayMeasurementsOmitInvalidOrInconsistentModeFacts() {
+    let snapshot = DisplayProvider().snapshot(
+      displayCount: 1,
+      reading: PublicDisplayModeReading(
+        pixelWidth: 0,
+        pixelHeight: 1_964,
+        pointWidth: 1_512,
+        pointHeight: 900,
+        refreshRate: .nan
+      )
+    )
+    let channelIDs = Set(snapshot.channels.map(\.id))
+
+    XCTAssertEqual(snapshot.summary, "1 active displays")
+    XCTAssertFalse(channelIDs.contains("main_resolution"))
+    XCTAssertTrue(channelIDs.contains("main_logical_resolution"))
+    XCTAssertFalse(channelIDs.contains("backing_scale"))
+    XCTAssertFalse(channelIDs.contains("refresh_rate"))
+    XCTAssertNil(PublicDisplayMeasurements.validDimension(100_001))
+    XCTAssertNil(
+      PublicDisplayMeasurements.backingScale(
+        pixelWidth: 3_024,
+        pixelHeight: 1_964,
+        pointWidth: 1_512,
+        pointHeight: 900
+      )
+    )
+  }
+
   func testGPUPerformanceValueRejectsInvalidPercentages() {
     XCTAssertEqual(GPUPerformanceValue.percentage(64), 64)
     XCTAssertNil(GPUPerformanceValue.percentage(-1))

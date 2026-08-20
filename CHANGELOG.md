@@ -53,6 +53,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ### Fixed
 
+- Display telemetry now distinguishes current-mode pixel dimensions from logical point dimensions and only derives a backing scale from consistent, bounded axes.
 - Settings no longer claims that existing automatically sampled read-only HID providers are opt-in.
 - The former Vibration Recorder placeholder no longer implies that 1–10 second dashboard samples can measure vibration frequency.
 - Sampling health now caps both per-cycle scanning and cross-cycle provider state at the 256-provider contract limit, preventing changing malformed IDs from growing memory indefinitely.
