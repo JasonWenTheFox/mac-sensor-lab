@@ -43,11 +43,14 @@ struct RootView: View {
               history: model.history,
               isDemoMode: model.isDemoMode,
               ambientLuxCalibration: model.ambientLuxCalibration,
+              ambientSpectralReference: model.ambientSpectralReference,
               onSetAmbientCalibration: model.setAmbientLuxCalibration,
               onUndoAmbientCalibrationPoint: model.undoLastAmbientLuxCalibrationPoint,
               onClearAmbientCalibration: model.clearAmbientLuxCalibration,
               onExportAmbientCalibration: model.exportAmbientLuxCalibration,
-              onImportAmbientCalibration: model.importAmbientLuxCalibration
+              onImportAmbientCalibration: model.importAmbientLuxCalibration,
+              onSetAmbientSpectralReference: model.setAmbientSpectralReference,
+              onClearAmbientSpectralReference: model.clearAmbientSpectralReference
             )
           case .diagnostics:
             DiagnosticsView(
@@ -524,11 +527,14 @@ private struct ExperimentsView: View {
   let history: [String: [SensorHistoryPoint]]
   let isDemoMode: Bool
   let ambientLuxCalibration: AmbientLuxCalibration?
+  let ambientSpectralReference: AmbientSpectralFingerprint?
   let onSetAmbientCalibration: (Double, Double) -> Void
   let onUndoAmbientCalibrationPoint: () -> Void
   let onClearAmbientCalibration: () -> Void
   let onExportAmbientCalibration: () -> Void
   let onImportAmbientCalibration: () -> Void
+  let onSetAmbientSpectralReference: ([Double]) -> Void
+  let onClearAmbientSpectralReference: () -> Void
 
   private struct Experiment {
     let name: String
@@ -567,13 +573,13 @@ private struct ExperimentsView: View {
       name: L10n.text("Network Throughput"), symbol: "arrow.up.arrow.down",
       providerID: "system.network_throughput", channelID: "network_receive_rate",
       description: L10n.text(
-        "Compares aggregate receive and send rates without exposing interface identity"
+        "Compares recent aggregate receive and send rates"
       )),
     Experiment(
       name: L10n.text("Disk Activity"), symbol: "internaldrive",
       providerID: "storage.disk_io", channelID: "disk_read_rate",
       description: L10n.text(
-        "Compares aggregate read and write rates without exposing device identity"
+        "Compares recent aggregate read and write rates"
       )),
     Experiment(
       name: L10n.text("Level"), symbol: "level", providerID: "motion.spu_live",
@@ -585,11 +591,6 @@ private struct ExperimentsView: View {
       name: L10n.text("Lid Protractor"), symbol: "angle", providerID: "motion.lid_angle",
       channelID: "angle",
       description: L10n.text("Uses the undocumented lid-angle sensor")),
-    Experiment(
-      name: L10n.text("Trackpad Scale"), symbol: "scalemass",
-      providerID: "diagnostics.hardware_capabilities",
-      channelID: "force_touch",
-      description: L10n.text("Requires a future raw Force Touch provider and calibration")),
     Experiment(
       name: L10n.text("Motion Trend"), symbol: "waveform.path", providerID: "motion.spu_live",
       channelID: "acceleration_magnitude",
@@ -603,15 +604,18 @@ private struct ExperimentsView: View {
         "Shows raw light first; lux requires model-specific calibration"
       )),
     Experiment(
-      name: L10n.text("Sound Lab"), symbol: "waveform", providerID: nil, channelID: nil,
-      description: L10n.text("Microphone access will be opt-in")),
+      name: L10n.text("Light Spectrum"), symbol: "rainbow",
+      providerID: "motion.spu_live", channelID: "ambient_spectral_1",
+      description: L10n.text(
+        "Compares the relative balance of four uncalibrated light channels"
+      )),
   ]
 
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 8) {
         Text(L10n.text("Experiments")).font(.largeTitle.bold())
-        Text(L10n.text("Derived tools unlock only when their data source is verified."))
+        Text(L10n.text("Choose a tool to interpret, compare, or calibrate recent sensor data."))
           .foregroundStyle(.secondary)
       }
       .frame(maxWidth: .infinity, alignment: .leading)
@@ -660,19 +664,19 @@ private struct ExperimentsView: View {
         snapshot?.status == .degraded ? "Recent data • source limited" : "Data source ready"
       )
     }
-    guard let snapshot else { return L10n.text("Not implemented • provider pending") }
+    guard let snapshot else { return L10n.text("In development") }
     if snapshot.id == "diagnostics.hardware_capabilities",
       snapshot.channels.contains(where: { ($0.value ?? 0) > 0 })
     {
-      return L10n.text("Hardware detected • measurement provider pending")
+      return L10n.text("Hardware detected • measurement in development")
     }
     return switch snapshot.status {
     case .loading: L10n.text("Checking data source")
     case .permissionRequired: L10n.text("Permission required")
     case .unavailable: L10n.text("Data source unavailable")
-    case .error: L10n.text("Provider error")
+    case .error: L10n.text("Data source error")
     case .degraded: L10n.text("Data source limited")
-    case .available: L10n.text("Required measurement channel unavailable")
+    case .available: L10n.text("Required reading unavailable")
     }
   }
 
@@ -696,10 +700,10 @@ private struct ExperimentsView: View {
       }
 
       if channelID == "angle", let value = channel.value {
-        Gauge(value: min(max(value, 0), 180), in: 0...180) {
+        Gauge(value: min(max(value, 0), 360), in: 0...360) {
           Text(L10n.text("Lid angle"))
         } currentValueLabel: {
-          Text("0° — 180°").font(.caption2)
+          Text("0° — 360°").font(.caption2)
         }
         .gaugeStyle(.linearCapacity)
         LidReferencePanel(currentAngle: value, isDemoMode: isDemoMode)
@@ -737,6 +741,15 @@ private struct ExperimentsView: View {
             onImportCalibration: onImportAmbientCalibration
           )
         }
+      }
+
+      if channelID == "ambient_spectral_1" {
+        AmbientSpectrumPanel(
+          channels: snapshot.channels.filter { $0.id.hasPrefix("ambient_spectral_") },
+          reference: ambientSpectralReference,
+          onSetReference: onSetAmbientSpectralReference,
+          onClearReference: onClearAmbientSpectralReference
+        )
       }
 
       if channelID == "acceleration_magnitude",
@@ -887,6 +900,74 @@ private struct ExperimentsView: View {
       .frame(height: 44, alignment: .bottom)
       .accessibilityElement(children: .ignore)
       .accessibilityLabel(L10n.text("Four uncalibrated ambient spectral channels"))
+    }
+  }
+}
+
+private struct AmbientSpectrumPanel: View {
+  let channels: [SensorChannel]
+  let reference: AmbientSpectralFingerprint?
+  let onSetReference: ([Double]) -> Void
+  let onClearReference: () -> Void
+
+  private var fingerprint: AmbientSpectralFingerprint? {
+    let ordered = channels.sorted { $0.id < $1.id }
+    guard ordered.count == AmbientSpectralFingerprint.channelCount else { return nil }
+    return AmbientSpectralFingerprint(values: ordered.compactMap(\.value))
+  }
+
+  var body: some View {
+    if let fingerprint {
+      VStack(alignment: .leading, spacing: 8) {
+        Text(L10n.text("Relative channel balance"))
+          .font(.caption.weight(.medium))
+        HStack(spacing: 8) {
+          ForEach(Array(fingerprint.components.enumerated()), id: \.offset) { index, value in
+            VStack(spacing: 4) {
+              ProgressView(value: value)
+                .progressViewStyle(.linear)
+              Text(L10n.format("Spectral channel %lld", Int64(index + 1)))
+                .font(.caption2)
+              Text(value.formatted(.percent.precision(.fractionLength(0))))
+                .font(.caption2.monospacedDigit())
+            }
+            .frame(maxWidth: .infinity)
+          }
+        }
+
+        if let reference {
+          let distance = fingerprint.distance(to: reference)
+          HStack(spacing: 8) {
+            ExperimentMetric(
+              label: L10n.text("Match to reference"),
+              value: (1 - distance).formatted(.percent.precision(.fractionLength(0)))
+            )
+            if let channel = fingerprint.largestShiftChannel(comparedTo: reference) {
+              ExperimentMetric(
+                label: L10n.text("Largest shift"),
+                value: L10n.format("Spectral channel %lld", Int64(channel + 1))
+              )
+            }
+          }
+        }
+
+        HStack {
+          Button(L10n.text(reference == nil ? "Set Current as Reference" : "Replace Reference")) {
+            onSetReference(fingerprint.components)
+          }
+          if reference != nil {
+            Button(L10n.text("Clear Reference")) { onClearReference() }
+          }
+        }
+        Text(
+          L10n.text(
+            "This fingerprint compares light sources on this Mac; it is not a color-temperature measurement."
+          )
+        )
+        .font(.caption2)
+        .foregroundStyle(.secondary)
+      }
+      .padding(.top, 4)
     }
   }
 }
@@ -1319,12 +1400,6 @@ private struct DiagnosticsView: View {
               Int64(statusCounts.permissionRequired)
             )
           )
-          Text(
-            L10n.text(
-              "Mac Sensor Lab does not request administrator access, change driver state, or bypass macOS privacy controls."
-            )
-          )
-          .foregroundStyle(.secondary)
         }
       }
       Section(L10n.text("Sampling & recording")) {
@@ -1372,11 +1447,6 @@ private struct DiagnosticsView: View {
       Section(L10n.text("Privacy")) {
         Text(
           L10n.text(
-            "No serial number, hardware UUID, UDID, host name, user name, location, process list, SSID or audio recording is collected by this build."
-          )
-        )
-        Text(
-          L10n.text(
             "All readings stay on this Mac unless you explicitly export a snapshot, recording, calibration, or diagnostics file."
           )
         )
@@ -1385,7 +1455,7 @@ private struct DiagnosticsView: View {
         Button(L10n.text("Export Privacy-Safe Diagnostics…")) { onExportDiagnostics() }
         Text(
           L10n.text(
-            "The support report contains provider status and stable channel metadata, never sensor readings, notes, source strings, machine identifiers, or file paths."
+            "The support report contains sensor availability and channel types, but no readings."
           )
         )
         .foregroundStyle(.secondary)
@@ -1393,7 +1463,7 @@ private struct DiagnosticsView: View {
       Section(L10n.text("Safety")) {
         Text(
           L10n.text(
-            "This build never runs as root, changes fan settings, writes SMC values, or modifies Apple SPU driver state."
+            "Sensor access is read-only and does not change system settings."
           )
         )
         Text(

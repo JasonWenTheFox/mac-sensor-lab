@@ -27,9 +27,10 @@ public enum SensorProviderRegistry {
 
   public static func readAll(_ providers: [any SensorProvider]) async -> [SensorSnapshot] {
     let order = registrationOrder(for: providers)
+    let readers = providers.map(SensorProviderReadGate.init(provider:))
     return await withTaskGroup(of: SensorSnapshot.self) { group in
-      for provider in providers {
-        group.addTask { await provider.read() }
+      for reader in readers {
+        group.addTask { await reader.read() }
       }
       var snapshots: [SensorSnapshot] = []
       for await snapshot in group {

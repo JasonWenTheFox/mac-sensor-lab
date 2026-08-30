@@ -67,8 +67,7 @@ public final class DiskIOProvider: SensorProvider, @unchecked Sendable {
         summary: "Block-storage statistics were unavailable",
         status: .unavailable,
         source: metadata.source,
-        capability: metadata.capability,
-        notes: ["No device names, serial numbers, volume names, or file paths are read."]
+        capability: metadata.capability
       )
     }
 
@@ -165,7 +164,6 @@ public final class DiskIOProvider: SensorProvider, @unchecked Sendable {
       notes: [
         "Rates need two samples; a counter reset or device change starts a new baseline.",
         "Totals are driver-lifetime counters aggregated across block-storage drivers.",
-        "No device names, serial numbers, volume names, or file paths are read or exported.",
       ]
     )
   }

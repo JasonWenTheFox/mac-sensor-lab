@@ -68,8 +68,7 @@ public final class NetworkThroughputProvider: SensorProvider, @unchecked Sendabl
         summary: "Aggregate network counters were unavailable",
         status: .unavailable,
         source: metadata.source,
-        capability: metadata.capability,
-        notes: ["No interface names or network addresses were exported."]
+        capability: metadata.capability
       )
     }
 
@@ -140,7 +139,6 @@ public final class NetworkThroughputProvider: SensorProvider, @unchecked Sendabl
       channels: channels,
       notes: [
         "Rates need two samples; the first read or an active-interface count change establishes a baseline.",
-        "Counters aggregate active non-loopback interfaces without exporting their names or addresses.",
         "Virtual or tunneled paths can represent the same traffic more than once.",
       ]
     )

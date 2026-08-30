@@ -5,9 +5,21 @@ import SensorCore
 @main
 struct SensorLabSelfTest {
   static func main() async {
+    let arguments = CommandLine.arguments.dropFirst().filter { $0 != "--" }
+    if arguments.contains("--help") || arguments.contains("-h") {
+      printHelp()
+      exit(EXIT_SUCCESS)
+    }
+    let supported = Set(["--portable", "--spu-stability"])
+    let unknown = arguments.filter { !supported.contains($0) }
+    guard unknown.isEmpty else {
+      fputs("sensorlab-selftest: unknown option \(unknown[0]); use --help\n", stderr)
+      exit(EXIT_FAILURE)
+    }
+
     var failures: [String] = []
-    let portableMode = CommandLine.arguments.contains("--portable")
-    let spuStabilityMode = CommandLine.arguments.contains("--spu-stability")
+    let portableMode = arguments.contains("--portable")
+    let spuStabilityMode = arguments.contains("--spu-stability")
     let providers = SensorProviderRegistry.providers()
 
     if providers.count < 15 {
@@ -131,8 +143,20 @@ struct SensorLabSelfTest {
       exit(EXIT_SUCCESS)
     }
 
+    if let spuStabilitySummary { fputs("\(spuStabilitySummary)\n", stderr) }
     for failure in failures { fputs("FAIL: \(failure)\n", stderr) }
     exit(EXIT_FAILURE)
+  }
+
+  private static func printHelp() {
+    print(
+      """
+      Usage: sensorlab-selftest [--portable] [--spu-stability]
+
+        --portable       Use deterministic fixtures where hardware evidence is not required.
+        --spu-stability  Run the bounded sequential SPU stability check.
+        --help, -h       Show this help.
+      """)
   }
 
   private static func checkSPUStability(attempts: Int) async -> (

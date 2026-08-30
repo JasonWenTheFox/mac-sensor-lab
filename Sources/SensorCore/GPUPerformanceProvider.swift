@@ -28,10 +28,7 @@ public struct GPUPerformanceProvider: SensorProvider {
         summary: "Apple GPU performance statistics were unavailable",
         status: .unavailable,
         source: metadata.source,
-        capability: metadata.capability,
-        notes: [
-          "Only a fixed allowlist of utilization and memory counters is requested; no device identity fields are read."
-        ]
+        capability: metadata.capability
       )
     }
 
@@ -80,7 +77,6 @@ public struct GPUPerformanceProvider: SensorProvider {
       notes: [
         "AGX PerformanceStatistics keys are undocumented and may change across macOS or GPU generations.",
         "Multiple driver instances use the maximum utilization and summed memory counters.",
-        "Only fixed allowlisted counters are read; no registry names, IDs, or device identity fields are exported.",
       ]
     )
   }

@@ -258,8 +258,7 @@ public struct SPULiveProvider: SensorProvider {
     guard !channels.isEmpty else {
       return failure(
         status: .degraded,
-        summary: "Sensors detected, but macOS is not currently publishing reports",
-        note: "The safe reader did not wake or reconfigure the SPU."
+        summary: "Sensors detected, but macOS is not currently publishing reports"
       )
     }
 
@@ -278,10 +277,7 @@ public struct SPULiveProvider: SensorProvider {
       source: metadata.source,
       capability: metadata.capability,
       channels: channels,
-      notes: [
-        "No Apple SPU driver properties were changed.",
-        "Undocumented formats are provisional and must be validated per model.",
-      ]
+      notes: []
     )
   }
 
@@ -332,10 +328,7 @@ public struct SPULiveProvider: SensorProvider {
       status: status,
       source: metadata.source,
       capability: metadata.capability,
-      notes: [
-        note,
-        "No sudo, driver-property writes, or permission bypass was attempted.",
-      ].compactMap { $0 }
+      notes: [note].compactMap { $0 }
     )
   }
 }

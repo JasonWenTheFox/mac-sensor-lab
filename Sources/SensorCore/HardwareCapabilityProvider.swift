@@ -38,7 +38,7 @@ public struct HardwareCapabilityProvider: SensorProvider {
       source: metadata.source,
       capability: metadata.capability,
       channels: channels,
-      notes: ["No private data fields are read during capability discovery."]
+      notes: []
     )
   }
 }

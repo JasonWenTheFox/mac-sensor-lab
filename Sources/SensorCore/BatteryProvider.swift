@@ -220,10 +220,7 @@ public struct BatteryProvider: SensorProvider {
       source: metadata.source,
       capability: metadata.capability,
       channels: channels,
-      notes: [
-        "Only a fixed allowlist of non-identifying registry keys is read.",
-        "Battery-side power is not whole-system wall power.",
-      ]
+      notes: []
     )
   }
 }

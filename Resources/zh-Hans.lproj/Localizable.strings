@@ -52,6 +52,8 @@
 	<string>加速度</string>
 	<key>Acceleration magnitude</key>
 	<string>加速度模长</string>
+	<key>Acceleration, level, and ambient-light fixture data</key>
+	<string>加速度、水平与环境光演示数据</string>
 	<key>Accelerometer</key>
 	<string>加速度计</string>
 	<key>Active displays</key>
@@ -86,8 +88,14 @@
 	<string>Apple SPU 发现</string>
 	<key>Apple SPU Sensors</key>
 	<string>Apple SPU 传感器</string>
+	<key>AppleSMC could not be opened</key>
+	<string>无法打开 AppleSMC</string>
+	<key>AppleSMC is not available on this Mac</key>
+	<string>这台 Mac 不提供 AppleSMC</string>
 	<key>AppleSMC is present but its user client could not be opened</key>
 	<string>AppleSMC 存在，但无法打开其用户客户端</string>
+	<key>AppleSMC is temporarily busy</key>
+	<string>AppleSMC 暂时繁忙</string>
 	<key>Architecture</key>
 	<string>架构</string>
 	<key>Automatic sampling</key>
@@ -100,10 +108,14 @@
 	<string>已恢复自动采样</string>
 	<key>Available</key>
 	<string>可用</string>
+	<key>Available SMC channels vary by Mac model and macOS version.</key>
+	<string>可用的 SMC 通道会随 Mac 机型和 macOS 版本变化。</string>
 	<key>Available for important usage</key>
 	<string>可用于重要用途</string>
 	<key>Available for opportunistic usage</key>
 	<string>可用于机会性用途</string>
+	<key>Available-space values use the current Foundation volume semantics.</key>
+	<string>可用空间数值采用当前 Foundation 的卷语义。</string>
 	<key>Average</key>
 	<string>平均</string>
 	<key>Average %@</key>
@@ -188,16 +200,22 @@
 	<string>图表历史仅保留在内存中，可从工具栏清除。</string>
 	<key>Checking data source</key>
 	<string>正在检查数据源</string>
+	<key>Choose a tool to interpret, compare, or calibrate recent sensor data.</key>
+	<string>选择工具来解释、比较或校准近期传感器数据。</string>
 	<key>Clear</key>
 	<string>清除</string>
 	<key>Clear All</key>
 	<string>全部清除</string>
 	<key>Clear Chart History</key>
 	<string>清除图表历史</string>
+	<key>Clear Reference</key>
+	<string>清除参考</string>
 	<key>Cleared ambient-light calibration</key>
 	<string>已清除环境光校准</string>
 	<key>Cleared in-memory chart history</key>
 	<string>已清除内存中的图表历史</string>
+	<key>Cleared the light-spectrum reference</key>
+	<string>已清除光谱参考</string>
 	<key>Closed from reference</key>
 	<string>相对参考角度已合上</string>
 	<key>Collecting CPU baseline • load %@</key>
@@ -212,6 +230,12 @@
 	<string>对比汇总收发速率，不暴露接口身份</string>
 	<key>Compares internal CPU and GPU hotspots; not ambient temperature</key>
 	<string>对比内部 CPU 与 GPU 热点；不是环境温度</string>
+	<key>Compares recent aggregate read and write rates</key>
+	<string>比较近期汇总读写速率</string>
+	<key>Compares recent aggregate receive and send rates</key>
+	<string>比较近期汇总接收与发送速率</string>
+	<key>Compares the relative balance of four uncalibrated light channels</key>
+	<string>比较四个未校准光通道的相对比例</string>
 	<key>Compatible SPU interfaces were not exposed</key>
 	<string>系统未暴露兼容的 SPU 接口</string>
 	<key>Completed refreshes</key>
@@ -242,8 +266,12 @@
 	<string>Apple 公开电源 API 返回的当前容量 ÷ 最大容量。</string>
 	<key>Cycle count</key>
 	<string>循环计数</string>
+	<key>Data access</key>
+	<string>数据访问</string>
 	<key>Data mode</key>
 	<string>数据模式</string>
+	<key>Data source error</key>
+	<string>数据源出错</string>
 	<key>Data source limited</key>
 	<string>数据源受限</string>
 	<key>Data source ready</key>
@@ -266,6 +294,8 @@
 	<string>桌面 Mac 可能不暴露 AppleSmartBattery。</string>
 	<key>Detected</key>
 	<string>已检测到</string>
+	<key>Detection alone does not guarantee that live reports are available.</key>
+	<string>检测到硬件并不保证当前有实时报告。</string>
 	<key>Detection does not prove continuous read permission.</key>
 	<string>检测到硬件并不证明拥有连续读取权限。</string>
 	<key>Deterministic fixture readings for screenshots and UI review.</key>
@@ -374,6 +404,8 @@
 	<string>无法打开 HID 管理器</string>
 	<key>HID open result: %@.</key>
 	<string>HID 打开结果：%@。</string>
+	<key>Hardware detected • measurement in development</key>
+	<string>已检测到硬件 • 测量功能开发中</string>
 	<key>Hardware detected • measurement provider pending</key>
 	<string>已检测到硬件 • 等待测量 Provider</string>
 	<key>Hardware/service presence only.</key>
@@ -386,6 +418,8 @@
 	<string>导入校准…</string>
 	<key>Imported light calibration %@</key>
 	<string>已导入光照校准 %@</string>
+	<key>In development</key>
+	<string>开发中</string>
 	<key>Included</key>
 	<string>已包含</string>
 	<key>Includes provider status and stable channel metadata, but no sensor readings or machine identifiers.</key>
@@ -396,6 +430,8 @@
 	<string>内部组件温度，并非室内环境温度。</string>
 	<key>JSON Snapshot</key>
 	<string>JSON 快照</string>
+	<key>Largest shift</key>
+	<string>变化最大的通道</string>
 	<key>Last action</key>
 	<string>上一操作</string>
 	<key>Last refresh</key>
@@ -418,6 +454,8 @@
 	<string>上盖传感器返回了超出范围的值</string>
 	<key>Light Meter</key>
 	<string>照度计</string>
+	<key>Light Spectrum</key>
+	<string>光谱对比</string>
 	<key>Limited</key>
 	<string>受限</string>
 	<key>Linear fit from %lld points • RMSE %@ lux.</key>
@@ -452,6 +490,8 @@
 	<string>主显示器像素尺寸</string>
 	<key>Malformed provider output was discarded before display or export.</key>
 	<string>格式异常的 Provider 输出已在显示或导出前丢弃。</string>
+	<key>Match to reference</key>
+	<string>与参考的匹配度</string>
 	<key>Max</key>
 	<string>最大</string>
 	<key>Memory and swap counters available</key>
@@ -538,6 +578,8 @@
 	<string>序数编码仅用于趋势显示；等级间距没有物理意义，也不推断温度。</string>
 	<key>Original sample time: %@</key>
 	<string>原始采样时间：%@</string>
+	<key>Other sensors will continue updating while this read finishes.</key>
+	<string>这次读取完成前，其他传感器仍会继续更新。</string>
 	<key>Overview</key>
 	<string>概览</string>
 	<key>Pause Automatic Sampling</key>
@@ -558,6 +600,8 @@
 	<string>俯仰 %@°</string>
 	<key>Pixel and point dimensions are the current display mode; scale is derived. Persistent display identifiers are intentionally omitted.</key>
 	<string>像素与点尺寸来自当前显示模式，缩放倍率为派生值；有意省略持久显示器标识符。</string>
+	<key>Pixel and point dimensions describe the current display mode; scale is derived.</key>
+	<string>像素与点尺寸描述当前显示模式；缩放倍率为派生值。</string>
 	<key>Position in observed raw range</key>
 	<string>在已观测原始范围中的位置</string>
 	<key>Power &amp; Battery</key>
@@ -646,8 +690,12 @@
 	<string>相对变化</string>
 	<key>Relative change is derived from the raw lid angle and does not alter the sensor.</key>
 	<string>相对变化由原始上盖角度派生，不会更改传感器。</string>
+	<key>Relative channel balance</key>
+	<string>相对通道比例</string>
 	<key>Removed the last ambient-light calibration point</key>
 	<string>已移除最后一个环境光校准点</string>
+	<key>Replace Reference</key>
+	<string>替换参考</string>
 	<key>Reported capacity ratio</key>
 	<string>报告容量比</string>
 	<key>Reported full-charge capacity</key>
@@ -656,6 +704,8 @@
 	<string>报告满充容量 ÷ 设计容量；并非 Apple 的电池健康状态。</string>
 	<key>Required measurement channel unavailable</key>
 	<string>所需测量通道不可用</string>
+	<key>Required reading unavailable</key>
+	<string>所需读数不可用</string>
 	<key>Requires a future raw Force Touch provider and calibration</key>
 	<string>需要未来的 Force Touch 原始 Provider 和校准</string>
 	<key>Requires an external lux reference. Add up to eight strictly increasing points; every result remains an estimate, not a certified meter.</key>
@@ -688,10 +738,18 @@
 	<string>采样控制</string>
 	<key>Saved ambient-light calibration point %lld</key>
 	<string>已保存环境光校准点 %lld</string>
+	<key>Saved the current light spectrum as a reference</key>
+	<string>已将当前光谱保存为参考</string>
 	<key>Send packet rate</key>
 	<string>发送包速率</string>
+	<key>Sensor access is read-only and does not change system settings.</key>
+	<string>传感器访问为只读，不会更改系统设置。</string>
+	<key>Sensor access is read-only. Unavailable sources stay isolated from the rest of the app.</key>
+	<string>传感器访问为只读；不可用的数据源不会影响应用的其他部分。</string>
 	<key>Sensor providers</key>
 	<string>传感器 Provider</string>
+	<key>Sensor read is taking longer than expected</key>
+	<string>传感器读取时间超过预期</string>
 	<key>Sensors detected, but macOS is not currently publishing reports</key>
 	<string>检测到传感器，但 macOS 当前未发布报告</string>
 	<key>Serious</key>
@@ -762,12 +820,22 @@
 	<string>本 App 不会请求 sudo 或更改 HID 驱动属性。</string>
 	<key>The App will not request sudo or attempt a privileged helper in this build.</key>
 	<string>此构建不会请求 sudo，也不会尝试特权 Helper。</string>
+	<key>The current spectral sample cannot be used as a reference</key>
+	<string>当前光谱样本无法作为参考</string>
 	<key>The interval is remembered. Pause state is intentionally reset on every launch.</key>
 	<string>采样间隔会被记住；每次启动时会有意重置暂停状态。</string>
+	<key>The lid-angle sensor could not be opened</key>
+	<string>无法打开上盖角度传感器</string>
+	<key>The lid-angle sensor is not available on this Mac</key>
+	<string>这台 Mac 不提供上盖角度传感器</string>
+	<key>The lid-angle sensor is temporarily busy</key>
+	<string>上盖角度传感器暂时繁忙</string>
 	<key>The safe reader did not wake or reconfigure the SPU.</key>
 	<string>安全读取器没有唤醒或重新配置 SPU。</string>
 	<key>The support report contains provider status and stable channel metadata, never sensor readings, notes, source strings, machine identifiers, or file paths.</key>
 	<string>支持报告只包含 Provider 状态和稳定的通道元数据，不包含传感器读数、备注、来源字符串、机器标识或文件路径。</string>
+	<key>The support report contains sensor availability and channel types, but no readings.</key>
+	<string>支持报告包含传感器可用性和通道类型，但不包含读数。</string>
 	<key>Thermal Trend</key>
 	<string>热压力趋势</string>
 	<key>Thermal pressure</key>
@@ -782,6 +850,8 @@
 	<string>散热状态</string>
 	<key>This build never runs as root, changes fan settings, writes SMC values, or modifies Apple SPU driver state.</key>
 	<string>此构建绝不以 root 身份运行，不改变风扇设置、不写入 SMC 值，也不修改 Apple SPU 驱动状态。</string>
+	<key>This fingerprint compares light sources on this Mac; it is not a color-temperature measurement.</key>
+	<string>这个指纹用于比较本机上的光源变化，不是色温测量。</string>
 	<key>Time remaining values are operating-system estimates.</key>
 	<string>剩余时间值是操作系统估算。</string>
 	<key>Totals are driver-lifetime counters aggregated across block-storage drivers.</key>
@@ -866,6 +936,10 @@
 	<string>小时</string>
 	<key>macOS</key>
 	<string>macOS</string>
+	<key>macOS denied access to AppleSMC</key>
+	<string>macOS 拒绝访问 AppleSMC</string>
+	<key>macOS denied access to the lid-angle sensor</key>
+	<string>macOS 拒绝访问上盖角度传感器</string>
 	<key>macOS denied ordinary read access for %lld provider(s). Raw Sensors shows the provider-specific reason.</key>
 	<string>macOS 拒绝了 %lld 个 Provider 的普通只读访问。“原始传感器”会显示各 Provider 的具体原因。</string>
 	<key>minutes</key>

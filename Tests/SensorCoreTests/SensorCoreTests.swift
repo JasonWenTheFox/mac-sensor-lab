@@ -1,9 +1,74 @@
 import Foundation
+import IOKit
 import XCTest
 
 @testable import SensorCore
 
 final class SensorCoreTests: XCTestCase {
+  func testAmbientSpectralFingerprintComparesRelativeChannelBalance() throws {
+    let reference = try XCTUnwrap(
+      AmbientSpectralFingerprint(values: [10, 20, 30, 40])
+    )
+    let scaled = try XCTUnwrap(
+      AmbientSpectralFingerprint(values: [100, 200, 300, 400])
+    )
+    let shifted = try XCTUnwrap(
+      AmbientSpectralFingerprint(values: [40, 20, 30, 10])
+    )
+
+    XCTAssertEqual(reference.components.reduce(0, +), 1, accuracy: 0.000_001)
+    XCTAssertEqual(reference.distance(to: scaled), 0, accuracy: 0.000_001)
+    XCTAssertGreaterThan(reference.distance(to: shifted), 0.25)
+    XCTAssertEqual(shifted.largestShiftChannel(comparedTo: reference), 0)
+    XCTAssertNil(AmbientSpectralFingerprint(values: [0, 0, 0, 0]))
+    XCTAssertNil(AmbientSpectralFingerprint(values: [1, 2, .infinity, 4]))
+    XCTAssertNil(AmbientSpectralFingerprint(values: [1, 2, 3]))
+  }
+
+  func testSMCOpenFailureDistinguishesAbsencePermissionAndContention() {
+    XCTAssertEqual(SMCOpenFailure.status(for: .serviceUnavailable), .unavailable)
+    XCTAssertEqual(
+      SMCOpenFailure.status(for: .userClientOpenFailed(kIOReturnNotPermitted)),
+      .permissionRequired
+    )
+    XCTAssertEqual(
+      SMCOpenFailure.status(for: .userClientOpenFailed(kIOReturnExclusiveAccess)),
+      .degraded
+    )
+    XCTAssertEqual(
+      SMCOpenFailure.status(for: .userClientOpenFailed(kIOReturnNoDevice)),
+      .unavailable
+    )
+    XCTAssertEqual(
+      SMCOpenFailure.status(for: .enumerationFailed(kIOReturnError)),
+      .error
+    )
+  }
+
+  func testProviderReadGateTimesOutWithoutStartingDuplicateReads() async throws {
+    let provider = DelayedFirstReadProvider()
+    let gate = SensorProviderReadGate(provider: provider)
+
+    let first = await gate.read(timeout: .milliseconds(20))
+    XCTAssertEqual(first.status, .degraded)
+    XCTAssertTrue(first.summary.contains("longer than expected"))
+
+    let clock = ContinuousClock()
+    let secondStartedAt = clock.now
+    let second = await gate.read(timeout: .seconds(1))
+    let secondElapsed = secondStartedAt.duration(to: clock.now)
+    XCTAssertEqual(second.status, .degraded)
+    XCTAssertLessThan(secondElapsed, .milliseconds(50))
+    let countWhileBlocked = await provider.readCount()
+    XCTAssertEqual(countWhileBlocked, 1)
+
+    try await Task.sleep(for: .milliseconds(180))
+    let recovered = await gate.read(timeout: .seconds(1))
+    XCTAssertEqual(recovered.status, .available)
+    let recoveredCount = await provider.readCount()
+    XCTAssertEqual(recoveredCount, 2)
+  }
+
   func testLocalizationCatalogCoversStaticAppKeysAndGeneratedChineseStrings() throws {
     let projectRoot = URL(fileURLWithPath: #filePath)
       .deletingLastPathComponent()
@@ -1495,7 +1560,11 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertEqual(
       try XCTUnwrap(channels["battery_time_to_empty"]?.value), 285, accuracy: 0.001)
     XCTAssertNil(channels["battery_time_to_full"])
-    XCTAssertTrue(snapshot.notes.joined().contains("serial numbers"))
+    XCTAssertTrue(
+      Set(channels.keys).isDisjoint(
+        with: ["power_source_name", "serial_number", "adapter_id", "transport_type"]
+      )
+    )
     XCTAssertTrue(SensorContractAudit.issues(for: [snapshot]).isEmpty)
   }
 
@@ -1753,18 +1822,20 @@ final class SensorCoreTests: XCTestCase {
     let liveKeys = Set([
       SensorPreferenceKeys.samplingCadence(isDemoMode: false),
       SensorPreferenceKeys.ambientLuxCalibration(isDemoMode: false),
+      SensorPreferenceKeys.ambientSpectralReference(isDemoMode: false),
       SensorPreferenceKeys.lidHasReference(isDemoMode: false),
       SensorPreferenceKeys.lidReferenceAngle(isDemoMode: false),
     ])
     let demoKeys = Set([
       SensorPreferenceKeys.samplingCadence(isDemoMode: true),
       SensorPreferenceKeys.ambientLuxCalibration(isDemoMode: true),
+      SensorPreferenceKeys.ambientSpectralReference(isDemoMode: true),
       SensorPreferenceKeys.lidHasReference(isDemoMode: true),
       SensorPreferenceKeys.lidReferenceAngle(isDemoMode: true),
     ])
 
-    XCTAssertEqual(liveKeys.count, 4)
-    XCTAssertEqual(demoKeys.count, 4)
+    XCTAssertEqual(liveKeys.count, 5)
+    XCTAssertEqual(demoKeys.count, 5)
     XCTAssertTrue(liveKeys.isDisjoint(with: demoKeys))
     XCTAssertTrue(demoKeys.allSatisfy { $0.hasSuffix(".demo") })
     XCTAssertTrue(liveKeys.allSatisfy { !$0.hasSuffix(".demo") })
@@ -2268,7 +2339,7 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertEqual(commonSnapshot.status, .available)
     XCTAssertTrue(commonIDs.contains("temperature_system_talp"))
     XCTAssertFalse(commonIDs.contains("temperature_cpu_tp00"))
-    XCTAssertTrue(commonSnapshot.notes.joined().contains("not retained or exported"))
+    XCTAssertTrue(SensorContractAudit.issues(for: [commonSnapshot]).isEmpty)
 
     let invalidValues = [
       "Tp09": Double.infinity,
@@ -2421,6 +2492,39 @@ final class SensorCoreTests: XCTestCase {
       errorHandler(error)
     }
   }
+}
+
+private actor DelayedFirstReadProvider: SensorProvider {
+  nonisolated let metadata = SensorProviderMetadata(
+    id: "test.delayed",
+    name: "Delayed fixture",
+    category: .diagnostics,
+    source: "Test",
+    capability: .publicAPI
+  )
+
+  private var count = 0
+
+  func read() async -> SensorSnapshot {
+    count += 1
+    if count == 1 {
+      try? await Task.sleep(for: .milliseconds(150))
+    }
+    return SensorSnapshot(
+      id: metadata.id,
+      name: metadata.name,
+      category: metadata.category,
+      summary: "Ready",
+      status: .available,
+      source: metadata.source,
+      capability: metadata.capability,
+      channels: [
+        SensorChannel(id: "value", label: "Value", value: 1, formattedValue: "1")
+      ]
+    )
+  }
+
+  func readCount() -> Int { count }
 }
 
 extension JSONDecoder {

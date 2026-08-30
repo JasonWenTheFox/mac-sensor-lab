@@ -61,9 +61,11 @@ final class SensorDashboardModel: ObservableObject {
   @Published private(set) var recordingFileName: String?
   @Published private(set) var recordingProgress: SensorCSVRecordingProgress?
   @Published private(set) var ambientLuxCalibration: AmbientLuxCalibration?
+  @Published private(set) var ambientSpectralReference: AmbientSpectralFingerprint?
   @Published var lastActionMessage: String?
 
-  private let providers: [any SensorProvider]
+  private let providerReaders: [SensorProviderReadGate]
+  private let providerReadTimeout: Duration
   private var recorder: SensorCSVRecorder?
   private var samplingHealthTracker = SensorSamplingHealthTracker()
 
@@ -77,15 +79,23 @@ final class SensorDashboardModel: ObservableObject {
     SensorPreferenceKeys.samplingCadence(isDemoMode: isDemoMode)
   }
 
+  private var ambientSpectralReferenceDefaultsKey: String {
+    SensorPreferenceKeys.ambientSpectralReference(isDemoMode: isDemoMode)
+  }
+
   init(
     providers: [any SensorProvider] = SensorProviderRegistry.providers(),
-    isDemoMode: Bool = false
+    isDemoMode: Bool = false,
+    providerReadTimeout: Duration = SensorProviderReadGate.defaultTimeout
   ) {
     self.isDemoMode = isDemoMode
-    self.providers = providers
+    self.providerReaders = providers.map(SensorProviderReadGate.init(provider:))
+    self.providerReadTimeout = providerReadTimeout
     self.snapshots = providers.map { SensorSnapshot.loading(metadata: $0.metadata) }
     self.ambientLuxCalibration = Self.loadAmbientCalibration(
       key: SensorPreferenceKeys.ambientLuxCalibration(isDemoMode: isDemoMode))
+    self.ambientSpectralReference = Self.loadAmbientSpectralReference(
+      key: SensorPreferenceKeys.ambientSpectralReference(isDemoMode: isDemoMode))
     self.samplingCadence = Self.loadSamplingCadence(
       key: SensorPreferenceKeys.samplingCadence(isDemoMode: isDemoMode))
   }
@@ -123,11 +133,12 @@ final class SensorDashboardModel: ObservableObject {
     isRefreshing = true
     let clock = ContinuousClock()
     let startedAt = clock.now
+    let providerReadTimeout = self.providerReadTimeout
 
     await withTaskGroup(of: (Int, SensorProviderMetadata, SensorSnapshot).self) { group in
-      for (index, provider) in providers.enumerated() {
-        let metadata = provider.metadata
-        group.addTask { (index, metadata, await provider.read()) }
+      for (index, reader) in providerReaders.enumerated() {
+        let metadata = reader.metadata
+        group.addTask { (index, metadata, await reader.read(timeout: providerReadTimeout)) }
       }
       for await (index, metadata, rawSnapshot) in group {
         guard !Task.isCancelled else { break }
@@ -178,7 +189,7 @@ final class SensorDashboardModel: ObservableObject {
     panel.title = L10n.text("Export Privacy-Safe Diagnostics")
     panel.message =
       L10n.text(
-        "Includes provider status and stable channel metadata, but no sensor readings or machine identifiers."
+        "The support report contains sensor availability and channel types, but no readings."
       )
     panel.nameFieldStringValue = "mac-sensor-lab-diagnostics-\(Self.fileTimestamp()).json"
     panel.allowedContentTypes = [.json]
@@ -273,6 +284,24 @@ final class SensorDashboardModel: ObservableObject {
     UserDefaults.standard.removeObject(forKey: ambientCalibrationDefaultsKey)
     reapplyAmbientCalibration()
     lastActionMessage = L10n.text("Cleared ambient-light calibration")
+  }
+
+  func setAmbientSpectralReference(values: [Double]) {
+    guard let reference = AmbientSpectralFingerprint(values: values),
+      let data = try? JSONEncoder().encode(reference.components)
+    else {
+      lastActionMessage = L10n.text("The current spectral sample cannot be used as a reference")
+      return
+    }
+    ambientSpectralReference = reference
+    UserDefaults.standard.set(data, forKey: ambientSpectralReferenceDefaultsKey)
+    lastActionMessage = L10n.text("Saved the current light spectrum as a reference")
+  }
+
+  func clearAmbientSpectralReference() {
+    ambientSpectralReference = nil
+    UserDefaults.standard.removeObject(forKey: ambientSpectralReferenceDefaultsKey)
+    lastActionMessage = L10n.text("Cleared the light-spectrum reference")
   }
 
   func exportAmbientLuxCalibration() {
@@ -415,6 +444,15 @@ final class SensorDashboardModel: ObservableObject {
     return SamplingCadence(
       rawValue: UserDefaults.standard.double(forKey: key))
       ?? .twoSeconds
+  }
+
+  private static func loadAmbientSpectralReference(
+    key: String
+  ) -> AmbientSpectralFingerprint? {
+    guard let data = UserDefaults.standard.data(forKey: key),
+      let values = try? JSONDecoder().decode([Double].self, from: data)
+    else { return nil }
+    return AmbientSpectralFingerprint(values: values)
   }
 
   private static func fileTimestamp() -> String {

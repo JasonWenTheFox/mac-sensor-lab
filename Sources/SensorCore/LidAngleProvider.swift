@@ -22,8 +22,9 @@ public struct LidAngleProvider: SensorProvider {
   public func read() async -> SensorSnapshot {
     let noOptions = IOOptionBits(kIOHIDOptionsTypeNone)
     let manager = IOHIDManagerCreate(kCFAllocatorDefault, noOptions)
-    guard IOHIDManagerOpen(manager, noOptions) == kIOReturnSuccess else {
-      return failure(status: .permissionRequired, summary: "HID manager could not be opened")
+    let managerOpenResult = IOHIDManagerOpen(manager, noOptions)
+    guard managerOpenResult == kIOReturnSuccess else {
+      return openFailure(results: [managerOpenResult])
     }
     defer { IOHIDManagerClose(manager, noOptions) }
 
@@ -41,11 +42,11 @@ public struct LidAngleProvider: SensorProvider {
       return failure(status: .unavailable, summary: "Standard lid-angle HID interface not found")
     }
 
-    var lastOpenError: IOReturn?
+    var openErrors: [IOReturn] = []
     for device in devices {
       let openResult = IOHIDDeviceOpen(device, noOptions)
       guard openResult == kIOReturnSuccess else {
-        lastOpenError = openResult
+        openErrors.append(openResult)
         continue
       }
 
@@ -88,18 +89,24 @@ public struct LidAngleProvider: SensorProvider {
             note: "Undocumented hardware interface; model-specific validation is required."
           )
         ],
-        notes: ["No driver state was changed and no privileged access was attempted."]
+        notes: []
       )
     }
 
-    if let lastOpenError {
-      return failure(
-        status: .permissionRequired,
-        summary: "Lid sensor detected but could not be opened",
-        note: "IOReturn \(lastOpenError)"
-      )
-    }
+    if !openErrors.isEmpty { return openFailure(results: openErrors) }
     return failure(status: .degraded, summary: "Lid sensor did not return a feature report")
+  }
+
+  private func openFailure(results: [IOReturn]) -> SensorSnapshot {
+    let status = SPUHIDOpenFailure.status(for: results)
+    let summary =
+      switch status {
+      case .permissionRequired: "macOS denied access to the lid-angle sensor"
+      case .degraded: "The lid-angle sensor is temporarily busy"
+      case .unavailable: "The lid-angle sensor is not available on this Mac"
+      default: "The lid-angle sensor could not be opened"
+      }
+    return failure(status: status, summary: summary)
   }
 
   private func failure(status: SensorStatus, summary: String, note: String? = nil) -> SensorSnapshot
@@ -112,9 +119,7 @@ public struct LidAngleProvider: SensorProvider {
       status: status,
       source: metadata.source,
       capability: metadata.capability,
-      notes: [note, "The App will not request sudo or alter HID driver properties."].compactMap {
-        $0
-      }
+      notes: [note].compactMap { $0 }
     )
   }
 }

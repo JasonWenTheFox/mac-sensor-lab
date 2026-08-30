@@ -49,7 +49,7 @@ public struct SystemInfoProvider: SensorProvider {
           formattedValue: SensorFormatting.decimal(uptime / 3600, fractionDigits: 1), unit: "hours",
           kind: .derived),
       ],
-      notes: ["Device names and unique identifiers are intentionally omitted."]
+      notes: []
     )
   }
 }

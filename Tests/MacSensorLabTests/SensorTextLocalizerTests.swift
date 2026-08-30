@@ -255,7 +255,10 @@ final class SensorTextLocalizerTests: XCTestCase {
     )
 
     let motion = try XCTUnwrap(snapshots["motion.spu_live"])
-    XCTAssertEqual(packagedLocalizer.localized(motion.summary), "实时加速度、水平与环境光数据")
+    XCTAssertEqual(
+      packagedLocalizer.localized(motion.summary),
+      "加速度、水平与环境光演示数据"
+    )
     XCTAssertEqual(
       packagedLocalizer.localized(try XCTUnwrap(motion.channels.first).label),
       "加速度 X"
@@ -327,4 +330,69 @@ final class SensorTextLocalizerTests: XCTestCase {
     XCTAssertTrue(mixed.hasReviewableIssues)
     XCTAssertEqual(mixed.statusTransitionCount, 1)
   }
+}
+
+@MainActor
+final class SensorDashboardModelTests: XCTestCase {
+  func testSlowProviderCannotFreezeTheWholeRefreshCycle() async {
+    let slow = SlowDashboardProvider()
+    let fast = FastDashboardProvider()
+    let model = SensorDashboardModel(
+      providers: [slow, fast],
+      isDemoMode: true,
+      providerReadTimeout: .milliseconds(20)
+    )
+    let clock = ContinuousClock()
+    let startedAt = clock.now
+
+    await model.refresh()
+
+    XCTAssertLessThan(startedAt.duration(to: clock.now), .milliseconds(100))
+    XCTAssertFalse(model.isRefreshing)
+    XCTAssertEqual(model.samplingHealth.completedCycleCount, 1)
+    XCTAssertEqual(model.snapshots.first(where: { $0.id == "test.slow" })?.status, .degraded)
+    XCTAssertEqual(model.snapshots.first(where: { $0.id == "test.fast" })?.status, .available)
+  }
+}
+
+private actor SlowDashboardProvider: SensorProvider {
+  nonisolated let metadata = SensorProviderMetadata(
+    id: "test.slow",
+    name: "Slow fixture",
+    category: .diagnostics,
+    source: "Test",
+    capability: .publicAPI
+  )
+
+  func read() async -> SensorSnapshot {
+    try? await Task.sleep(for: .milliseconds(200))
+    return fixtureSnapshot(metadata: metadata)
+  }
+}
+
+private struct FastDashboardProvider: SensorProvider {
+  let metadata = SensorProviderMetadata(
+    id: "test.fast",
+    name: "Fast fixture",
+    category: .diagnostics,
+    source: "Test",
+    capability: .publicAPI
+  )
+
+  func read() async -> SensorSnapshot { fixtureSnapshot(metadata: metadata) }
+}
+
+private func fixtureSnapshot(metadata: SensorProviderMetadata) -> SensorSnapshot {
+  SensorSnapshot(
+    id: metadata.id,
+    name: metadata.name,
+    category: metadata.category,
+    summary: "Ready",
+    status: .available,
+    source: metadata.source,
+    capability: metadata.capability,
+    channels: [
+      SensorChannel(id: "value", label: "Value", value: 1, formattedValue: "1")
+    ]
+  )
 }

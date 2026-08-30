@@ -8,7 +8,6 @@ import IOKit
 private enum SMCCommand: UInt8 {
   case kernelIndex = 2
   case readBytes = 5
-  case readIndex = 8
   case readKeyInfo = 9
 }
 
@@ -84,25 +83,25 @@ final class ReadOnlySMC: @unchecked Sendable {
   private var connection: io_connect_t = 0
   private let lock = NSLock()
 
-  init?() {
+  init() throws {
     var iterator: io_iterator_t = 0
-    guard
-      IOServiceGetMatchingServices(
-        kIOMainPortDefault,
-        IOServiceMatching("AppleSMC"),
-        &iterator
-      ) == kIOReturnSuccess
-    else {
-      return nil
+    let matchingResult = IOServiceGetMatchingServices(
+      kIOMainPortDefault,
+      IOServiceMatching("AppleSMC"),
+      &iterator
+    )
+    guard matchingResult == kIOReturnSuccess else {
+      throw ReadOnlySMCOpenError.enumerationFailed(matchingResult)
     }
     defer { IOObjectRelease(iterator) }
 
     let device = IOIteratorNext(iterator)
-    guard device != 0 else { return nil }
+    guard device != 0 else { throw ReadOnlySMCOpenError.serviceUnavailable }
     defer { IOObjectRelease(device) }
 
-    guard IOServiceOpen(device, mach_task_self_, 0, &connection) == kIOReturnSuccess else {
-      return nil
+    let openResult = IOServiceOpen(device, mach_task_self_, 0, &connection)
+    guard openResult == kIOReturnSuccess else {
+      throw ReadOnlySMCOpenError.userClientOpenFailed(openResult)
     }
   }
 
@@ -201,4 +200,10 @@ final class ReadOnlySMC: @unchecked Sendable {
       &outputSize
     )
   }
+}
+
+enum ReadOnlySMCOpenError: Error, Equatable {
+  case enumerationFailed(IOReturn)
+  case serviceUnavailable
+  case userClientOpenFailed(IOReturn)
 }

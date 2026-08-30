@@ -238,11 +238,7 @@ public struct PublicPowerSourceProvider: SensorProvider {
   }
 
   private var privacyNotes: [String] {
-    [
-      "Uses Apple's public IOPowerSources API.",
-      "Power-source names, IDs, serial numbers, transport details, and adapter metadata are intentionally ignored.",
-      "Time remaining values are operating-system estimates.",
-    ]
+    ["Time remaining values are operating-system estimates."]
   }
 
   private func unavailableSnapshot(summary: String) -> SensorSnapshot {

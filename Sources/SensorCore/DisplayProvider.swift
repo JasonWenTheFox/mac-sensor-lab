@@ -155,7 +155,7 @@ public struct DisplayProvider: SensorProvider {
       capability: metadata.capability,
       channels: channels,
       notes: [
-        "Pixel and point dimensions are the current display mode; scale is derived. Persistent display identifiers are intentionally omitted."
+        "Pixel and point dimensions describe the current display mode; scale is derived."
       ]
     )
   }

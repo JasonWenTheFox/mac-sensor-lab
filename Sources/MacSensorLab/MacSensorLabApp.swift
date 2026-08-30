@@ -57,15 +57,10 @@ private struct SettingsView: View {
         )
         .foregroundStyle(.secondary)
       }
-      Section(L10n.text("Safety")) {
+      Section(L10n.text("Data access")) {
         Text(
           L10n.text(
-            "Mac Sensor Lab reads sensors locally and does not request administrator access in this build."
-          )
-        )
-        Text(
-          L10n.text(
-            "Live sampling attempts ordinary read-only access. If macOS denies an interface, its provider reports Permission required; this app does not request administrator access or bypass privacy controls."
+            "Sensor access is read-only. Unavailable sources stay isolated from the rest of the app."
           )
         )
       }

@@ -81,8 +81,7 @@ public struct SPUDiscoveryProvider: SensorProvider {
       capability: metadata.capability,
       channels: found.sorted { $0.label < $1.label },
       notes: [
-        "Detection does not prove continuous read permission.",
-        "No driver properties were changed and no privileged access was attempted.",
+        "Detection alone does not guarantee that live reports are available."
       ]
     )
   }

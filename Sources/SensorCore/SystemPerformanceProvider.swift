@@ -112,8 +112,7 @@ public final class SystemPerformanceProvider: SensorProvider, @unchecked Sendabl
         summary: "System performance counters were unavailable",
         status: .unavailable,
         source: metadata.source,
-        capability: metadata.capability,
-        notes: ["No process list or identifying information was requested."]
+        capability: metadata.capability
       )
     }
 
@@ -139,7 +138,6 @@ public final class SystemPerformanceProvider: SensorProvider, @unchecked Sendabl
       notes: [
         "CPU utilization needs two samples; the first read establishes a baseline.",
         "Memory channels are raw Mach page categories and may overlap conceptually with UI labels used by other tools.",
-        "No process list or identifying information was requested.",
       ]
     )
   }

@@ -146,8 +146,7 @@ public struct StorageProvider: SensorProvider {
       capability: metadata.capability,
       channels: channels,
       notes: [
-        "Capacity semantics come from public Foundation volume resource keys.",
-        "Volume names, identifiers, mount paths, and system error text are intentionally omitted.",
+        "Available-space values use the current Foundation volume semantics."
       ]
     )
   }
@@ -160,8 +159,7 @@ public struct StorageProvider: SensorProvider {
       summary: "Could not read system-volume capacity",
       status: .unavailable,
       source: metadata.source,
-      capability: metadata.capability,
-      notes: ["No volume path or system error text is exported."]
+      capability: metadata.capability
     )
   }
 

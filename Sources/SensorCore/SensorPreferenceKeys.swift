@@ -7,6 +7,10 @@ public enum SensorPreferenceKeys {
     scoped("dev.macsensorlab.ambientLuxCalibration", isDemoMode: isDemoMode)
   }
 
+  public static func ambientSpectralReference(isDemoMode: Bool) -> String {
+    scoped("dev.macsensorlab.ambientSpectralReference", isDemoMode: isDemoMode)
+  }
+
   public static func lidHasReference(isDemoMode: Bool) -> String {
     scoped("dev.macsensorlab.lid.hasReference", isDemoMode: isDemoMode)
   }

@@ -1,4 +1,5 @@
 import Foundation
+import IOKit
 
 public struct SMCSensorProvider: SensorProvider {
   public let metadata = SensorProviderMetadata(
@@ -12,16 +13,28 @@ public struct SMCSensorProvider: SensorProvider {
   public init() {}
 
   public func read() async -> SensorSnapshot {
-    guard let smc = ReadOnlySMC() else {
+    let smc: ReadOnlySMC
+    do {
+      smc = try ReadOnlySMC()
+    } catch let error as ReadOnlySMCOpenError {
       return SensorSnapshot(
         id: metadata.id,
         name: metadata.name,
         category: metadata.category,
-        summary: "AppleSMC is present but its user client could not be opened",
-        status: .permissionRequired,
+        summary: SMCOpenFailure.summary(for: error),
+        status: SMCOpenFailure.status(for: error),
         source: metadata.source,
-        capability: metadata.capability,
-        notes: ["The App will not request sudo or attempt a privileged helper in this build."]
+        capability: metadata.capability
+      )
+    } catch {
+      return SensorSnapshot(
+        id: metadata.id,
+        name: metadata.name,
+        category: metadata.category,
+        summary: "AppleSMC could not be opened",
+        status: .error,
+        source: metadata.source,
+        capability: metadata.capability
       )
     }
 
@@ -29,6 +42,38 @@ public struct SMCSensorProvider: SensorProvider {
       metadata: metadata,
       generation: AppleSiliconSMCGeneration.current()
     ).snapshot(valueFor: smc.value)
+  }
+}
+
+enum SMCOpenFailure {
+  static func status(for error: ReadOnlySMCOpenError) -> SensorStatus {
+    switch error {
+    case .serviceUnavailable:
+      .unavailable
+    case .enumerationFailed:
+      .error
+    case .userClientOpenFailed(let result):
+      switch result {
+      case kIOReturnNotPrivileged, kIOReturnNotPermitted:
+        .permissionRequired
+      case kIOReturnExclusiveAccess, kIOReturnBusy, kIOReturnNotOpen, kIOReturnNotReady,
+        kIOReturnTimeout:
+        .degraded
+      case kIOReturnNoDevice, kIOReturnNotFound, kIOReturnUnsupported:
+        .unavailable
+      default:
+        .error
+      }
+    }
+  }
+
+  static func summary(for error: ReadOnlySMCOpenError) -> String {
+    switch status(for: error) {
+    case .permissionRequired: "macOS denied access to AppleSMC"
+    case .degraded: "AppleSMC is temporarily busy"
+    case .unavailable: "AppleSMC is not available on this Mac"
+    default: "AppleSMC could not be opened"
+    }
   }
 }
 
@@ -148,16 +193,7 @@ struct SMCSensorSnapshotBuilder {
   }
 
   private var generationNotes: [String] {
-    let allowlistNote =
-      generation == .unknown
-      ? "CPU generation was not recognized; only fixed generation-neutral temperature, fan and power keys were read."
-      : "Only a fixed \(generation.displayName) and generation-neutral allowlist of temperature, fan and power keys was read."
-    return [
-      allowlistNote,
-      "CPU generation selects an allowlist only; the brand string is not retained or exported.",
-      "No SMC write or fan-control method exists in this target.",
-      "Undocumented key meanings require anonymous cross-model validation.",
-    ]
+    ["Available SMC channels vary by Mac model and macOS version."]
   }
 
   private func validTemperatures(

@@ -138,7 +138,7 @@ public enum SensorDemoProviderRegistry {
         ]),
       provider(
         "motion.spu_live", "Motion & Ambient Light", .motion, .undocumented,
-        "Live acceleration, level, ambient data",
+        "Acceleration, level, and ambient-light fixture data",
         [
           number("acceleration_x", "Acceleration X", 0.02, "g"),
           number("acceleration_y", "Acceleration Y", -0.01, "g"),

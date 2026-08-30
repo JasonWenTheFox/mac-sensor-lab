@@ -85,6 +85,49 @@ public struct MotionVariationStatistics: Equatable, Sendable {
   }
 }
 
+/// A relative four-channel fingerprint for comparing ambient light sources on one Mac.
+///
+/// The undocumented SPU channels do not have a published spectral response or color-matching
+/// matrix. Normalizing them can reveal relative changes, but cannot produce lux, chromaticity, or
+/// correlated color temperature.
+public struct AmbientSpectralFingerprint: Equatable, Sendable {
+  public static let channelCount = 4
+
+  public let components: [Double]
+
+  public init?(values: [Double]) {
+    guard values.count == Self.channelCount,
+      values.allSatisfy({ $0.isFinite && $0 >= 0 }),
+      let maximum = values.max(),
+      maximum > 0
+    else { return nil }
+
+    let scaled = values.map { $0 / maximum }
+    let scaledTotal = scaled.reduce(0, +)
+    guard scaledTotal.isFinite, scaledTotal > 0 else { return nil }
+    let components = scaled.map { $0 / scaledTotal }
+    guard components.allSatisfy({ $0.isFinite && (0...1).contains($0) }) else { return nil }
+    self.components = components
+  }
+
+  /// Total-variation distance in the closed range 0...1.
+  public func distance(to reference: AmbientSpectralFingerprint) -> Double {
+    var total = 0.0
+    for (current, baseline) in zip(components, reference.components) {
+      total += abs(current - baseline)
+    }
+    guard total.isFinite else { return 1 }
+    return min(max(total / 2, 0), 1)
+  }
+
+  public func largestShiftChannel(comparedTo reference: AmbientSpectralFingerprint) -> Int? {
+    zip(components, reference.components)
+      .enumerated()
+      .max { abs($0.element.0 - $0.element.1) < abs($1.element.0 - $1.element.1) }?
+      .offset
+  }
+}
+
 /// A deliberately conservative estimate from recent public battery-charge history.
 ///
 /// The estimate is only about the observed dashboard window. Callers must additionally verify that
