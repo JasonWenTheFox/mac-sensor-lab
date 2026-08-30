@@ -34,3 +34,9 @@
 - 每个传感器通过独立 Provider 接入，失败不得拖垮其他模块。
 - 运行最相关的 Swift 测试、CLI 自检和 App 启动验证。
 - 构建和测试产物放 `.build/`、`.work/` 或 `outputs/`，不污染源码目录。
+
+## 发布边界
+
+- 公开前必须完成许可证、隐私、Git 历史、跟踪文件和本机路径审计。
+- GitHub Actions 默认仅允许手动触发；日常验证优先使用 `scripts/verify-local.sh`。
+- 未经 Developer ID 签名和公证的 App 不作为面向普通用户的可下载二进制发布。

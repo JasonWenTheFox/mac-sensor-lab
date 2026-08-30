@@ -4,8 +4,15 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ## Unreleased
 
+No changes yet.
+
+## 0.2.0 - 2026-08-31
+
 ### Added
 
+- A Light Spectrum experiment that normalizes the four ambient spectral channels into relative proportions, stores an optional local reference, and reports bounded similarity and the largest channel shift without claiming color temperature, wavelengths, or lux.
+- A single-flight provider read gate with an independent two-second coordination boundary, preventing one blocked synchronous sensor call from freezing a full dashboard refresh or spawning duplicate reads.
+- Dedicated privacy-aware bug and feature-request forms plus a private GitHub vulnerability-reporting link.
 - A single offline `verify-local.sh` entry point for formatting, localization, release-boundary checks, builds, XCTest, portable self-test, Release bundle verification, and opt-in hardware/sanitizer/SPU stability checks without consuming GitHub Actions minutes.
 - Component Thermals and System Power Trend experiments that reuse the fixed read-only SMC allowlist for bounded CPU/GPU comparisons and recent power averages/peaks, with internal-versus-ambient/wall-power caveats.
 - Network Throughput and Disk Activity experiments with bounded, dual-series receive/send and read/write history, recent averages, and explicit aggregate-identity caveats.
@@ -44,9 +51,9 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ### Changed
 
+- GitHub Actions is manual-only; pushes and pull requests no longer consume hosted-runner minutes automatically, and the local verification script remains the release authority.
 - App assembly now builds and verifies a fresh same-output-filesystem staging bundle before replacing the previous generated bundle, preventing removed or renamed resources from leaking into later builds.
 - System-volume storage now uses public Foundation resource keys and keeps ordinary, important-use, and opportunistic availability as separate bounded facts.
-- CI now avoids duplicate feature-branch `push` runs, cancels stale pull-request runs, and defers the macOS runner while a pull request remains a draft; marking it ready requests one complete validation.
 - Optimized Release app bundles now enable and verify Hardened Runtime even under local ad-hoc signing; the deterministic Demo also passes a local launch-survival smoke test.
 - Existing ambient-light calibration now accepts up to eight strictly monotonic reference points, supports undoing the last point, and preserves legacy single-point JSON/UserDefaults compatibility.
 - SMC temperature lookup now selects fixed M1, M2, M3, M4, or M5 key catalogs, keeps generation detection out of exports, and safely falls back to generation-neutral keys.
@@ -60,6 +67,9 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 ### Fixed
 
+- SMC and lid-angle open failures now distinguish missing hardware, permission denial, transient contention, and other errors instead of classifying every failure as a privacy permission problem.
+- The lid protractor now uses the provider's documented 0–360 degree range instead of clipping valid readings at 180 degrees.
+- The self-test CLI now rejects unknown options and exposes explicit help; SPU stability failures still print their bounded result summary.
 - GPU-memory and disk-driver counters now require exact nonnegative integer `NSNumber` payloads, preventing negative or fractional registry values from wrapping into enormous unsigned readings.
 - Storage failures no longer echo system error text that could contain a local path, and impossible capacity relationships are omitted instead of becoming used-space claims.
 - Display telemetry now distinguishes current-mode pixel dimensions from logical point dimensions and only derives a backing scale from consistent, bounded axes.

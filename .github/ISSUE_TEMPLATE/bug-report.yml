@@ -1,0 +1,44 @@
+name: Bug report
+description: Report a reproducible app or build problem without sharing private sensor data.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Mac Sensor Lab. Do not attach full snapshots, recordings, system dumps, crash dumps, or screenshots containing real sensor readings. Use the compatibility form for model-specific provider availability.
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: "0.2.0 (2) or a short commit hash"
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: "15.6"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: Remove readings, paths, account data, and device identifiers.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I removed sensor readings, unique identifiers, private paths, account data, and system dumps.
+          required: true
+        - label: This report does not disclose a security vulnerability.
+          required: true

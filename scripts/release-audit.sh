@@ -57,10 +57,19 @@ for required in \
   THIRD_PARTY_NOTICES.md \
   CONTRIBUTING.md \
   SECURITY.md \
+  .github/ISSUE_TEMPLATE/bug-report.yml \
   .github/ISSUE_TEMPLATE/compatibility-report.yml \
+  .github/ISSUE_TEMPLATE/feature-request.yml \
+  .github/ISSUE_TEMPLATE/config.yml \
   docs/06-匿名兼容性贡献指南.md; do
   [[ -s "$required" ]] || fail "required release file is missing or empty: $required"
 done
+
+/usr/bin/grep -Fq 'workflow_dispatch:' .github/workflows/ci.yml \
+  || fail "GitHub Actions must retain an explicit manual trigger"
+if /usr/bin/grep -Eq '^[[:space:]]+(push|pull_request):' .github/workflows/ci.yml; then
+  fail "GitHub Actions must not consume minutes automatically on push or pull request"
+fi
 
 [[ -x scripts/verify-local.sh ]] \
   || fail "scripts/verify-local.sh must exist and remain executable"
