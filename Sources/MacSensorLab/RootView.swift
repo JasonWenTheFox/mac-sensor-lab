@@ -35,6 +35,11 @@ struct RootView: View {
               onReviewIssues: { model.selection = .rawSensors },
               onViewDiagnostics: { model.selection = .diagnostics }
             )
+          case .hardwareInventory:
+            HardwareInventoryView(
+              snapshots: model.snapshots.filter { $0.id.hasPrefix("hardware.") },
+              history: model.history
+            )
           case .rawSensors:
             RawSensorsView(snapshots: model.snapshots)
           case .experiments:
@@ -165,13 +170,51 @@ private struct OverviewView: View {
       .padding(.bottom, 16)
 
       LazyVGrid(columns: columns, spacing: 16) {
-        ForEach(snapshots) { snapshot in
+        ForEach(snapshots.filter { !$0.id.hasPrefix("hardware.") }) { snapshot in
           SensorCard(snapshot: snapshot, history: history)
         }
       }
     }
     .padding(24)
     .navigationTitle(L10n.text("Overview"))
+  }
+}
+
+private struct HardwareInventoryView: View {
+  let snapshots: [SensorSnapshot]
+  let history: [String: [SensorHistoryPoint]]
+  private let columns = [GridItem(.adaptive(minimum: 300), spacing: 16)]
+
+  var body: some View {
+    ScrollView {
+      VStack(alignment: .leading, spacing: 8) {
+        Text(L10n.text("Hardware Inventory"))
+          .font(.largeTitle.bold())
+        Text(
+          L10n.text(
+            "Model-level hardware facts only; unique device identifiers are intentionally excluded."
+          )
+        )
+        .foregroundStyle(.secondary)
+        Text(
+          L10n.text(
+            "Access level and compatibility evidence remain visible on every card."
+          )
+        )
+        .font(.callout)
+        .foregroundStyle(.secondary)
+      }
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .padding(.bottom, 12)
+
+      LazyVGrid(columns: columns, spacing: 16) {
+        ForEach(snapshots) { snapshot in
+          SensorCard(snapshot: snapshot, history: history)
+        }
+      }
+    }
+    .padding(24)
+    .navigationTitle(L10n.text("Hardware Inventory"))
   }
 }
 
@@ -388,7 +431,13 @@ private struct SensorCard: View {
           )
         )
         Spacer()
-        Text(L10n.text(snapshot.capability.displayName))
+        Text(
+          L10n.format(
+            "%@ • %@",
+            L10n.text(snapshot.domain.displayName),
+            L10n.text(snapshot.accessLevel.displayName)
+          )
+        )
       }
       .font(.caption)
       .foregroundStyle(.tertiary)
@@ -457,7 +506,7 @@ private struct RawSensorsView: View {
           L10n.text("No Sensors Found"),
           systemImage: "magnifyingglass",
           description: Text(
-            L10n.text("Try a provider, channel, source, status, or stable ID.")
+            L10n.text("Try a provider, channel, domain, access, status, or stable ID.")
           )
         )
       }
@@ -498,21 +547,40 @@ private struct RawSensorsView: View {
             StatusPill(status: snapshot.status)
           }
         } footer: {
-          Text(
-            L10n.format(
-              "Updated %@ • Source: %@ • %@",
-              snapshot.timestamp.formatted(date: .omitted, time: .standard),
-              L10n.sensorText(snapshot.source),
-              L10n.text(snapshot.capability.displayName)
+          VStack(alignment: .leading, spacing: 3) {
+            Text(
+              L10n.format(
+                "Updated %@ • Source: %@",
+                snapshot.timestamp.formatted(date: .omitted, time: .standard),
+                L10n.sensorText(snapshot.source)
+              )
             )
-          )
+            Text(
+              L10n.format(
+                "Domain: %@ • Access: %@ • Evidence: %@",
+                L10n.text(snapshot.domain.displayName),
+                L10n.text(snapshot.accessLevel.displayName),
+                L10n.text(snapshot.compatibilityConfidence.displayName)
+              )
+            )
+            Text(
+              L10n.format(
+                "Presence: %@ • Decoder: %@ • Read path: %@ • Stream: %@ • Feature: %@",
+                L10n.text(snapshot.readiness.hardwarePresence.displayName),
+                L10n.text(snapshot.readiness.decoder.displayName),
+                L10n.text(snapshot.readiness.readPath.displayName),
+                L10n.text(snapshot.readiness.stream.displayName),
+                L10n.text(snapshot.readiness.feature.displayName)
+              )
+            )
+          }
         }
       }
     }
     .navigationTitle(L10n.text("Raw Sensors"))
     .searchable(
       text: $query,
-      prompt: L10n.text("Provider, channel, source, status, or ID")
+      prompt: L10n.text("Provider, channel, domain, access, status, or ID")
     )
   }
 }

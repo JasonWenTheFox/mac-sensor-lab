@@ -2,7 +2,7 @@ import Foundation
 
 public enum SensorCSVStreamEncoder {
   public static let header =
-    "provider_id,provider_name,status,source,channel_id,channel_name,raw_value,formatted_value,unit,kind,timestamp\n"
+    "provider_id,provider_name,status,capability,domain,access_level,compatibility_confidence,hardware_presence,decoder_readiness,read_path_readiness,stream_readiness,feature_readiness,source,channel_id,channel_name,raw_value,formatted_value,unit,kind,timestamp\n"
 
   public static func data(for snapshots: [SensorSnapshot], includeHeader: Bool) -> Data {
     var data = includeHeader ? Data(header.utf8) : Data()
@@ -74,6 +74,15 @@ public enum SensorCSVStreamEncoder {
       SensorFormatting.csvTextCell(snapshot.id),
       SensorFormatting.csvTextCell(snapshot.name),
       SensorFormatting.csvTextCell(snapshot.status.rawValue),
+      SensorFormatting.csvTextCell(snapshot.capability.rawValue),
+      SensorFormatting.csvTextCell(snapshot.domain.rawValue),
+      SensorFormatting.csvTextCell(snapshot.accessLevel.rawValue),
+      SensorFormatting.csvTextCell(snapshot.compatibilityConfidence.rawValue),
+      SensorFormatting.csvTextCell(snapshot.readiness.hardwarePresence.rawValue),
+      SensorFormatting.csvTextCell(snapshot.readiness.decoder.rawValue),
+      SensorFormatting.csvTextCell(snapshot.readiness.readPath.rawValue),
+      SensorFormatting.csvTextCell(snapshot.readiness.stream.rawValue),
+      SensorFormatting.csvTextCell(snapshot.readiness.feature.rawValue),
       SensorFormatting.csvTextCell(snapshot.source),
       SensorFormatting.csvTextCell(channelID),
       SensorFormatting.csvTextCell(channelName),

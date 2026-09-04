@@ -16,7 +16,10 @@ public enum SensorSnapshotGate {
       snapshot.name == metadata.name,
       snapshot.category == metadata.category,
       snapshot.source == metadata.source,
-      snapshot.capability == metadata.capability
+      snapshot.capability == metadata.capability,
+      snapshot.domain == metadata.domain,
+      snapshot.accessLevel == metadata.accessLevel,
+      snapshot.compatibilityConfidence == metadata.compatibilityConfidence
     else {
       return rejectionSnapshot(for: metadata, now: now)
     }
@@ -36,6 +39,9 @@ public enum SensorSnapshotGate {
       status: .error,
       source: metadata.source,
       capability: metadata.capability,
+      domain: metadata.domain,
+      accessLevel: metadata.accessLevel,
+      compatibilityConfidence: metadata.compatibilityConfidence,
       notes: ["Malformed provider output was discarded before display or export."],
       timestamp: timestamp
     )

@@ -17,6 +17,8 @@ let package = Package(
       linkerSettings: [
         .linkedFramework("IOKit"),
         .linkedFramework("CoreGraphics"),
+        .linkedFramework("LocalAuthentication"),
+        .linkedFramework("Metal"),
       ]
     ),
     .executableTarget(

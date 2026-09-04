@@ -227,8 +227,8 @@ final class SensorCoreTests: XCTestCase {
       ]
     )
     let text = String(decoding: SensorExportService.csvData([snapshot]), as: UTF8.self)
-    XCTAssertTrue(
-      text.contains("'=provider,'+name,available,'@source,'-channel,'=label,-12.5,'-12.500"))
+    XCTAssertTrue(text.contains("'=provider,'+name,available,publicAPI,diagnostics,publicOrdinary"))
+    XCTAssertTrue(text.contains("'@source,'-channel,'=label,-12.5,'-12.500"))
   }
 
   func testExportDoesNotInventMachineIdentifiers() throws {
@@ -245,10 +245,71 @@ final class SensorCoreTests: XCTestCase {
       ]
     )
     let data = try SensorExportService.jsonData([snapshot])
+    let export = try JSONDecoder.withISO8601.decode(SensorSnapshotExport.self, from: data)
+    XCTAssertEqual(export.schemaVersion, 1)
+    XCTAssertEqual(export.snapshots.map(\.id), [snapshot.id])
+    XCTAssertEqual(export.snapshots.first?.domain, snapshot.domain)
+    XCTAssertEqual(export.snapshots.first?.readiness, snapshot.readiness)
     let text = String(decoding: data, as: UTF8.self)
     XCTAssertFalse(text.localizedCaseInsensitiveContains("serial number"))
     XCTAssertFalse(text.localizedCaseInsensitiveContains("hardware uuid"))
     XCTAssertFalse(text.localizedCaseInsensitiveContains("provisioning udid"))
+  }
+
+  func testSemanticTaxonomySeparatesDomainAccessEvidenceAndReadiness() {
+    let publicMetadata = SensorProviderMetadata(
+      id: "display.active",
+      name: "Display",
+      category: .display,
+      source: "Fixture",
+      capability: .publicAPI
+    )
+    XCTAssertEqual(publicMetadata.domain, .display)
+    XCTAssertEqual(publicMetadata.accessLevel, .publicOrdinary)
+    XCTAssertEqual(publicMetadata.compatibilityConfidence, .documentedPlatformContract)
+
+    let privateSnapshot = SensorSnapshot(
+      id: "motion.spu_live",
+      name: "Motion & Ambient Light",
+      category: .motion,
+      summary: "Fixture",
+      status: .degraded,
+      source: "Fixture",
+      capability: .undocumented,
+      channels: [
+        SensorChannel(id: "acceleration_x", label: "Acceleration X", formattedValue: "0")
+      ]
+    )
+    XCTAssertEqual(privateSnapshot.domain, .motion)
+    XCTAssertEqual(privateSnapshot.accessLevel, .privateExperimental)
+    XCTAssertEqual(privateSnapshot.compatibilityConfidence, .singleModelObserved)
+    XCTAssertEqual(privateSnapshot.readiness.hardwarePresence, .present)
+    XCTAssertEqual(privateSnapshot.readiness.decoder, .ready)
+    XCTAssertEqual(privateSnapshot.readiness.readPath, .limited)
+    XCTAssertEqual(privateSnapshot.readiness.stream, .inactive)
+    XCTAssertEqual(privateSnapshot.readiness.feature, .partial)
+
+    XCTAssertEqual(
+      SensorAccessLevel.publicEntitlement.legacyCapability,
+      .publicAPIWithPermission
+    )
+    XCTAssertEqual(SensorAccessLevel(legacyCapability: .privileged), .privilegedHelper)
+  }
+
+  func testHardwareInventorySanitizerRejectsUnboundedOrIdentifyingText() {
+    XCTAssertEqual(HardwareInventorySanitizer.modelIdentifier("Mac17,2"), "Mac17,2")
+    XCTAssertEqual(HardwareInventorySanitizer.modelIdentifier("MacBookPro18,3"), "MacBookPro18,3")
+    XCTAssertNil(HardwareInventorySanitizer.modelIdentifier("Mac17,2\nserial"))
+    XCTAssertNil(HardwareInventorySanitizer.modelIdentifier(String(repeating: "A", count: 65)))
+
+    XCTAssertEqual(HardwareInventorySanitizer.appleSoCName("Apple M5"), "Apple M5")
+    XCTAssertEqual(HardwareInventorySanitizer.appleSoCName("Apple M4 Max"), "Apple M4 Max")
+    XCTAssertNil(HardwareInventorySanitizer.appleSoCName("Intel Core i9"))
+    XCTAssertNil(HardwareInventorySanitizer.appleSoCName("Apple M5 owner"))
+    XCTAssertNil(HardwareInventorySanitizer.displayName("GPU\nprivate"))
+    XCTAssertEqual(HardwareInventorySanitizer.coreCount(256), 256)
+    XCTAssertNil(HardwareInventorySanitizer.coreCount(0))
+    XCTAssertNil(HardwareInventorySanitizer.coreCount(257))
   }
 
   func testDiagnosticsExportContainsMetadataButNeverReadingsOrFreeText() throws {
@@ -281,8 +342,13 @@ final class SensorCoreTests: XCTestCase {
       generatedAt: Date(timeIntervalSince1970: 2_000)
     )
     let report = try JSONDecoder.withISO8601.decode(SensorDiagnosticsReport.self, from: data)
-    XCTAssertEqual(report.schemaVersion, 2)
+    XCTAssertEqual(report.schemaVersion, 3)
     XCTAssertEqual(report.providers.first?.providerID, "test.provider")
+    XCTAssertEqual(report.providers.first?.domain, .externalSensors)
+    XCTAssertEqual(report.providers.first?.accessLevel, .undocumentedOrdinary)
+    XCTAssertEqual(report.providers.first?.compatibilityConfidence, .singleModelObserved)
+    XCTAssertEqual(report.providers.first?.readiness.hardwarePresence, .present)
+    XCTAssertEqual(report.providers.first?.readiness.readPath, .limited)
     XCTAssertEqual(report.providers.first?.channels.first?.channelID, "ambient_intensity")
     let text = String(decoding: data, as: UTF8.self)
     XCTAssertFalse(text.contains("SENSITIVE_"))
@@ -1495,6 +1561,14 @@ final class SensorCoreTests: XCTestCase {
       ).first
     )
     XCTAssertEqual(localizedChannelMatch.channels.map(\.id), ["disk_write_rate"])
+    XCTAssertEqual(
+      SensorSnapshotSearch.filter([snapshot], query: "storage").map(\.id),
+      [snapshot.id]
+    )
+    XCTAssertEqual(
+      SensorSnapshotSearch.filter([snapshot], query: "undocumentedOrdinary").map(\.id),
+      [snapshot.id]
+    )
     XCTAssertTrue(SensorSnapshotSearch.filter([snapshot], query: "microphone").isEmpty)
     XCTAssertEqual(SensorSnapshotSearch.filter([snapshot], query: "   "), [snapshot])
   }
@@ -1858,13 +1932,25 @@ final class SensorCoreTests: XCTestCase {
 
   func testDemoRegistryIsCompleteFiniteAndClearlyLabeled() async {
     let providers = SensorDemoProviderRegistry.providers()
-    XCTAssertEqual(providers.count, SensorProviderRegistry.providers().count)
+    let liveProviders = SensorProviderRegistry.providers()
+    XCTAssertEqual(providers.map(\.metadata.id), liveProviders.map(\.metadata.id))
     XCTAssertEqual(Set(providers.map(\.metadata.id)).count, providers.count)
 
-    for provider in providers {
+    for (provider, liveProvider) in zip(providers, liveProviders) {
       XCTAssertEqual(provider.metadata.source, "Built-in deterministic demo fixture")
+      XCTAssertEqual(provider.metadata.name, liveProvider.metadata.name)
+      XCTAssertEqual(provider.metadata.category, liveProvider.metadata.category)
+      XCTAssertEqual(provider.metadata.capability, liveProvider.metadata.capability)
+      XCTAssertEqual(provider.metadata.domain, liveProvider.metadata.domain)
+      XCTAssertEqual(provider.metadata.accessLevel, liveProvider.metadata.accessLevel)
+      XCTAssertEqual(
+        provider.metadata.compatibilityConfidence,
+        liveProvider.metadata.compatibilityConfidence
+      )
       let snapshot = await provider.read()
-      XCTAssertEqual(snapshot.status, .available)
+      XCTAssertNotEqual(snapshot.status, .loading)
+      XCTAssertNotEqual(snapshot.status, .error)
+      XCTAssertFalse(snapshot.channels.isEmpty)
       XCTAssertEqual(snapshot.source, "Built-in deterministic demo fixture")
       XCTAssertTrue(snapshot.notes.contains("Synthetic demo data; not a hardware reading."))
       XCTAssertTrue(snapshot.channels.allSatisfy { $0.value?.isFinite ?? true })
@@ -1872,6 +1958,44 @@ final class SensorCoreTests: XCTestCase {
 
     let snapshots = await SensorProviderRegistry.readAll(providers)
     XCTAssertEqual(snapshots.map(\.id), providers.map(\.metadata.id))
+
+    let byID = Dictionary(uniqueKeysWithValues: snapshots.map { ($0.id, $0) })
+    XCTAssertEqual(
+      byID["system.overview"]?.channels.first(where: { $0.id == "uptime" })?.kind,
+      .derived
+    )
+    XCTAssertEqual(
+      byID["storage.system_volume"]?.channels.first(where: { $0.id == "used" })?.kind,
+      .derived
+    )
+    XCTAssertEqual(
+      Set(byID["diagnostics.hardware_capabilities"]?.channels.map(\.id) ?? []),
+      ["apple_smc", "force_touch", "smart_battery"]
+    )
+    XCTAssertEqual(byID["diagnostics.hardware_capabilities"]?.status, .degraded)
+    XCTAssertEqual(
+      byID["diagnostics.hardware_capabilities"]?.readiness.feature,
+      .partial
+    )
+    XCTAssertNotNil(
+      byID["motion.spu_discovery"]?.channels.first(where: { $0.id == "lid_angle" })
+    )
+    XCTAssertEqual(
+      Set(
+        byID["motion.spu_live"]?.channels.filter {
+          $0.id.hasPrefix("angular_velocity_")
+        }.map(\.id) ?? []
+      ),
+      ["angular_velocity_x", "angular_velocity_y", "angular_velocity_z"]
+    )
+    for requiredID in [
+      "disk_bytes_read_total", "disk_bytes_written_total", "disk_read_errors_total",
+      "disk_write_errors_total",
+    ] {
+      XCTAssertNotNil(
+        byID["storage.disk_io"]?.channels.first(where: { $0.id == requiredID })
+      )
+    }
   }
 
   func testContractAuditAcceptsDemoRegistryAndDetectsMetadataDrift() async {
@@ -2233,8 +2357,21 @@ final class SensorCoreTests: XCTestCase {
       source: metadata.source,
       capability: metadata.capability
     )
+    let semanticDrift = SensorSnapshot(
+      id: metadata.id,
+      name: metadata.name,
+      category: metadata.category,
+      summary: "Fixture",
+      status: .available,
+      source: metadata.source,
+      capability: metadata.capability,
+      domain: .cpu,
+      channels: [
+        SensorChannel(id: "value", label: "Value", value: 1, formattedValue: "1")
+      ]
+    )
 
-    for rejectedInput in [malformed, wrongIdentity] {
+    for rejectedInput in [malformed, wrongIdentity, semanticDrift] {
       let rejected = SensorSnapshotGate.admitted(rejectedInput, for: metadata)
       XCTAssertEqual(rejected.id, metadata.id)
       XCTAssertEqual(rejected.name, metadata.name)

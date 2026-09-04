@@ -28,6 +28,13 @@ public struct SPUDiscoveryProvider: SensorProvider {
         status: .error,
         source: metadata.source,
         capability: metadata.capability,
+        readiness: SensorReadiness(
+          hardwarePresence: .unknown,
+          decoder: .notApplicable,
+          readPath: .failed,
+          stream: .notApplicable,
+          feature: .unknown
+        ),
         notes: ["IOReturn \(result)"]
       )
     }
@@ -67,7 +74,14 @@ public struct SPUDiscoveryProvider: SensorProvider {
         summary: "No known Apple SPU sensors detected",
         status: .unavailable,
         source: metadata.source,
-        capability: metadata.capability
+        capability: metadata.capability,
+        readiness: SensorReadiness(
+          hardwarePresence: .absent,
+          decoder: .notApplicable,
+          readPath: .ready,
+          stream: .notApplicable,
+          feature: .unsupported
+        )
       )
     }
 
@@ -79,6 +93,13 @@ public struct SPUDiscoveryProvider: SensorProvider {
       status: .degraded,
       source: metadata.source,
       capability: metadata.capability,
+      readiness: SensorReadiness(
+        hardwarePresence: .present,
+        decoder: .notApplicable,
+        readPath: .ready,
+        stream: .notApplicable,
+        feature: .partial
+      ),
       channels: found.sorted { $0.label < $1.label },
       notes: [
         "Detection alone does not guarantee that live reports are available."

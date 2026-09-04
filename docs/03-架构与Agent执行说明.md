@@ -8,21 +8,23 @@ Hardware / Apple APIs / IOKit
 Independent Sensor Providers
             ↓
 Normalized SensorSnapshot + SensorChannel
+Domain / Access / Evidence / Five-stage Readiness
             ↓
 History / Calibration / Recording / Export
             ↓
-Overview / Raw Sensors / Experiments / Diagnostics
+Overview / Hardware Inventory / Raw Sensors / Experiments / Diagnostics
 ```
 
 ## Provider 合约
 
 每个 Provider 负责：
 
-- 稳定 ID、名称、类别、来源和能力等级；
+- 稳定 ID、名称、导航类别、硬件领域、来源、访问级别和兼容性证据；
 - 普通权限下的异步探测；
 - 快照读取或持续采样；
 - 通道单位和 Raw/Derived/Estimated/Calibrated 标记；
 - 可用性、权限、超时和错误状态；
+- 硬件存在性、解码器、读取路径、数据流和用户功能的独立就绪状态；
 - 停止与资源释放。
 
 上层 UI 不直接调用 IOKit、SMC、AVFoundation 或私有框架。
@@ -32,12 +34,13 @@ Overview / Raw Sensors / Experiments / Diagnostics
 - AppModel 在主线程只发布轻量状态；
 - 硬件读取在独立 Task/线程完成；
 - Provider 结果按注册索引回填，并在进入 UI、历史与记录前经过 fail-closed Snapshot Gate；契约或注册元数据不匹配时只生成固定、安全且不回显原负载的 Error Snapshot；
+- Snapshot Gate 除旧元数据外还核对 domain、accessLevel 和 compatibilityConfidence；readiness 是随每次读取变化的动态状态，不与静态 metadata 强制相等；
 - 当前 UI 最快每 1 秒采样一次，历史只保存绘图/派生通道并限制为 256 条序列、每条 600 个严格递增时间戳，不直接按潜在高频 HID 回调重绘；
 - 取消 Dashboard Task 会停止安排新的刷新；每个 Provider 还经过默认 2 秒的单飞协调门，超时后立即向本轮返回安全降级状态，原同步调用在后台自然结束前不会再次启动。该门不宣称能强杀任意同步系统 API，SPU 自身仍保留 250 ms 报告等待边界；
 - 当前 Provider 使用短生命周期 IOKit/HID/SMC 句柄；关闭 Dashboard 会取消采样并安全结束活动中的连续记录；
 - 若未来加入真正的高频 Provider，必须先设计有界环形缓冲、降采样和休眠/唤醒生命周期测试。
 
-## 今晚的实现顺序
+## 基础垂直切片的实现顺序（已完成）
 
 1. SensorCore 模型、Provider 协议和 JSON/CSV 导出；
 2. 公开/普通权限系统 Provider；

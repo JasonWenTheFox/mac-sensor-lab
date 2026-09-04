@@ -18,6 +18,17 @@ public enum SensorSnapshotSearch {
           snapshot.status.displayName,
           snapshot.source,
           snapshot.capability.displayName,
+          snapshot.domain.displayName,
+          snapshot.domain.rawValue,
+          snapshot.accessLevel.displayName,
+          snapshot.accessLevel.rawValue,
+          snapshot.compatibilityConfidence.displayName,
+          snapshot.compatibilityConfidence.rawValue,
+          snapshot.readiness.hardwarePresence.rawValue,
+          snapshot.readiness.decoder.rawValue,
+          snapshot.readiness.readPath.rawValue,
+          snapshot.readiness.stream.rawValue,
+          snapshot.readiness.feature.rawValue,
           snapshot.summary,
         ] + snapshot.notes
       if providerFields.contains(where: {
@@ -49,6 +60,10 @@ public enum SensorSnapshotSearch {
         status: snapshot.status,
         source: snapshot.source,
         capability: snapshot.capability,
+        domain: snapshot.domain,
+        accessLevel: snapshot.accessLevel,
+        compatibilityConfidence: snapshot.compatibilityConfidence,
+        readiness: snapshot.readiness,
         channels: channels,
         notes: snapshot.notes,
         timestamp: snapshot.timestamp

@@ -17,7 +17,7 @@ public struct SensorDiagnosticsReport: Codable, Equatable, Sendable {
     generatedAt: Date = .now,
     samplingHealth: SensorSamplingHealth? = nil
   ) {
-    self.schemaVersion = 2
+    self.schemaVersion = 3
     self.generatedAt = generatedAt
     self.applicationVersion = applicationVersion
     self.sampling = samplingHealth.map(SensorSamplingDiagnostic.init(health:))
@@ -50,7 +50,12 @@ public struct SensorProviderDiagnostic: Codable, Equatable, Sendable {
   public let providerID: String
   public let category: SensorCategory
   public let status: SensorStatus
+  /// Kept in schema v3 so v2 consumers can continue reading the coarse classification.
   public let capability: SensorCapability
+  public let domain: HardwareDomain
+  public let accessLevel: SensorAccessLevel
+  public let compatibilityConfidence: SensorCompatibilityConfidence
+  public let readiness: SensorReadiness
   public let channels: [SensorChannelDiagnostic]
   public let observationCount: Int?
   public let statusTransitionCount: Int?
@@ -64,6 +69,10 @@ public struct SensorProviderDiagnostic: Codable, Equatable, Sendable {
     self.category = snapshot.category
     self.status = snapshot.status
     self.capability = snapshot.capability
+    self.domain = snapshot.domain
+    self.accessLevel = snapshot.accessLevel
+    self.compatibilityConfidence = snapshot.compatibilityConfidence
+    self.readiness = snapshot.readiness
     self.channels = snapshot.channels.map(SensorChannelDiagnostic.init(channel:))
     self.observationCount = samplingHealth?.observationCount
     self.statusTransitionCount = samplingHealth?.statusTransitionCount

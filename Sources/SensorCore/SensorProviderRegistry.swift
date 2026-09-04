@@ -4,6 +4,12 @@ public enum SensorProviderRegistry {
   public static func providers() -> [any SensorProvider] {
     [
       SystemInfoProvider(),
+      HardwarePlatformProvider(),
+      SoCHardwareProvider(),
+      CPUHardwareProvider(),
+      MemoryHardwareProvider(),
+      GPUHardwareProvider(),
+      SecurityHardwareProvider(),
       SystemPerformanceProvider(),
       GPUPerformanceProvider(),
       NetworkThroughputProvider(),

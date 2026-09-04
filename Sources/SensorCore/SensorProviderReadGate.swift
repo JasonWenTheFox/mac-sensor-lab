@@ -70,6 +70,9 @@ public final class SensorProviderReadGate: @unchecked Sendable {
       status: .degraded,
       source: metadata.source,
       capability: metadata.capability,
+      domain: metadata.domain,
+      accessLevel: metadata.accessLevel,
+      compatibilityConfidence: metadata.compatibilityConfidence,
       notes: ["Other sensors will continue updating while this read finishes."]
     )
   }

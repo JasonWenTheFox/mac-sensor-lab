@@ -28,6 +28,8 @@ public struct HardwareCapabilityProvider: SensorProvider {
       )
     }
     let detected = channels.filter { ($0.value ?? 0) > 0 }.count
+    let presence: SensorHardwarePresence =
+      detected == 0 ? .absent : (detected == channels.count ? .present : .mixed)
 
     return SensorSnapshot(
       id: metadata.id,
@@ -37,6 +39,13 @@ public struct HardwareCapabilityProvider: SensorProvider {
       status: detected > 0 ? .degraded : .unavailable,
       source: metadata.source,
       capability: metadata.capability,
+      readiness: SensorReadiness(
+        hardwarePresence: presence,
+        decoder: .notApplicable,
+        readPath: .ready,
+        stream: .notApplicable,
+        feature: detected > 0 ? .partial : .unsupported
+      ),
       channels: channels,
       notes: []
     )

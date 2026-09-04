@@ -88,6 +88,16 @@ struct SPUSnapshotStabilizer {
       status: .degraded,
       source: candidate.source,
       capability: candidate.capability,
+      domain: candidate.domain,
+      accessLevel: candidate.accessLevel,
+      compatibilityConfidence: candidate.compatibilityConfidence,
+      readiness: SensorReadiness(
+        hardwarePresence: recent.readiness.hardwarePresence,
+        decoder: recent.readiness.decoder,
+        readPath: .limited,
+        stream: .inactive,
+        feature: .partial
+      ),
       channels: recent.channels,
       notes: candidate.notes + [
         "Showing the last successful sample from \(ageText) seconds ago; its original timestamp is preserved."

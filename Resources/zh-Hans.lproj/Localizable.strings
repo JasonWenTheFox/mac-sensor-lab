@@ -32,6 +32,8 @@
 	<string>检测到 %lld 类实验性传感器</string>
 	<key>%lld of %lld capabilities detected</key>
 	<string>已检测到 %lld/%lld 项能力</string>
+	<key>%lld physical • %lld logical cores</key>
+	<string>%lld 个物理核心 • %lld 个逻辑核心</string>
 	<key>%lld read-only channels</key>
 	<string>%lld 个只读通道</string>
 	<key>%lld rows • %@</key>
@@ -44,10 +46,16 @@
 	<string>、</string>
 	<key>50 MB safety limit</key>
 	<string>50 MB 安全上限</string>
+	<key>A shared model-class identifier, not a unique device identifier.</key>
+	<string>这是同类机型共享的标识符，不是设备唯一标识。</string>
+	<key>A shared product-family name, not a chip identifier.</key>
+	<string>这是共享的产品系列名称，不是芯片唯一标识。</string>
 	<key>AC power</key>
 	<string>交流电源</string>
 	<key>AGX PerformanceStatistics keys are undocumented and may change across macOS or GPU generations.</key>
 	<string>AGX PerformanceStatistics 键未文档化，可能随 macOS 或 GPU 代际而变化。</string>
+	<key>Absent</key>
+	<string>不存在</string>
 	<key>Acceleration</key>
 	<string>加速度</string>
 	<key>Acceleration magnitude</key>
@@ -56,6 +64,8 @@
 	<string>加速度、水平与环境光演示数据</string>
 	<key>Accelerometer</key>
 	<string>加速度计</string>
+	<key>Access level and compatibility evidence remain visible on every card.</key>
+	<string>每张卡片都会显示访问级别与兼容性证据。</string>
 	<key>Active displays</key>
 	<string>活动显示器</string>
 	<key>Active non-loopback interfaces</key>
@@ -74,6 +84,8 @@
 	<string>汇总块设备</string>
 	<key>All readings stay on this Mac unless you explicitly export a snapshot, recording, calibration, or diagnostics file.</key>
 	<string>所有读数都保留在这台 Mac 上，除非你主动导出快照、记录、校准或诊断文件。</string>
+	<key>Ambient Light</key>
+	<string>环境光</string>
 	<key>Ambient intensity</key>
 	<string>环境光强度</string>
 	<key>Ambient light</key>
@@ -88,6 +100,10 @@
 	<string>Apple SPU 发现</string>
 	<key>Apple SPU Sensors</key>
 	<string>Apple SPU 传感器</string>
+	<key>Apple SoC</key>
+	<string>Apple SoC</string>
+	<key>Apple SoC family was unavailable</key>
+	<string>Apple SoC 系列不可用</string>
 	<key>AppleSMC could not be opened</key>
 	<string>无法打开 AppleSMC</string>
 	<key>AppleSMC is not available on this Mac</key>
@@ -98,6 +114,8 @@
 	<string>AppleSMC 暂时繁忙</string>
 	<key>Architecture</key>
 	<string>架构</string>
+	<key>Audio</key>
+	<string>音频</string>
 	<key>Automatic sampling</key>
 	<string>自动采样</string>
 	<key>Automatic sampling interval</key>
@@ -152,14 +170,22 @@
 	<string>操作系统针对电池的估算值；已省略‘正在计算’哨兵值。</string>
 	<key>Block-storage statistics were unavailable</key>
 	<string>块存储统计不可用</string>
+	<key>Blocked by platform</key>
+	<string>受平台阻止</string>
+	<key>Bluetooth</key>
+	<string>蓝牙</string>
 	<key>Build</key>
 	<string>构建</string>
 	<key>Built-in demo fixtures</key>
 	<string>内置演示样本</string>
 	<key>Built-in deterministic demo fixture</key>
 	<string>内置确定性演示夹具</string>
+	<key>CPU</key>
+	<string>CPU</string>
 	<key>CPU %@</key>
 	<string>CPU %@</string>
+	<key>CPU Topology</key>
+	<string>CPU 拓扑</string>
 	<key>CPU average</key>
 	<string>CPU 平均温度</string>
 	<key>CPU generation selects an allowlist only; the brand string is not retained or exported.</key>
@@ -170,6 +196,8 @@
 	<string>CPU 热点</string>
 	<key>CPU hotspot %@ °C</key>
 	<string>CPU 热点 %@ °C</string>
+	<key>CPU topology was unavailable</key>
+	<string>CPU 拓扑不可用</string>
 	<key>CPU utilization</key>
 	<string>CPU 利用率</string>
 	<key>CPU utilization needs two samples; the first read establishes a baseline.</key>
@@ -188,6 +216,10 @@
 	<string>校准导入失败：%@</string>
 	<key>Calibration point was invalid, non-monotonic, or exceeded the eight-point limit</key>
 	<string>校准点无效、不单调，或超过了 8 点上限</string>
+	<key>Camera</key>
+	<string>摄像头</string>
+	<key>Capability only; no authentication prompt or enrollment state is requested.</key>
+	<string>仅检查能力；不会发起认证提示，也不会请求录入状态。</string>
 	<key>Capacity</key>
 	<string>容量</string>
 	<key>Capacity semantics come from public Foundation volume resource keys.</key>
@@ -236,6 +268,8 @@
 	<string>比较近期汇总接收与发送速率</string>
 	<key>Compares the relative balance of four uncalibrated light channels</key>
 	<string>比较四个未校准光通道的相对比例</string>
+	<key>Compatibility unknown</key>
+	<string>兼容性未知</string>
 	<key>Compatible SPU interfaces were not exposed</key>
 	<string>系统未暴露兼容的 SPU 接口</string>
 	<key>Completed refreshes</key>
@@ -278,6 +312,10 @@
 	<string>数据源已就绪</string>
 	<key>Data source unavailable</key>
 	<string>数据源不可用</string>
+	<key>Decoder ready</key>
+	<string>解码器就绪</string>
+	<key>Decoder unsupported</key>
+	<string>解码器不支持</string>
 	<key>Demo data — no hardware is being read</key>
 	<string>演示数据 — 未读取硬件</string>
 	<key>Demo data — not live sensor readings</key>
@@ -314,6 +352,10 @@
 	<string>磁盘活动</string>
 	<key>Display</key>
 	<string>显示器</string>
+	<key>Documented platform contract</key>
+	<string>平台文档保证</string>
+	<key>Domain: %@ • Access: %@ • Evidence: %@</key>
+	<string>领域：%@ • 访问：%@ • 证据：%@</string>
 	<key>Early warning</key>
 	<string>早期告警</string>
 	<key>Error</key>
@@ -364,14 +406,28 @@
 	<string>已导出光照校准 %@</string>
 	<key>Exported privacy-safe diagnostics %@</key>
 	<string>已导出隐私安全诊断 %@</string>
+	<key>External Sensors</key>
+	<string>外部传感器</string>
 	<key>Fair</key>
 	<string>轻度</string>
 	<key>Fan %lld</key>
 	<string>风扇 %lld</string>
+	<key>Fans</key>
+	<string>风扇</string>
+	<key>Feature blocked</key>
+	<string>功能受阻</string>
+	<key>Feature partial</key>
+	<string>功能部分就绪</string>
+	<key>Feature ready</key>
+	<string>功能就绪</string>
+	<key>Feature unsupported</key>
+	<string>功能不支持</string>
 	<key>Final warning</key>
 	<string>最终告警</string>
 	<key>Fixed allowlisted AppleSmartBattery field.</key>
 	<string>固定白名单中的 AppleSmartBattery 字段。</string>
+	<key>Fixture validated</key>
+	<string>已通过样本验证</string>
 	<key>Force Touch trackpad</key>
 	<string>Force Touch 触控板</string>
 	<key>Foundation URLResourceValues</key>
@@ -384,6 +440,8 @@
 	<string>4 个未校准的环境光谱通道</string>
 	<key>Fully charged</key>
 	<string>已充满</string>
+	<key>GPU</key>
+	<string>GPU</string>
 	<key>GPU %@</key>
 	<string>GPU %@</string>
 	<key>GPU Performance</key>
@@ -404,6 +462,10 @@
 	<string>无法打开 HID 管理器</string>
 	<key>HID open result: %@.</key>
 	<string>HID 打开结果：%@。</string>
+	<key>Hardware Inventory</key>
+	<string>硬件清单</string>
+	<key>Hardware absent</key>
+	<string>硬件不存在</string>
 	<key>Hardware detected • measurement in development</key>
 	<string>已检测到硬件 • 测量功能开发中</string>
 	<key>Hardware detected • measurement provider pending</key>
@@ -430,6 +492,8 @@
 	<string>内部组件温度，并非室内环境温度。</string>
 	<key>JSON Snapshot</key>
 	<string>JSON 快照</string>
+	<key>Keyboard</key>
+	<string>键盘</string>
 	<key>Largest shift</key>
 	<string>变化最大的通道</string>
 	<key>Last action</key>
@@ -440,6 +504,8 @@
 	<string>上次刷新耗时</string>
 	<key>Level</key>
 	<string>水平仪</string>
+	<key>Lid</key>
+	<string>上盖</string>
 	<key>Lid Angle</key>
 	<string>上盖角度</string>
 	<key>Lid Protractor</key>
@@ -480,10 +546,14 @@
 	<string>低电量模式</string>
 	<key>Low-rate acceleration variation; not a vibration spectrum analyzer</key>
 	<string>低速率加速度变化；不是振动频谱分析仪</string>
+	<key>Mac Platform</key>
+	<string>Mac 平台</string>
 	<key>Mac Sensor Lab does not request administrator access, change driver state, or bypass macOS privacy controls.</key>
 	<string>Mac Sensor Lab 不请求管理员权限、不改变驱动状态，也不绕过 macOS 隐私控制。</string>
 	<key>Mac Sensor Lab reads sensors locally and does not request administrator access in this build.</key>
 	<string>Mac Sensor Lab 在本机读取传感器，此构建不请求管理员权限。</string>
+	<key>Mac model class was unavailable</key>
+	<string>Mac 机型类别不可用</string>
 	<key>Main display logical size</key>
 	<string>主显示器逻辑尺寸</string>
 	<key>Main display pixels</key>
@@ -494,22 +564,44 @@
 	<string>与参考的匹配度</string>
 	<key>Max</key>
 	<string>最大</string>
+	<key>Memory</key>
+	<string>内存</string>
+	<key>Memory Hardware</key>
+	<string>内存硬件</string>
 	<key>Memory and swap counters available</key>
 	<string>内存与 Swap 计数器可用</string>
 	<key>Memory channels are raw Mach page categories and may overlap conceptually with UI labels used by other tools.</key>
 	<string>内存通道是原始 Mach 页面类别，在概念上可能与其他工具的 UI 标签重叠。</string>
+	<key>Metal GPU</key>
+	<string>Metal GPU</string>
+	<key>Metal GPU capabilities were unavailable</key>
+	<string>Metal GPU 能力不可用</string>
+	<key>Metal registry identifiers are intentionally not collected or exported.</key>
+	<string>特意不收集或导出 Metal registry 标识符。</string>
 	<key>Microphone access will be opt-in</key>
 	<string>麦克风访问将始终需要主动选择</string>
 	<key>Min</key>
 	<string>最小</string>
+	<key>Mixed</key>
+	<string>混合状态</string>
+	<key>Model identifier</key>
+	<string>机型标识符</string>
+	<key>Model-level hardware facts only; unique device identifiers are intentionally excluded.</key>
+	<string>只显示机型层面的硬件事实；特意排除设备唯一标识。</string>
+	<key>Motion</key>
+	<string>运动</string>
 	<key>Motion &amp; Ambient Light</key>
 	<string>运动与环境光</string>
 	<key>Motion Trend</key>
 	<string>运动趋势</string>
 	<key>Multiple driver instances use the maximum utilization and summed memory counters.</key>
 	<string>存在多个驱动实例时，利用率取最大值，内存计数器求和。</string>
+	<key>Network</key>
+	<string>网络</string>
 	<key>Network Throughput</key>
 	<string>网络吞吐量</string>
+	<key>Neural Engine</key>
+	<string>神经网络引擎</string>
 	<key>No</key>
 	<string>否</string>
 	<key>No Apple SPU driver properties were changed.</key>
@@ -550,12 +642,18 @@
 	<string>无告警</string>
 	<key>Nominal</key>
 	<string>正常</string>
+	<key>Not applicable</key>
+	<string>不适用</string>
 	<key>Not detected</key>
 	<string>未检测到</string>
 	<key>Not implemented • provider pending</key>
 	<string>尚未实现 • 等待 Provider</string>
 	<key>Observed drain</key>
 	<string>观察到的耗电速率</string>
+	<key>Observed on multiple models</key>
+	<string>已在多款机型观察</string>
+	<key>Observed on one model</key>
+	<string>已在一款机型观察</string>
 	<key>Off</key>
 	<string>已关闭</string>
 	<key>On</key>
@@ -590,12 +688,16 @@
 	<string>峰峰值</string>
 	<key>Performance</key>
 	<string>性能</string>
+	<key>Performance and efficiency counts appear only when both bounded counters agree with the physical total.</key>
+	<string>仅当性能核与能效核的受限计数之和等于物理核心总数时才显示。</string>
 	<key>Permission handling</key>
 	<string>权限处理</string>
 	<key>Permission required</key>
 	<string>需要权限</string>
 	<key>Physical memory</key>
 	<string>物理内存</string>
+	<key>Physical memory capacity was unavailable</key>
+	<string>物理内存容量不可用</string>
 	<key>Pitch %@°</key>
 	<string>俯仰 %@°</string>
 	<key>Pixel and point dimensions are the current display mode; scale is derived. Persistent display identifiers are intentionally omitted.</key>
@@ -604,6 +706,8 @@
 	<string>像素与点尺寸描述当前显示模式；缩放倍率为派生值。</string>
 	<key>Position in observed raw range</key>
 	<string>在已观测原始范围中的位置</string>
+	<key>Power</key>
+	<string>电源</string>
 	<key>Power &amp; Battery</key>
 	<string>电源与电池</string>
 	<key>Power source</key>
@@ -612,12 +716,22 @@
 	<string>有意忽略电源名称、ID、序列号、传输详情和电源适配器元数据。</string>
 	<key>Presence only; continuous access may require additional permission.</key>
 	<string>仅表示存在；连续访问可能需要额外权限。</string>
+	<key>Presence: %@ • Decoder: %@ • Read path: %@ • Stream: %@ • Feature: %@</key>
+	<string>存在性：%@ • 解码：%@ • 读取路径：%@ • 数据流：%@ • 功能：%@</string>
+	<key>Present</key>
+	<string>存在</string>
+	<key>Primary GPU</key>
+	<string>主 GPU</string>
 	<key>Privacy</key>
 	<string>隐私</string>
 	<key>Privacy manifest</key>
 	<string>隐私清单</string>
+	<key>Private experimental access</key>
+	<string>私有实验性访问</string>
 	<key>Privileged</key>
 	<string>需特权</string>
+	<key>Privileged helper</key>
+	<string>特权辅助进程</string>
 	<key>Projected empty</key>
 	<string>预计耗尽</string>
 	<key>Provider error</key>
@@ -626,12 +740,18 @@
 	<string>Provider 健康状态</string>
 	<key>Provider output rejected by the safety contract</key>
 	<string>Provider 输出被安全契约拒绝</string>
+	<key>Provider, channel, domain, access, status, or ID</key>
+	<string>Provider、通道、领域、访问、状态或 ID</string>
 	<key>Provider, channel, source, status, or ID</key>
 	<string>Provider、通道、来源、状态或 ID</string>
 	<key>Public API</key>
 	<string>公开 API</string>
+	<key>Public API + entitlement</key>
+	<string>公开 API + Entitlement</string>
 	<key>Public API + permission</key>
 	<string>公开 API + 权限</string>
+	<key>Public API + privacy permission</key>
+	<string>公开 API + 隐私权限</string>
 	<key>Public power-source information available</key>
 	<string>公开电源信息可用</string>
 	<key>Public power-source information returned no allowlisted values</key>
@@ -660,6 +780,14 @@
 	<string>读操作速率</string>
 	<key>Read operations</key>
 	<string>读操作</string>
+	<key>Read path failed</key>
+	<string>读取路径失败</string>
+	<key>Read path limited</key>
+	<string>读取路径受限</string>
+	<key>Read path ready</key>
+	<string>读取路径就绪</string>
+	<key>Read path unavailable</key>
+	<string>读取路径不可用</string>
 	<key>Reading in the background…</key>
 	<string>正在后台读取…</string>
 	<key>Receive packet rate</key>
@@ -740,6 +868,10 @@
 	<string>已保存环境光校准点 %lld</string>
 	<key>Saved the current light spectrum as a reference</key>
 	<string>已将当前光谱保存为参考</string>
+	<key>Secure Enclave presence is not inferred from Touch ID capability.</key>
+	<string>不会根据 Touch ID 能力推断 Secure Enclave 是否存在。</string>
+	<key>Security Hardware</key>
+	<string>安全硬件</string>
 	<key>Send packet rate</key>
 	<string>发送包速率</string>
 	<key>Sensor access is read-only and does not change system settings.</key>
@@ -752,6 +884,8 @@
 	<string>传感器读取时间超过预期</string>
 	<key>Sensors detected, but macOS is not currently publishing reports</key>
 	<string>检测到传感器，但 macOS 当前未发布报告</string>
+	<key>Serial numbers, hardware UUIDs, host names, and user names are not read.</key>
+	<string>不读取序列号、硬件 UUID、主机名或用户名。</string>
 	<key>Serious</key>
 	<string>较高</string>
 	<key>Set Current as Reference</key>
@@ -764,6 +898,10 @@
 	<string>单点缩放：%@ lux（原始值 %@）。</string>
 	<key>Smart battery</key>
 	<string>智能电池</string>
+	<key>SoC</key>
+	<string>SoC</string>
+	<key>SoC family</key>
+	<string>SoC 系列</string>
 	<key>Sound Lab</key>
 	<string>声音实验室</string>
 	<key>Source: %@</key>
@@ -794,6 +932,10 @@
 	<string>存储</string>
 	<key>Storage capacity available</key>
 	<string>存储容量可用</string>
+	<key>Stream active</key>
+	<string>数据流活跃</string>
+	<key>Stream inactive</key>
+	<string>数据流未活跃</string>
 	<key>Support</key>
 	<string>支持</string>
 	<key>Swap encrypted</key>
@@ -802,6 +944,8 @@
 	<string>合成演示数据；并非硬件读数。</string>
 	<key>System</key>
 	<string>系统</string>
+	<key>System Hardware</key>
+	<string>系统硬件</string>
 	<key>System Power Source</key>
 	<string>系统电源来源</string>
 	<key>System Power Trend</key>
@@ -836,6 +980,8 @@
 	<string>支持报告只包含 Provider 状态和稳定的通道元数据，不包含传感器读数、备注、来源字符串、机器标识或文件路径。</string>
 	<key>The support report contains sensor availability and channel types, but no readings.</key>
 	<string>支持报告包含传感器可用性和通道类型，但不包含读数。</string>
+	<key>Thermal</key>
+	<string>热状态</string>
 	<key>Thermal Trend</key>
 	<string>热压力趋势</string>
 	<key>Thermal pressure</key>
@@ -852,10 +998,22 @@
 	<string>此构建绝不以 root 身份运行，不改变风扇设置、不写入 SMC 值，也不修改 Apple SPU 驱动状态。</string>
 	<key>This fingerprint compares light sources on this Mac; it is not a color-temperature measurement.</key>
 	<string>这个指纹用于比较本机上的光源变化，不是色温测量。</string>
+	<key>This provider only accepts a bounded Apple M-series family name.</key>
+	<string>此 Provider 只接受长度受限的 Apple M 系列名称。</string>
+	<key>Thunderbolt</key>
+	<string>雷雳</string>
 	<key>Time remaining values are operating-system estimates.</key>
 	<string>剩余时间值是操作系统估算。</string>
 	<key>Totals are driver-lifetime counters aggregated across block-storage drivers.</key>
 	<string>总计是跨块存储驱动汇总的驱动生命周期计数器。</string>
+	<key>Touch ID available</key>
+	<string>Touch ID 可用</string>
+	<key>Touch ID capability</key>
+	<string>Touch ID 能力</string>
+	<key>Touch ID not detected</key>
+	<string>未检测到 Touch ID</string>
+	<key>Trackpad</key>
+	<string>触控板</string>
 	<key>Trackpad Scale</key>
 	<string>触控板秤</string>
 	<key>Tracks internal SMC power telemetry; not wall-plug power</key>
@@ -864,10 +1022,14 @@
 	<string>将公开热压力状态记录为序数历史，而非温度</string>
 	<key>Trend estimate pauses while connected to power or charging.</key>
 	<string>连接电源或充电时暂停趋势估算。</string>
+	<key>Try a provider, channel, domain, access, status, or stable ID.</key>
+	<string>尝试搜索 Provider、通道、领域、访问、状态或稳定 ID。</string>
 	<key>Try a provider, channel, source, status, or stable ID.</key>
 	<string>尝试搜索 Provider、通道、来源、状态或稳定 ID。</string>
 	<key>UPS power</key>
 	<string>UPS 电源</string>
+	<key>USB</key>
+	<string>USB</string>
 	<key>Unavailable</key>
 	<string>不可用</string>
 	<key>Uncalibrated raw channel.</key>
@@ -884,6 +1046,8 @@
 	<string>未文档化的硬件接口；需要按机型验证。</string>
 	<key>Undocumented key meanings require anonymous cross-model validation.</key>
 	<string>未文档化的键含义需要匿名跨机型验证。</string>
+	<key>Undocumented user access</key>
+	<string>未文档化的普通用户访问</string>
 	<key>Unknown</key>
 	<string>未知</string>
 	<key>Unsupported</key>
@@ -892,6 +1056,8 @@
 	<string>更新参考值</string>
 	<key>Updated </key>
 	<string>更新于 </string>
+	<key>Updated %@ • Source: %@</key>
+	<string>更新于 %@ • 来源：%@</string>
 	<key>Updated %@ • Source: %@ • %@</key>
 	<string>更新于 %@ • 来源：%@ • %@</string>
 	<key>Used</key>
@@ -916,6 +1082,8 @@
 	<string>有意省略卷名称、标识符、挂载路径和系统错误文本。</string>
 	<key>Waiting for at least five minutes and a measurable charge drop.</key>
 	<string>正在等待至少五分钟和可测量的电量下降。</string>
+	<key>Wi-Fi</key>
+	<string>Wi-Fi</string>
 	<key>Write errors</key>
 	<string>写入错误</string>
 	<key>Write operation rate</key>

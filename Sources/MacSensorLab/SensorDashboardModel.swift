@@ -6,6 +6,7 @@ import UniformTypeIdentifiers
 
 enum DashboardSection: String, CaseIterable, Identifiable {
   case overview = "Overview"
+  case hardwareInventory = "Hardware Inventory"
   case rawSensors = "Raw Sensors"
   case experiments = "Experiments"
   case diagnostics = "Diagnostics"
@@ -16,6 +17,7 @@ enum DashboardSection: String, CaseIterable, Identifiable {
   var symbol: String {
     switch self {
     case .overview: "square.grid.2x2"
+    case .hardwareInventory: "cpu"
     case .rawSensors: "waveform.path.ecg"
     case .experiments: "flask"
     case .diagnostics: "stethoscope"
@@ -411,6 +413,10 @@ final class SensorDashboardModel: ObservableObject {
       status: snapshot.status,
       source: snapshot.source,
       capability: snapshot.capability,
+      domain: snapshot.domain,
+      accessLevel: snapshot.accessLevel,
+      compatibilityConfidence: snapshot.compatibilityConfidence,
+      readiness: snapshot.readiness,
       channels: channels,
       notes: snapshot.notes,
       timestamp: snapshot.timestamp

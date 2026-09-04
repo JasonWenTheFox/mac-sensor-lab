@@ -22,8 +22,8 @@ struct SensorLabSelfTest {
     let spuStabilityMode = arguments.contains("--spu-stability")
     let providers = SensorProviderRegistry.providers()
 
-    if providers.count < 15 {
-      failures.append("expected at least 15 providers, found \(providers.count)")
+    if providers.count < 21 {
+      failures.append("expected at least 21 providers, found \(providers.count)")
     }
 
     let snapshots = await SensorProviderRegistry.readAll()
@@ -104,12 +104,18 @@ struct SensorLabSelfTest {
 
     do {
       let json = try SensorExportService.jsonData(snapshots)
-      _ = try JSONSerialization.jsonObject(with: json)
+      let exportObject = try JSONSerialization.jsonObject(with: json) as? [String: Any]
+      if exportObject?["schemaVersion"] as? Int != 1 {
+        failures.append("snapshot export schema is not version 1")
+      }
       let diagnostics = try SensorDiagnosticsExportService.jsonData(
         snapshots,
         applicationVersion: "self-test"
       )
-      _ = try JSONSerialization.jsonObject(with: diagnostics)
+      let diagnosticObject = try JSONSerialization.jsonObject(with: diagnostics) as? [String: Any]
+      if diagnosticObject?["schemaVersion"] as? Int != 3 {
+        failures.append("diagnostics schema is not version 3")
+      }
       let diagnosticText = String(decoding: diagnostics, as: UTF8.self)
       let forbiddenDiagnosticKeys = [
         "value", "formattedValue", "summary", "notes", "source", "timestamp", "name",

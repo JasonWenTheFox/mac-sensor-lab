@@ -293,6 +293,19 @@ public enum SensorContractAudit {
       if snapshot.capability != metadata.capability {
         issues.append(metadataMismatch(at: "\(path).capability", field: "capability"))
       }
+      if snapshot.domain != metadata.domain {
+        issues.append(metadataMismatch(at: "\(path).domain", field: "domain"))
+      }
+      if snapshot.accessLevel != metadata.accessLevel {
+        issues.append(metadataMismatch(at: "\(path).accessLevel", field: "accessLevel"))
+      }
+      if snapshot.compatibilityConfidence != metadata.compatibilityConfidence {
+        issues.append(
+          metadataMismatch(
+            at: "\(path).compatibilityConfidence",
+            field: "compatibilityConfidence"
+          ))
+      }
     }
 
     return Array(issues.prefix(maximumIssueCount))

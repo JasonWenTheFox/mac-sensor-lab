@@ -6,6 +6,26 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 No changes yet.
 
+## 0.3.0 - 2026-09-05
+
+### Added
+
+- A dedicated Hardware Inventory screen backed by six independent providers for the non-unique Mac model class, Apple SoC family, CPU topology, physical/unified memory, public Metal GPU capabilities, and Touch ID capability.
+- Independent `HardwareDomain`, `SensorAccessLevel`, compatibility-evidence, and five-stage readiness fields so hardware presence, decoder status, read path, stream state, and user-feature readiness are no longer collapsed into one capability label.
+- Versioned full-snapshot JSON exports (`schemaVersion: 1`) and privacy-safe diagnostics schema v3; JSON, diagnostics, and CSV now carry the new semantic fields while retaining the legacy capability value.
+- Search and Simplified Chinese UI coverage for hardware domains, access levels, compatibility evidence, and readiness states.
+
+### Changed
+
+- The live and deterministic demo registries now contain the same 21 provider IDs and matching metadata semantics.
+- Demo fixtures now cover previously drifting uptime/storage kinds, SPU gyroscope and lid discovery channels, hardware-presence IDs, and conditional battery/network/disk/SMC channels.
+- Presence-only SPU discovery and experimental-hardware checks explicitly report partial feature readiness instead of implying that a continuous measurement is already usable.
+
+### Security and privacy
+
+- Hardware inventory accepts only bounded model-level strings and counters. It does not read or export serial numbers, hardware UUIDs, host/user names, Metal registry IDs, biometric enrollment state, or authentication results.
+- Touch ID capability detection uses a non-prompting LocalAuthentication check; it neither authenticates the user nor infers Secure Enclave presence.
+
 ## 0.2.0 - 2026-08-31
 
 ### Added

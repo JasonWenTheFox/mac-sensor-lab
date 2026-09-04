@@ -14,6 +14,7 @@ final class SensorTextLocalizerTests: XCTestCase {
     "%lld active displays": "%lld 台活动显示器",
     "%lld experimental sensor types detected": "检测到 %lld 类实验性传感器",
     "%lld of %lld capabilities detected": "已检测到 %lld/%lld 项能力",
+    "%lld physical • %lld logical cores": "%lld 个物理核心 • %lld 个逻辑核心",
     "%lld read-only channels": "%lld 个只读通道",
     ", ": "、",
     "AC power": "交流电源",
@@ -71,6 +72,10 @@ final class SensorTextLocalizerTests: XCTestCase {
     )
     XCTAssertEqual(localizer.localized("2 active displays"), "2 台活动显示器")
     XCTAssertEqual(localizer.localized("CPU 38%"), "CPU 38%")
+    XCTAssertEqual(
+      localizer.localized("10 physical • 10 logical cores"),
+      "10 个物理核心 • 10 个逻辑核心"
+    )
     XCTAssertEqual(localizer.localized("GPU 27%"), "GPU 27%")
     XCTAssertEqual(localizer.localized("Thermal pressure nominal"), "热压力正常")
     XCTAssertEqual(
@@ -269,7 +274,7 @@ final class SensorTextLocalizerTests: XCTestCase {
     )
 
     let discovery = try XCTUnwrap(snapshots["motion.spu_discovery"])
-    XCTAssertEqual(packagedLocalizer.localized(discovery.name), "Apple SPU 发现")
+    XCTAssertEqual(packagedLocalizer.localized(discovery.name), "Apple SPU 传感器")
     XCTAssertEqual(
       packagedLocalizer.localized(try XCTUnwrap(discovery.channels.first).formattedValue),
       "已检测到"

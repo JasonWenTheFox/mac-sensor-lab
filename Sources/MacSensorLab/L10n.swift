@@ -63,6 +63,11 @@ struct SensorTextLocalizer {
     if let activeCount = integer(before: " active displays", in: value) {
       return formatted("%lld active displays", activeCount)
     }
+    if let counts = twoIntegers(
+      between: "", middle: " physical • ", and: " logical cores", in: value)
+    {
+      return formatted("%lld physical • %lld logical cores", counts.0, counts.1)
+    }
     if value.hasPrefix("CPU hotspot "), value.hasSuffix(" °C") {
       let reading = String(value.dropFirst("CPU hotspot ".count).dropLast(" °C".count))
       return formatted("CPU hotspot %@ °C", reading)

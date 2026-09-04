@@ -109,6 +109,387 @@ public enum SensorCapability: String, Codable, Sendable {
   }
 }
 
+/// The physical or logical hardware area represented by a provider.
+///
+/// This is intentionally independent from the dashboard category: a provider can remain in the
+/// familiar "System" section while still declaring that its readings describe the GPU or memory.
+public enum HardwareDomain: String, Codable, CaseIterable, Sendable {
+  case system
+  case soc
+  case cpu
+  case gpu
+  case neuralEngine
+  case memory
+  case power
+  case battery
+  case thermal
+  case fan
+  case storage
+  case display
+  case motion
+  case ambientLight
+  case lid
+  case trackpad
+  case keyboardInput
+  case audio
+  case camera
+  case wifi
+  case bluetooth
+  case usb
+  case thunderbolt
+  case securityHardware
+  case network
+  case externalSensors
+  case diagnostics
+
+  public var displayName: String {
+    switch self {
+    case .system: "System Hardware"
+    case .soc: "SoC"
+    case .cpu: "CPU"
+    case .gpu: "GPU"
+    case .neuralEngine: "Neural Engine"
+    case .memory: "Memory"
+    case .power: "Power"
+    case .battery: "Battery"
+    case .thermal: "Thermal"
+    case .fan: "Fans"
+    case .storage: "Storage"
+    case .display: "Display"
+    case .motion: "Motion"
+    case .ambientLight: "Ambient Light"
+    case .lid: "Lid"
+    case .trackpad: "Trackpad"
+    case .keyboardInput: "Keyboard"
+    case .audio: "Audio"
+    case .camera: "Camera"
+    case .wifi: "Wi-Fi"
+    case .bluetooth: "Bluetooth"
+    case .usb: "USB"
+    case .thunderbolt: "Thunderbolt"
+    case .securityHardware: "Security Hardware"
+    case .network: "Network"
+    case .externalSensors: "External Sensors"
+    case .diagnostics: "Diagnostics"
+    }
+  }
+}
+
+/// How the app reaches a provider, without conflating access with value quality or availability.
+public enum SensorAccessLevel: String, Codable, CaseIterable, Sendable {
+  case publicOrdinary
+  case publicTCC
+  case publicEntitlement
+  case undocumentedOrdinary
+  case privilegedHelper
+  case privateExperimental
+  case platformBlocked
+  case hardwareAbsent
+
+  public var displayName: String {
+    switch self {
+    case .publicOrdinary: "Public API"
+    case .publicTCC: "Public API + privacy permission"
+    case .publicEntitlement: "Public API + entitlement"
+    case .undocumentedOrdinary: "Undocumented user access"
+    case .privilegedHelper: "Privileged helper"
+    case .privateExperimental: "Private experimental access"
+    case .platformBlocked: "Blocked by platform"
+    case .hardwareAbsent: "Hardware absent"
+    }
+  }
+
+  public init(legacyCapability: SensorCapability) {
+    self =
+      switch legacyCapability {
+      case .publicAPI: .publicOrdinary
+      case .publicAPIWithPermission: .publicTCC
+      case .undocumented: .undocumentedOrdinary
+      case .privileged: .privilegedHelper
+      case .unsupported: .platformBlocked
+      }
+  }
+
+  public var legacyCapability: SensorCapability {
+    switch self {
+    case .publicOrdinary: .publicAPI
+    case .publicTCC, .publicEntitlement: .publicAPIWithPermission
+    case .undocumentedOrdinary, .privateExperimental: .undocumented
+    case .privilegedHelper: .privileged
+    case .platformBlocked, .hardwareAbsent: .unsupported
+    }
+  }
+}
+
+/// The evidence level behind a compatibility claim. This must describe evidence, not optimism.
+public enum SensorCompatibilityConfidence: String, Codable, CaseIterable, Sendable {
+  case unknown
+  case fixtureValidated
+  case singleModelObserved
+  case multiModelObserved
+  case documentedPlatformContract
+
+  public var displayName: String {
+    switch self {
+    case .unknown: "Compatibility unknown"
+    case .fixtureValidated: "Fixture validated"
+    case .singleModelObserved: "Observed on one model"
+    case .multiModelObserved: "Observed on multiple models"
+    case .documentedPlatformContract: "Documented platform contract"
+    }
+  }
+}
+
+public enum SensorHardwarePresence: String, Codable, Sendable {
+  case unknown
+  case present
+  case absent
+  case mixed
+  case notApplicable
+
+  public var displayName: String {
+    switch self {
+    case .unknown: "Unknown"
+    case .present: "Present"
+    case .absent: "Absent"
+    case .mixed: "Mixed"
+    case .notApplicable: "Not applicable"
+    }
+  }
+}
+
+public enum SensorDecoderReadiness: String, Codable, Sendable {
+  case unknown
+  case ready
+  case notApplicable
+  case unsupported
+
+  public var displayName: String {
+    switch self {
+    case .unknown: "Unknown"
+    case .ready: "Decoder ready"
+    case .notApplicable: "Not applicable"
+    case .unsupported: "Decoder unsupported"
+    }
+  }
+}
+
+public enum SensorReadPathReadiness: String, Codable, Sendable {
+  case unknown
+  case ready
+  case limited
+  case permissionRequired
+  case unavailable
+  case failed
+
+  public var displayName: String {
+    switch self {
+    case .unknown: "Unknown"
+    case .ready: "Read path ready"
+    case .limited: "Read path limited"
+    case .permissionRequired: "Permission required"
+    case .unavailable: "Read path unavailable"
+    case .failed: "Read path failed"
+    }
+  }
+}
+
+public enum SensorStreamReadiness: String, Codable, Sendable {
+  case unknown
+  case active
+  case inactive
+  case notApplicable
+
+  public var displayName: String {
+    switch self {
+    case .unknown: "Unknown"
+    case .active: "Stream active"
+    case .inactive: "Stream inactive"
+    case .notApplicable: "Not applicable"
+    }
+  }
+}
+
+public enum SensorFeatureReadiness: String, Codable, Sendable {
+  case unknown
+  case ready
+  case partial
+  case blocked
+  case unsupported
+  case notApplicable
+
+  public var displayName: String {
+    switch self {
+    case .unknown: "Unknown"
+    case .ready: "Feature ready"
+    case .partial: "Feature partial"
+    case .blocked: "Feature blocked"
+    case .unsupported: "Feature unsupported"
+    case .notApplicable: "Not applicable"
+    }
+  }
+}
+
+/// Five independent checkpoints between hardware presence and a useful user-facing feature.
+public struct SensorReadiness: Codable, Equatable, Sendable {
+  public let hardwarePresence: SensorHardwarePresence
+  public let decoder: SensorDecoderReadiness
+  public let readPath: SensorReadPathReadiness
+  public let stream: SensorStreamReadiness
+  public let feature: SensorFeatureReadiness
+
+  public init(
+    hardwarePresence: SensorHardwarePresence,
+    decoder: SensorDecoderReadiness,
+    readPath: SensorReadPathReadiness,
+    stream: SensorStreamReadiness,
+    feature: SensorFeatureReadiness
+  ) {
+    self.hardwarePresence = hardwarePresence
+    self.decoder = decoder
+    self.readPath = readPath
+    self.stream = stream
+    self.feature = feature
+  }
+
+  static func inferred(
+    providerID: String,
+    status: SensorStatus,
+    accessLevel: SensorAccessLevel,
+    hasChannels: Bool
+  ) -> SensorReadiness {
+    let usesDecoder = accessLevel == .undocumentedOrdinary || accessLevel == .privateExperimental
+    let isStream = SensorSemanticProfile.streamingProviderIDs.contains(providerID)
+
+    let hardwarePresence: SensorHardwarePresence
+    if accessLevel == .hardwareAbsent {
+      hardwarePresence = .absent
+    } else if status == .available || (status == .degraded && hasChannels) {
+      hardwarePresence = .present
+    } else {
+      hardwarePresence = .unknown
+    }
+
+    let decoder: SensorDecoderReadiness
+    if !usesDecoder {
+      decoder = .notApplicable
+    } else if hasChannels && (status == .available || status == .degraded) {
+      decoder = .ready
+    } else {
+      decoder = .unknown
+    }
+
+    let readPath: SensorReadPathReadiness =
+      switch status {
+      case .loading: .unknown
+      case .available: .ready
+      case .degraded: .limited
+      case .permissionRequired: .permissionRequired
+      case .unavailable: .unavailable
+      case .error: .failed
+      }
+    let stream: SensorStreamReadiness
+    if !isStream {
+      stream = .notApplicable
+    } else {
+      stream = status == .available ? .active : .inactive
+    }
+    let feature: SensorFeatureReadiness =
+      switch status {
+      case .loading: .unknown
+      case .available: .ready
+      case .degraded: .partial
+      case .permissionRequired: .blocked
+      case .unavailable, .error: .unknown
+      }
+
+    return SensorReadiness(
+      hardwarePresence: hardwarePresence,
+      decoder: decoder,
+      readPath: readPath,
+      stream: stream,
+      feature: feature
+    )
+  }
+}
+
+private struct SensorSemanticProfile {
+  let domain: HardwareDomain
+  let accessLevel: SensorAccessLevel
+  let compatibilityConfidence: SensorCompatibilityConfidence
+
+  static let streamingProviderIDs: Set<String> = [
+    "system.performance",
+    "system.gpu_performance",
+    "system.network_throughput",
+    "storage.disk_io",
+    "motion.spu_live",
+  ]
+
+  static func resolve(
+    providerID: String,
+    category: SensorCategory,
+    legacyCapability: SensorCapability
+  ) -> SensorSemanticProfile {
+    let domain: HardwareDomain =
+      switch providerID {
+      case "system.gpu_performance", "hardware.gpu": .gpu
+      case "system.network_throughput": .network
+      case "power.source": .power
+      case "power.battery": .battery
+      case "thermal.pressure", "thermal.smc": .thermal
+      case "display.active": .display
+      case "storage.system_volume", "storage.disk_io": .storage
+      case "motion.spu_discovery", "motion.spu_live": .motion
+      case "motion.lid_angle": .lid
+      case "hardware.soc": .soc
+      case "hardware.cpu": .cpu
+      case "hardware.memory": .memory
+      case "hardware.security": .securityHardware
+      case "diagnostics.hardware_capabilities": .diagnostics
+      default:
+        switch category {
+        case .system: .system
+        case .power: .power
+        case .thermal: .thermal
+        case .display: .display
+        case .storage: .storage
+        case .motion: .motion
+        case .environment: .externalSensors
+        case .input: .trackpad
+        case .diagnostics: .diagnostics
+        }
+      }
+
+    let accessLevel: SensorAccessLevel =
+      switch providerID {
+      case "motion.spu_discovery", "motion.spu_live", "motion.lid_angle", "thermal.smc":
+        .privateExperimental
+      case "system.gpu_performance", "system.network_throughput", "power.battery",
+        "storage.disk_io", "diagnostics.hardware_capabilities", "hardware.platform",
+        "hardware.soc", "hardware.cpu":
+        .undocumentedOrdinary
+      default:
+        SensorAccessLevel(legacyCapability: legacyCapability)
+      }
+
+    let compatibilityConfidence: SensorCompatibilityConfidence =
+      switch accessLevel {
+      case .publicOrdinary, .publicTCC, .publicEntitlement:
+        .documentedPlatformContract
+      case .undocumentedOrdinary, .privateExperimental:
+        .singleModelObserved
+      case .privilegedHelper, .platformBlocked, .hardwareAbsent:
+        .unknown
+      }
+    return SensorSemanticProfile(
+      domain: domain,
+      accessLevel: accessLevel,
+      compatibilityConfidence: compatibilityConfidence
+    )
+  }
+}
+
 public struct SensorChannel: Identifiable, Codable, Equatable, Sendable {
   public let id: String
   public let label: String
@@ -145,6 +526,10 @@ public struct SensorSnapshot: Identifiable, Codable, Equatable, Sendable {
   public let status: SensorStatus
   public let source: String
   public let capability: SensorCapability
+  public let domain: HardwareDomain
+  public let accessLevel: SensorAccessLevel
+  public let compatibilityConfidence: SensorCompatibilityConfidence
+  public let readiness: SensorReadiness
   public let channels: [SensorChannel]
   public let notes: [String]
   public let timestamp: Date
@@ -157,6 +542,10 @@ public struct SensorSnapshot: Identifiable, Codable, Equatable, Sendable {
     status: SensorStatus,
     source: String,
     capability: SensorCapability,
+    domain: HardwareDomain? = nil,
+    accessLevel: SensorAccessLevel? = nil,
+    compatibilityConfidence: SensorCompatibilityConfidence? = nil,
+    readiness: SensorReadiness? = nil,
     channels: [SensorChannel] = [],
     notes: [String] = [],
     timestamp: Date = .now
@@ -168,6 +557,23 @@ public struct SensorSnapshot: Identifiable, Codable, Equatable, Sendable {
     self.status = status
     self.source = source
     self.capability = capability
+    let profile = SensorSemanticProfile.resolve(
+      providerID: id,
+      category: category,
+      legacyCapability: capability
+    )
+    let resolvedAccessLevel = accessLevel ?? profile.accessLevel
+    self.domain = domain ?? profile.domain
+    self.accessLevel = resolvedAccessLevel
+    self.compatibilityConfidence = compatibilityConfidence ?? profile.compatibilityConfidence
+    self.readiness =
+      readiness
+      ?? SensorReadiness.inferred(
+        providerID: id,
+        status: status,
+        accessLevel: resolvedAccessLevel,
+        hasChannels: !channels.isEmpty
+      )
     self.channels = channels
     self.notes = notes
     self.timestamp = timestamp
@@ -181,7 +587,10 @@ public struct SensorSnapshot: Identifiable, Codable, Equatable, Sendable {
       summary: "Reading in the background…",
       status: .loading,
       source: metadata.source,
-      capability: metadata.capability
+      capability: metadata.capability,
+      domain: metadata.domain,
+      accessLevel: metadata.accessLevel,
+      compatibilityConfidence: metadata.compatibilityConfidence
     )
   }
 }
@@ -192,19 +601,33 @@ public struct SensorProviderMetadata: Identifiable, Sendable {
   public let category: SensorCategory
   public let source: String
   public let capability: SensorCapability
+  public let domain: HardwareDomain
+  public let accessLevel: SensorAccessLevel
+  public let compatibilityConfidence: SensorCompatibilityConfidence
 
   public init(
     id: String,
     name: String,
     category: SensorCategory,
     source: String,
-    capability: SensorCapability
+    capability: SensorCapability,
+    domain: HardwareDomain? = nil,
+    accessLevel: SensorAccessLevel? = nil,
+    compatibilityConfidence: SensorCompatibilityConfidence? = nil
   ) {
     self.id = id
     self.name = name
     self.category = category
     self.source = source
     self.capability = capability
+    let profile = SensorSemanticProfile.resolve(
+      providerID: id,
+      category: category,
+      legacyCapability: capability
+    )
+    self.domain = domain ?? profile.domain
+    self.accessLevel = accessLevel ?? profile.accessLevel
+    self.compatibilityConfidence = compatibilityConfidence ?? profile.compatibilityConfidence
   }
 }
 
