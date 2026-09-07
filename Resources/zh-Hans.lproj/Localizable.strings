@@ -26,6 +26,8 @@
 	<string>%@ • 最近样本</string>
 	<key>%lld active displays</key>
 	<string>%lld 台活动显示器</string>
+	<key>%lld active • %lld EDR capable</key>
+	<string>%lld 台活动显示器 • %lld 台支持 EDR</string>
 	<key>%lld changes</key>
 	<string>%lld 次变化</string>
 	<key>%lld experimental sensor types detected</key>
@@ -54,6 +56,8 @@
 	<string>交流电源</string>
 	<key>AGX PerformanceStatistics keys are undocumented and may change across macOS or GPU generations.</key>
 	<string>AGX PerformanceStatistics 键未文档化，可能随 macOS 或 GPU 代际而变化。</string>
+	<key>APFS container</key>
+	<string>APFS 容器</string>
 	<key>Absent</key>
 	<string>不存在</string>
 	<key>Acceleration</key>
@@ -66,6 +70,8 @@
 	<string>加速度计</string>
 	<key>Access level and compatibility evidence remain visible on every card.</key>
 	<string>每张卡片都会显示访问级别与兼容性证据。</string>
+	<key>Active display hardware</key>
+	<string>活动显示硬件</string>
 	<key>Active displays</key>
 	<string>活动显示器</string>
 	<key>Active non-loopback interfaces</key>
@@ -104,6 +110,8 @@
 	<string>Apple SoC</string>
 	<key>Apple SoC family was unavailable</key>
 	<string>Apple SoC 系列不可用</string>
+	<key>Apple partition map</key>
+	<string>Apple 分区表</string>
 	<key>AppleSMC could not be opened</key>
 	<string>无法打开 AppleSMC</string>
 	<key>AppleSMC is not available on this Mac</key>
@@ -284,6 +292,10 @@
 	<string>控制器报告的容量；它可能随电池校准而变化。</string>
 	<key>Converted from the battery controller's raw deci-kelvin value.</key>
 	<string>由电池控制器的原始十分之一开尔文值换算。</string>
+	<key>CoreGraphics and AppKit display capabilities</key>
+	<string>CoreGraphics 与 AppKit 显示能力</string>
+	<key>CoreGraphics may estimate physical size at 72 DPI when EDID is unavailable, so physical dimensions and PPI remain Estimated.</key>
+	<string>EDID 不可用时 CoreGraphics 可能按 72 DPI 估算物理尺寸，因此物理尺寸和 PPI 始终标为估算值。</string>
 	<key>Could not read system-volume capacity</key>
 	<string>无法读取系统卷容量</string>
 	<key>Could not read the system volume</key>
@@ -342,6 +354,8 @@
 	<string>开发版</string>
 	<key>Development executable</key>
 	<string>开发用可执行文件</string>
+	<key>Device model, vendor, revision, serial number, GUID, UUID, BSD name, registry path, volume name, and mount path are intentionally omitted.</key>
+	<string>有意省略设备型号、厂商、修订、序列号、GUID、UUID、BSD 名称、registry 路径、卷名和挂载路径。</string>
 	<key>Device names and unique identifiers are intentionally omitted.</key>
 	<string>有意省略设备名称和唯一标识符。</string>
 	<key>Diagnostics</key>
@@ -350,14 +364,32 @@
 	<string>诊断导出失败：%@</string>
 	<key>Disk Activity</key>
 	<string>磁盘活动</string>
+	<key>Disk Arbitration whole-disk description</key>
+	<string>Disk Arbitration 整盘描述</string>
 	<key>Display</key>
 	<string>显示器</string>
+	<key>Display %lld %@</key>
+	<string>显示器 %lld %@</string>
+	<key>Display Hardware</key>
+	<string>显示硬件</string>
+	<key>Display P3 gamut</key>
+	<string>Display P3 色域</string>
+	<key>Display hardware capabilities were unavailable</key>
+	<string>显示硬件能力不可用</string>
+	<key>Display slots are session-local order labels, not persistent identifiers.</key>
+	<string>显示器序号仅表示本次会话的顺序，不是持久标识符。</string>
 	<key>Documented platform contract</key>
 	<string>平台文档保证</string>
 	<key>Domain: %@ • Access: %@ • Evidence: %@</key>
 	<string>领域：%@ • 访问：%@ • 证据：%@</string>
+	<key>EDR capability</key>
+	<string>EDR 能力</string>
+	<key>EDR-capable displays</key>
+	<string>支持 EDR 的显示器</string>
 	<key>Early warning</key>
 	<string>早期告警</string>
+	<key>Ejectable media</key>
+	<string>可推出介质</string>
 	<key>Error</key>
 	<string>错误</string>
 	<key>Errors</key>
@@ -454,6 +486,8 @@
 	<string>GPU 热点</string>
 	<key>GPU memory counters available</key>
 	<string>GPU 内存计数器可用</string>
+	<key>GUID partition map</key>
+	<string>GUID 分区表</string>
 	<key>Gravity-derived; axis orientation is model-dependent.</key>
 	<string>由重力派生；坐标轴方向取决于机型。</string>
 	<key>Gyroscope</key>
@@ -490,6 +524,8 @@
 	<string>内部 SMC 遥测；并非插座侧功率。</string>
 	<key>Internal component temperature, not ambient room temperature.</key>
 	<string>内部组件温度，并非室内环境温度。</string>
+	<key>Internal storage</key>
+	<string>内置存储</string>
 	<key>JSON Snapshot</key>
 	<string>JSON 快照</string>
 	<key>Keyboard</key>
@@ -540,12 +576,16 @@
 	<string>平均负载（%lld 分钟）</string>
 	<key>Loading</key>
 	<string>加载中</string>
+	<key>Localized display names, display IDs, EDID data, ICC profile names, and serial numbers are intentionally omitted.</key>
+	<string>有意省略显示器名称、显示 ID、EDID 数据、ICC 配置名称和序列号。</string>
 	<key>Logical processors</key>
 	<string>逻辑处理器</string>
 	<key>Low Power Mode</key>
 	<string>低电量模式</string>
 	<key>Low-rate acceleration variation; not a vibration spectrum analyzer</key>
 	<string>低速率加速度变化；不是振动频谱分析仪</string>
+	<key>MBR partition map</key>
+	<string>MBR 分区表</string>
 	<key>Mac Platform</key>
 	<string>Mac 平台</string>
 	<key>Mac Sensor Lab does not request administrator access, change driver state, or bypass macOS privacy controls.</key>
@@ -564,6 +604,8 @@
 	<string>与参考的匹配度</string>
 	<key>Max</key>
 	<string>最大</string>
+	<key>Media block size</key>
+	<string>介质块大小</string>
 	<key>Memory</key>
 	<string>内存</string>
 	<key>Memory Hardware</key>
@@ -618,6 +660,10 @@
 	<string>不读取或导出设备名称、序列号、卷名称或文件路径。</string>
 	<key>No device names, serial numbers, volume names, or file paths are read.</key>
 	<string>不读取设备名称、序列号、卷名称或文件路径。</string>
+	<key>No device path, identifier, model, or system error text is exported.</key>
+	<string>不导出设备路径、标识符、型号或系统错误文本。</string>
+	<key>No display identifiers, localized names, EDID blobs, or serial numbers are read.</key>
+	<string>不读取显示器标识符、本地化名称、EDID 数据或序列号。</string>
 	<key>No driver properties were changed and no privileged access was attempted.</key>
 	<string>未更改驱动属性，也未尝试特权访问。</string>
 	<key>No driver state was changed and no privileged access was attempted.</key>
@@ -666,6 +712,8 @@
 	<string>仅请求固定白名单中的利用率和内存计数器；不读取设备身份字段。</string>
 	<key>Only fixed allowlisted counters are read; no registry names, IDs, or device identity fields are exported.</key>
 	<string>仅读取固定白名单计数器；不导出注册表名称、ID 或设备身份字段。</string>
+	<key>Only the whole-disk object associated with the current system volume is summarized.</key>
+	<string>仅汇总与当前系统卷关联的整盘对象。</string>
 	<key>Opened from reference</key>
 	<string>相对参考角度已张开</string>
 	<key>Opening angle</key>
@@ -680,6 +728,8 @@
 	<string>这次读取完成前，其他传感器仍会继续更新。</string>
 	<key>Overview</key>
 	<string>概览</string>
+	<key>Partition scheme class</key>
+	<string>分区方案类别</string>
 	<key>Pause Automatic Sampling</key>
 	<string>暂停自动采样</string>
 	<key>Paused</key>
@@ -820,6 +870,8 @@
 	<string>相对变化由原始上盖角度派生，不会更改传感器。</string>
 	<key>Relative channel balance</key>
 	<string>相对通道比例</string>
+	<key>Removable media</key>
+	<string>可移除介质</string>
 	<key>Removed the last ambient-light calibration point</key>
 	<string>已移除最后一个环境光校准点</string>
 	<key>Replace Reference</key>
@@ -830,6 +882,8 @@
 	<string>报告满充容量</string>
 	<key>Reported full-charge capacity ÷ design capacity; not Apple's Battery Health status.</key>
 	<string>报告满充容量 ÷ 设计容量；并非 Apple 的电池健康状态。</string>
+	<key>Reported media capacity</key>
+	<string>报告的介质容量</string>
 	<key>Required measurement channel unavailable</key>
 	<string>所需测量通道不可用</string>
 	<key>Required reading unavailable</key>
@@ -844,6 +898,8 @@
 	<string>查看原始传感器</string>
 	<key>Roll %@°</key>
 	<string>横滚 %@°</string>
+	<key>SMART and NVMe health fields are not inferred from Disk Arbitration metadata.</key>
+	<string>不会根据 Disk Arbitration 元数据推断 SMART 或 NVMe 健康字段。</string>
 	<key>SMC Sensors</key>
 	<string>SMC 传感器</string>
 	<key>SMC opened, but common keys returned no readings</key>
@@ -890,6 +946,10 @@
 	<string>较高</string>
 	<key>Set Current as Reference</key>
 	<string>将当前值设为参考</string>
+	<key>Show all %lld facts</key>
+	<string>显示全部 %lld 项事实</string>
+	<key>Show fewer facts</key>
+	<string>收起详细事实</string>
 	<key>Showing the last successful sample from %@ seconds ago; its original timestamp is preserved.</key>
 	<string>显示 %@ 秒前最后一次成功采样；保留其原始时间戳。</string>
 	<key>Shows raw light first; lux requires model-specific calibration</key>
@@ -932,6 +992,8 @@
 	<string>存储</string>
 	<key>Storage capacity available</key>
 	<string>存储容量可用</string>
+	<key>Storage protocol class</key>
+	<string>存储协议类别</string>
 	<key>Stream active</key>
 	<string>数据流活跃</string>
 	<key>Stream inactive</key>
@@ -950,10 +1012,16 @@
 	<string>系统电源来源</string>
 	<key>System Power Trend</key>
 	<string>系统功耗趋势</string>
+	<key>System Storage Hardware</key>
+	<string>系统存储硬件</string>
 	<key>System low-battery warning</key>
 	<string>系统低电量告警</string>
 	<key>System performance counters were unavailable</key>
 	<string>系统性能计数器不可用</string>
+	<key>System storage facts available</key>
+	<string>系统存储硬件事实可用</string>
+	<key>System storage hardware facts were unavailable</key>
+	<string>系统存储硬件事实不可用</string>
 	<key>System time remaining</key>
 	<string>系统估算剩余时间</string>
 	<key>System uptime</key>
@@ -1084,6 +1152,8 @@
 	<string>正在等待至少五分钟和可测量的电量下降。</string>
 	<key>Wi-Fi</key>
 	<string>Wi-Fi</string>
+	<key>Writable media</key>
+	<string>可写介质</string>
 	<key>Write errors</key>
 	<string>写入错误</string>
 	<key>Write operation rate</key>
@@ -1096,12 +1166,28 @@
 	<string>加速度计</string>
 	<key>ambient light</key>
 	<string>环境光</string>
+	<key>available modes</key>
+	<string>可用模式数</string>
+	<key>color space model</key>
+	<string>色彩空间模型</string>
+	<key>current logical size</key>
+	<string>当前逻辑尺寸</string>
+	<key>current pixels</key>
+	<string>当前像素尺寸</string>
 	<key>cycles</key>
 	<string>次</string>
+	<key>estimated diagonal</key>
+	<string>估算对角线</string>
+	<key>estimated pixel density</key>
+	<string>估算像素密度</string>
 	<key>gyroscope</key>
 	<string>陀螺仪</string>
 	<key>hours</key>
 	<string>小时</string>
+	<key>is built in</key>
+	<string>是内建显示器</string>
+	<key>is main</key>
+	<string>是主显示器</string>
 	<key>macOS</key>
 	<string>macOS</string>
 	<key>macOS denied access to AppleSMC</key>
@@ -1110,6 +1196,12 @@
 	<string>macOS 拒绝访问上盖角度传感器</string>
 	<key>macOS denied ordinary read access for %lld provider(s). Raw Sensors shows the provider-specific reason.</key>
 	<string>macOS 拒绝了 %lld 个 Provider 的普通只读访问。“原始传感器”会显示各 Provider 的具体原因。</string>
+	<key>maximum EDR headroom</key>
+	<string>最大 EDR 余量</string>
+	<key>maximum frame rate</key>
+	<string>最高帧率</string>
+	<key>maximum mode pixels</key>
+	<string>最大模式像素尺寸</string>
 	<key>minutes</key>
 	<string>分钟</string>
 	<key>operations/s</key>
@@ -1120,6 +1212,12 @@
 	<string>像素</string>
 	<key>points</key>
 	<string>点</string>
+	<key>reported physical height</key>
+	<string>报告的物理高度</string>
+	<key>reported physical width</key>
+	<string>报告的物理宽度</string>
+	<key>variable refresh</key>
+	<string>可变刷新率</string>
 	<key>×</key>
 	<string>×</string>
 </dict>

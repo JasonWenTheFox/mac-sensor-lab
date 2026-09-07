@@ -15,8 +15,10 @@ let package = Package(
     .target(
       name: "SensorCore",
       linkerSettings: [
+        .linkedFramework("AppKit"),
         .linkedFramework("IOKit"),
         .linkedFramework("CoreGraphics"),
+        .linkedFramework("DiskArbitration"),
         .linkedFramework("LocalAuthentication"),
         .linkedFramework("Metal"),
       ]

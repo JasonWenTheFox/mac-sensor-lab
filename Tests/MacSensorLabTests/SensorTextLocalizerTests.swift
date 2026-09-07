@@ -12,6 +12,7 @@ final class SensorTextLocalizerTests: XCTestCase {
     "%@ • %@ memory": "%@ • %@ 内存",
     "%@ • %lld active": "%@ • %lld 台活动显示器",
     "%lld active displays": "%lld 台活动显示器",
+    "%lld active • %lld EDR capable": "%lld 台活动显示器 • %lld 台支持 EDR",
     "%lld experimental sensor types detected": "检测到 %lld 类实验性传感器",
     "%lld of %lld capabilities detected": "已检测到 %lld/%lld 项能力",
     "%lld physical • %lld logical cores": "%lld 个物理核心 • %lld 个逻辑核心",
@@ -26,6 +27,9 @@ final class SensorTextLocalizerTests: XCTestCase {
     "Collecting CPU baseline • load %@": "正在建立 CPU 基线 • 负载 %@",
     "Collecting network baseline • %lld active interfaces": "正在建立网络基线 • %lld 个活动接口",
     "Fan %lld": "风扇 %lld",
+    "Display %lld %@": "显示器 %lld %@",
+    "current pixels": "当前像素尺寸",
+    "estimated pixel density": "估算像素密度",
     "GPU %@": "GPU %@",
     "HID open result: %@.": "HID 打开结果：%@。",
     "Live %@ data": "实时%@数据",
@@ -71,6 +75,14 @@ final class SensorTextLocalizerTests: XCTestCase {
       "3024 × 1964 px • 1 台活动显示器"
     )
     XCTAssertEqual(localizer.localized("2 active displays"), "2 台活动显示器")
+    XCTAssertEqual(
+      localizer.localized("2 active • 1 EDR capable"),
+      "2 台活动显示器 • 1 台支持 EDR"
+    )
+    XCTAssertEqual(
+      localizer.localized("Display 2 estimated pixel density"),
+      "显示器 2 估算像素密度"
+    )
     XCTAssertEqual(localizer.localized("CPU 38%"), "CPU 38%")
     XCTAssertEqual(
       localizer.localized("10 physical • 10 logical cores"),

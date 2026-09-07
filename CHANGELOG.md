@@ -6,6 +6,25 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 No changes yet.
 
+## 0.3.1 - 2026-09-08
+
+### Added
+
+- Separate public-API display-hardware and system-storage-hardware providers, increasing the live and deterministic demo registries to 23 matching providers.
+- Per-session display facts for current pixel/logical size, enumerated mode count, highest reported pixel mode, maximum frame rate, variable refresh, coarse color-space model, Display P3 gamut, EDR capability/headroom, and estimated physical dimensions/diagonal/PPI.
+- Whole-disk system-storage facts from Disk Arbitration: allowlisted protocol class, internal/removable/ejectable/writable flags, media capacity, block size, and partition-scheme class.
+- An expandable facts control on Hardware Inventory cards so detailed capabilities remain available without crowding the default overview.
+
+### Fixed
+
+- Highest display-mode resolution now includes the active mode when the enumerated mode list is incomplete or internally inconsistent.
+- Storage byte counts are bounded to integers that remain exact in the exported `Double` representation.
+
+### Security and privacy
+
+- Display slots are session-local ordinal labels. Display IDs, names, EDID, ICC profile names, and serial numbers are never exported.
+- Storage metadata is reduced to fixed non-identifying categories and bounded numbers. Device model/vendor/revision, serial, GUID/UUID, BSD name, registry path, volume name, and mount path remain excluded; SMART/NVMe health is not inferred.
+
 ## 0.3.0 - 2026-09-05
 
 ### Added

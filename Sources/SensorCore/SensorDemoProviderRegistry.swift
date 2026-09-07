@@ -61,6 +61,74 @@ public enum SensorDemoProviderRegistry {
         "Touch ID available",
         [text("touch_id_capability", "Touch ID capability", "Detected", 1)]),
       provider(
+        "hardware.display", "Display Hardware", .display, .publicAPI,
+        "2 active • 1 EDR capable",
+        [
+          number("display_count", "Active display hardware", 2),
+          number("edr_capable_count", "EDR-capable displays", 1, nil, .derived),
+          text("display_1_main", "Display 1 is main", "Yes", 1),
+          text("display_1_built_in", "Display 1 is built in", "Yes", 1),
+          text(
+            "display_1_current_pixels", "Display 1 current pixels", "3024 × 1964", nil, "pixels"),
+          text(
+            "display_1_current_points", "Display 1 current logical size", "1512 × 982", nil,
+            "points"),
+          number("display_1_mode_count", "Display 1 available modes", 18),
+          text(
+            "display_1_maximum_mode_pixels", "Display 1 maximum mode pixels", "3024 × 1964", nil,
+            "pixels"),
+          number("display_1_maximum_frame_rate", "Display 1 maximum frame rate", 120, "Hz"),
+          text("display_1_variable_refresh", "Display 1 variable refresh", "Yes", 1),
+          text("display_1_color_space_model", "Display 1 color space model", "RGB"),
+          text("display_1_wide_color_gamut", "Display 1 Display P3 gamut", "Yes", 1),
+          text("display_1_edr_supported", "Display 1 EDR capability", "Yes", 1, nil, .derived),
+          number("display_1_maximum_edr_headroom", "Display 1 maximum EDR headroom", 2, "×"),
+          number(
+            "display_1_physical_width", "Display 1 reported physical width", 286, "mm", .estimated),
+          number(
+            "display_1_physical_height", "Display 1 reported physical height", 186, "mm", .estimated
+          ),
+          number("display_1_diagonal", "Display 1 estimated diagonal", 13.43, "in", .estimated),
+          number("display_1_ppi", "Display 1 estimated pixel density", 257.7, "ppi", .estimated),
+          text("display_2_main", "Display 2 is main", "No", 0),
+          text("display_2_built_in", "Display 2 is built in", "No", 0),
+          text(
+            "display_2_current_pixels", "Display 2 current pixels", "3840 × 2160", nil, "pixels"),
+          text(
+            "display_2_current_points", "Display 2 current logical size", "1920 × 1080", nil,
+            "points"),
+          number("display_2_mode_count", "Display 2 available modes", 12),
+          text(
+            "display_2_maximum_mode_pixels", "Display 2 maximum mode pixels", "3840 × 2160", nil,
+            "pixels"),
+          number("display_2_maximum_frame_rate", "Display 2 maximum frame rate", 60, "Hz"),
+          text("display_2_variable_refresh", "Display 2 variable refresh", "No", 0),
+          text("display_2_color_space_model", "Display 2 color space model", "RGB"),
+          text("display_2_wide_color_gamut", "Display 2 Display P3 gamut", "No", 0),
+          text("display_2_edr_supported", "Display 2 EDR capability", "No", 0, nil, .derived),
+          number("display_2_maximum_edr_headroom", "Display 2 maximum EDR headroom", 1, "×"),
+          number(
+            "display_2_physical_width", "Display 2 reported physical width", 598, "mm", .estimated),
+          number(
+            "display_2_physical_height", "Display 2 reported physical height", 336, "mm", .estimated
+          ),
+          number("display_2_diagonal", "Display 2 estimated diagonal", 27, "in", .estimated),
+          number("display_2_ppi", "Display 2 estimated pixel density", 163.2, "ppi", .estimated),
+        ]),
+      provider(
+        "hardware.storage", "System Storage Hardware", .storage, .publicAPI,
+        "NVMe • \(SensorFormatting.bytes(1_000_000_000_000))",
+        [
+          text("protocol", "Storage protocol class", "NVMe"),
+          text("internal", "Internal storage", "Yes", 1),
+          text("removable", "Removable media", "No", 0),
+          text("ejectable", "Ejectable media", "No", 0),
+          text("writable", "Writable media", "Yes", 1),
+          bytes("media_size", "Reported media capacity", 1_000_000_000_000),
+          bytes("block_size", "Media block size", 4_096),
+          text("partition_scheme", "Partition scheme class", "GUID partition map"),
+        ]),
+      provider(
         "system.performance", "Performance", .system, .publicAPI, "CPU 38%",
         [
           percent("cpu_utilization", "CPU utilization", 38, .derived),

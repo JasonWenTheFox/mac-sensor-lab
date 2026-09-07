@@ -1754,6 +1754,118 @@ final class SensorCoreTests: XCTestCase {
     )
   }
 
+  func testDisplayHardwareSnapshotSeparatesCapabilitiesAndEstimatedGeometry() throws {
+    let snapshot = DisplayHardwareProvider().snapshot(
+      readings: [
+        DisplayHardwareReading(
+          isMain: true,
+          isBuiltIn: true,
+          currentPixelWidth: 3_024,
+          currentPixelHeight: 1_964,
+          currentPointWidth: 1_512,
+          currentPointHeight: 982,
+          supportedModeCount: 18,
+          maximumPixelWidth: 3_024,
+          maximumPixelHeight: 1_964,
+          maximumFramesPerSecond: 120,
+          variableRefreshRate: true,
+          colorSpaceModel: "RGB",
+          wideColorGamut: true,
+          maximumPotentialEDRHeadroom: 2,
+          physicalWidthMillimeters: 286,
+          physicalHeightMillimeters: 186
+        )
+      ]
+    )
+    let channels = Dictionary(uniqueKeysWithValues: snapshot.channels.map { ($0.id, $0) })
+
+    XCTAssertEqual(snapshot.status, .available)
+    XCTAssertEqual(snapshot.summary, "1 active • 1 EDR capable")
+    XCTAssertEqual(snapshot.domain, .display)
+    XCTAssertEqual(snapshot.accessLevel, .publicOrdinary)
+    XCTAssertEqual(try XCTUnwrap(channels["display_count"]?.value), 1, accuracy: 0.001)
+    XCTAssertEqual(
+      try XCTUnwrap(channels["display_1_mode_count"]?.value), 18, accuracy: 0.001
+    )
+    XCTAssertEqual(channels["display_1_current_pixels"]?.formattedValue, "3024 × 1964")
+    XCTAssertEqual(channels["display_1_color_space_model"]?.formattedValue, "RGB")
+    XCTAssertEqual(channels["display_1_edr_supported"]?.kind, .derived)
+    XCTAssertEqual(channels["display_1_physical_width"]?.kind, .estimated)
+    XCTAssertEqual(channels["display_1_ppi"]?.kind, .estimated)
+    XCTAssertTrue(try XCTUnwrap(channels["display_1_ppi"]?.value) > 200)
+    XCTAssertFalse(
+      snapshot.channels.contains { channel in
+        channel.id.contains("serial") || channel.id.contains("identifier")
+          || channel.id.contains("name") || channel.id.contains("edid")
+      }
+    )
+  }
+
+  func testDisplayHardwareMeasurementsRejectMalformedOrUnobservedFacts() {
+    XCTAssertNil(DisplayHardwareMeasurements.dimension(0))
+    XCTAssertNil(DisplayHardwareMeasurements.modeCount(4_097))
+    XCTAssertNil(DisplayHardwareMeasurements.framesPerSecond(1_001))
+    XCTAssertNil(DisplayHardwareMeasurements.millimeters(.nan))
+    XCTAssertNil(DisplayHardwareMeasurements.edrHeadroom(0.9))
+    XCTAssertEqual(
+      DisplayHardwareMeasurements.maximumPixelDimensions(
+        currentWidth: 2_560,
+        currentHeight: 1_600,
+        enumeratedWidth: 1_920,
+        enumeratedHeight: 1_080
+      )?.width,
+      2_560
+    )
+    XCTAssertEqual(
+      DisplayHardwareMeasurements.maximumPixelDimensions(
+        currentWidth: 1_920,
+        currentHeight: 1_080,
+        enumeratedWidth: 3_840,
+        enumeratedHeight: 2_160
+      )?.height,
+      2_160
+    )
+    XCTAssertNil(
+      DisplayHardwareMeasurements.pixelsPerInch(
+        pixelWidth: 3_024,
+        pixelHeight: 1_964,
+        widthMillimeters: 0,
+        heightMillimeters: 186
+      )
+    )
+
+    let snapshot = DisplayHardwareProvider().snapshot(
+      readings: [
+        DisplayHardwareReading(
+          isMain: true,
+          isBuiltIn: false,
+          currentPixelWidth: 0,
+          currentPixelHeight: 1_080,
+          currentPointWidth: nil,
+          currentPointHeight: nil,
+          supportedModeCount: 5_000,
+          maximumPixelWidth: nil,
+          maximumPixelHeight: nil,
+          maximumFramesPerSecond: 0,
+          variableRefreshRate: nil,
+          colorSpaceModel: "User profile or serial",
+          wideColorGamut: nil,
+          maximumPotentialEDRHeadroom: nil,
+          physicalWidthMillimeters: .infinity,
+          physicalHeightMillimeters: 300
+        )
+      ]
+    )
+    let channelIDs = Set(snapshot.channels.map(\.id))
+    XCTAssertEqual(snapshot.summary, "1 active displays")
+    XCTAssertFalse(channelIDs.contains("edr_capable_count"))
+    XCTAssertFalse(channelIDs.contains("display_1_current_pixels"))
+    XCTAssertFalse(channelIDs.contains("display_1_mode_count"))
+    XCTAssertFalse(channelIDs.contains("display_1_color_space_model"))
+    XCTAssertFalse(channelIDs.contains("display_1_physical_width"))
+    XCTAssertEqual(DisplayHardwareProvider().snapshot(readings: []).status, .unavailable)
+  }
+
   func testStorageSnapshotKeepsPublicCapacitySemanticsSeparate() throws {
     let snapshot = StorageProvider().snapshot(
       reading: PublicStorageCapacityReading(
@@ -1812,6 +1924,91 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertEqual(unavailable.status, .unavailable)
     XCTAssertTrue(unavailable.channels.isEmpty)
     XCTAssertFalse(unavailable.notes.joined().contains("/"))
+  }
+
+  func testStorageHardwareSnapshotKeepsOnlyNonidentifyingWholeDiskFacts() throws {
+    let snapshot = StorageHardwareProvider().snapshot(
+      reading: StorageHardwareReading(
+        protocolClass: "NVMe",
+        isInternal: true,
+        isRemovable: false,
+        isEjectable: false,
+        isWritable: true,
+        mediaSize: 1_000_000_000_000,
+        blockSize: 4_096,
+        partitionScheme: "GUID partition map"
+      )
+    )
+    let channels = Dictionary(uniqueKeysWithValues: snapshot.channels.map { ($0.id, $0) })
+
+    XCTAssertEqual(snapshot.status, .available)
+    XCTAssertEqual(
+      snapshot.summary,
+      "NVMe • \(SensorFormatting.bytes(1_000_000_000_000))"
+    )
+    XCTAssertEqual(snapshot.domain, .storage)
+    XCTAssertEqual(snapshot.accessLevel, .publicOrdinary)
+    XCTAssertEqual(channels["protocol"]?.formattedValue, "NVMe")
+    XCTAssertEqual(try XCTUnwrap(channels["internal"]?.value), 1, accuracy: 0.001)
+    XCTAssertEqual(
+      try XCTUnwrap(channels["media_size"]?.value),
+      1_000_000_000_000,
+      accuracy: 0.001
+    )
+    XCTAssertEqual(try XCTUnwrap(channels["block_size"]?.value), 4_096, accuracy: 0.001)
+    XCTAssertFalse(
+      snapshot.channels.contains { channel in
+        ["model", "vendor", "serial", "uuid", "guid", "path", "bsd", "name"]
+          .contains(where: channel.id.contains)
+      }
+    )
+  }
+
+  func testStorageHardwareSanitizerRejectsFreeTextAndImpossibleSizes() {
+    XCTAssertEqual(StorageHardwareSanitizer.protocolClass("PCI-Express"), "PCI")
+    XCTAssertEqual(StorageHardwareSanitizer.protocolClass("USB"), "USB")
+    XCTAssertNil(StorageHardwareSanitizer.protocolClass("custom-serial-123"))
+    XCTAssertNil(StorageHardwareSanitizer.protocolClass(String(repeating: "x", count: 65)))
+    XCTAssertEqual(
+      StorageHardwareSanitizer.partitionScheme("GUID_partition_scheme"),
+      "GUID partition map"
+    )
+    XCTAssertNil(StorageHardwareSanitizer.partitionScheme("User disk name"))
+    XCTAssertNil(StorageHardwareSanitizer.mediaSize(1_024))
+    XCTAssertNil(StorageHardwareSanitizer.mediaSize(9_007_199_254_740_993))
+    XCTAssertNil(StorageHardwareSanitizer.mediaSize(.max))
+    XCTAssertNil(StorageHardwareSanitizer.blockSize(0))
+    XCTAssertNil(StorageHardwareSanitizer.blockSize(1_048_577))
+
+    let empty = StorageHardwareProvider().snapshot(
+      reading: StorageHardwareReading(
+        protocolClass: nil,
+        isInternal: nil,
+        isRemovable: nil,
+        isEjectable: nil,
+        isWritable: nil,
+        mediaSize: nil,
+        blockSize: nil,
+        partitionScheme: nil
+      )
+    )
+    XCTAssertEqual(empty.status, .unavailable)
+    XCTAssertTrue(empty.channels.isEmpty)
+
+    let malformedText = StorageHardwareProvider().snapshot(
+      reading: StorageHardwareReading(
+        protocolClass: "custom-serial-123",
+        isInternal: nil,
+        isRemovable: nil,
+        isEjectable: nil,
+        isWritable: nil,
+        mediaSize: nil,
+        blockSize: nil,
+        partitionScheme: "User disk name"
+      )
+    )
+    XCTAssertEqual(malformedText.status, .unavailable)
+    XCTAssertTrue(malformedText.channels.isEmpty)
   }
 
   func testThermalProviderKeepsStateAndOrdinalEncodingSeparate() throws {
@@ -1977,6 +2174,8 @@ final class SensorCoreTests: XCTestCase {
       byID["diagnostics.hardware_capabilities"]?.readiness.feature,
       .partial
     )
+    XCTAssertEqual(byID["hardware.display"]?.summary, "2 active • 1 EDR capable")
+    XCTAssertEqual(byID["hardware.storage"]?.channels.first?.id, "protocol")
     XCTAssertNotNil(
       byID["motion.spu_discovery"]?.channels.first(where: { $0.id == "lid_angle" })
     )

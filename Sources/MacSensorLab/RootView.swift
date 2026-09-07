@@ -209,7 +209,7 @@ private struct HardwareInventoryView: View {
 
       LazyVGrid(columns: columns, spacing: 16) {
         ForEach(snapshots) { snapshot in
-          SensorCard(snapshot: snapshot, history: history)
+          SensorCard(snapshot: snapshot, history: history, allowsExpansion: true)
         }
       }
     }
@@ -335,6 +335,15 @@ private struct ProviderHealthMetric: View {
 private struct SensorCard: View {
   let snapshot: SensorSnapshot
   let history: [String: [SensorHistoryPoint]]
+  var allowsExpansion = false
+  @State private var showsAllChannels = false
+
+  private var visibleChannels: [SensorChannel] {
+    if allowsExpansion && showsAllChannels {
+      return snapshot.channels
+    }
+    return Array(snapshot.channels.prefix(4))
+  }
 
   private var chartChannel: SensorChannel? {
     SensorHistoryRetention.overviewChannelPriority.lazy.compactMap { id in
@@ -365,7 +374,7 @@ private struct SensorCard: View {
         ProgressView()
           .controlSize(.small)
       } else {
-        ForEach(snapshot.channels.prefix(4)) { channel in
+        ForEach(visibleChannels) { channel in
           HStack(alignment: .firstTextBaseline) {
             Text(L10n.sensorText(channel.label))
               .foregroundStyle(.secondary)
@@ -377,6 +386,21 @@ private struct SensorCard: View {
             }
           }
           .font(.callout)
+        }
+        if allowsExpansion && snapshot.channels.count > 4 {
+          Button {
+            showsAllChannels.toggle()
+          } label: {
+            Label(
+              showsAllChannels
+                ? L10n.text("Show fewer facts")
+                : L10n.format("Show all %lld facts", Int64(snapshot.channels.count)),
+              systemImage: showsAllChannels ? "chevron.up" : "chevron.down"
+            )
+          }
+          .buttonStyle(.plain)
+          .font(.caption.weight(.medium))
+          .foregroundStyle(Color.accentColor)
         }
       }
 

@@ -22,8 +22,8 @@ struct SensorLabSelfTest {
     let spuStabilityMode = arguments.contains("--spu-stability")
     let providers = SensorProviderRegistry.providers()
 
-    if providers.count < 21 {
-      failures.append("expected at least 21 providers, found \(providers.count)")
+    if providers.count < 23 {
+      failures.append("expected at least 23 providers, found \(providers.count)")
     }
 
     let snapshots = await SensorProviderRegistry.readAll()

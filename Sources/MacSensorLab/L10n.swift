@@ -68,6 +68,14 @@ struct SensorTextLocalizer {
     {
       return formatted("%lld physical • %lld logical cores", counts.0, counts.1)
     }
+    if let counts = twoIntegers(
+      between: "", middle: " active • ", and: " EDR capable", in: value)
+    {
+      return formatted("%lld active • %lld EDR capable", counts.0, counts.1)
+    }
+    if let (display, field) = displayOrdinalField(in: value) {
+      return formatted("Display %lld %@", display, localized(field))
+    }
     if value.hasPrefix("CPU hotspot "), value.hasSuffix(" °C") {
       let reading = String(value.dropFirst("CPU hotspot ".count).dropLast(" °C".count))
       return formatted("CPU hotspot %@ °C", reading)
@@ -214,6 +222,17 @@ struct SensorTextLocalizer {
   private func pair(in value: String, separator: String) -> (String, String)? {
     guard let range = value.range(of: separator) else { return nil }
     return (String(value[..<range.lowerBound]), String(value[range.upperBound...]))
+  }
+
+  private func displayOrdinalField(in value: String) -> (Int64, String)? {
+    guard value.hasPrefix("Display ") else { return nil }
+    let body = value.dropFirst("Display ".count)
+    guard let separator = body.firstIndex(of: " "),
+      let display = Int64(body[..<separator])
+    else { return nil }
+    let field = String(body[body.index(after: separator)...])
+    guard !field.isEmpty else { return nil }
+    return (display, field)
   }
 
   private func twoIntegers(
