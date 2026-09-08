@@ -5,6 +5,7 @@ import SwiftUI
 struct RootView: View {
   @ObservedObject var model: SensorDashboardModel
   @StateObject private var displayRulerModel = DisplayRulerModel()
+  @StateObject private var pressureLabModel = PressureLabModel()
 
   var body: some View {
     NavigationSplitView {
@@ -51,6 +52,7 @@ struct RootView: View {
               ambientLuxCalibration: model.ambientLuxCalibration,
               ambientSpectralReference: model.ambientSpectralReference,
               displayRulerModel: displayRulerModel,
+              pressureLabModel: pressureLabModel,
               onSetAmbientCalibration: model.setAmbientLuxCalibration,
               onUndoAmbientCalibrationPoint: model.undoLastAmbientLuxCalibrationPoint,
               onClearAmbientCalibration: model.clearAmbientLuxCalibration,
@@ -623,6 +625,7 @@ private struct ExperimentsView: View {
   let ambientLuxCalibration: AmbientLuxCalibration?
   let ambientSpectralReference: AmbientSpectralFingerprint?
   @ObservedObject var displayRulerModel: DisplayRulerModel
+  @ObservedObject var pressureLabModel: PressureLabModel
   let onSetAmbientCalibration: (Double, Double) -> Void
   let onUndoAmbientCalibrationPoint: () -> Void
   let onClearAmbientCalibration: () -> Void
@@ -721,6 +724,13 @@ private struct ExperimentsView: View {
       )
       .padding(.top, 18)
 
+      PressureLabPanel(
+        model: pressureLabModel,
+        isDemoMode: isDemoMode,
+        forceTouchPresence: forceTouchPresence
+      )
+      .padding(.top, 16)
+
       LazyVGrid(columns: [GridItem(.adaptive(minimum: 280), spacing: 16)], spacing: 16) {
         ForEach(experiments, id: \.name) { experiment in
           let dependency = snapshots.first { $0.id == experiment.providerID }
@@ -757,6 +767,13 @@ private struct ExperimentsView: View {
       || (snapshot.id == "motion.spu_live" && snapshot.status == .degraded)
     guard statusIsReady else { return false }
     return snapshot.channels.contains { $0.id == channelID && $0.value != nil }
+  }
+
+  private var forceTouchPresence: Bool? {
+    snapshots
+      .first(where: { $0.id == "diagnostics.hardware_capabilities" })?
+      .channels.first(where: { $0.id == "force_touch" })?
+      .value.map { $0 > 0 }
   }
 
   private func sourceState(isReady: Bool, snapshot: SensorSnapshot?) -> String {

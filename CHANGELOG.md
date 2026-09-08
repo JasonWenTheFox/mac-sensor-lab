@@ -10,11 +10,13 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - Lossless two-limb UInt128 handling for all ten cumulative fields exposed by Apple's `NVMeSMARTData`, including exact decimal formatting and checked Data Units × 512,000 byte-counter conversion.
 - A session-only display-calibration core that computes bounded horizontal geometry from a user reference and invalidates stale calibration contexts when display topology or mode geometry changes.
 - A minimal physical display ruler in Experiments that follows the window's current screen, accepts an explicit real-world reference, and compares system-estimated horizontal geometry with user-calibrated results.
+- A user-started Force Touch Pressure Lab based only on view-local public AppKit pressure events, with stage-separated normalized-pressure history, stage transition values, and Force Click entry counts.
 
 ### Security and privacy
 
 - NVMe SMART reads remain limited to `SMARTReadData`. Identify data, detailed log pages, device identity, paths, self-tests, helpers, and write commands are excluded.
 - Display calibration keeps `CGDirectDisplayID` only inside an in-memory binding. Public state contains only a session slot, mode geometry, revision counters, a co-sampled system estimate, and user-referenced results; it is not persisted, hashed, exported, or added to snapshots. Demo mode does not read real display geometry.
+- Pressure Lab retains at most 240 samples in memory, clears them when the experiment is left, and does not use input monitors, raw multitouch contacts, device identifiers, persistence, snapshots, or exports. Its 0–1 value is explicitly stage-local and never presented as force or weight.
 
 ## 0.3.1 - 2026-09-08
 

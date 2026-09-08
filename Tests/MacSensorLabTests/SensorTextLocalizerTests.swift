@@ -528,6 +528,194 @@ final class SensorDashboardModelTests: XCTestCase {
     model.updateCurrentContext(context)
     XCTAssertEqual(model.systemEstimate, systemEstimate)
   }
+
+  func testPressureLabTracksStageLocalSamplesAndForceClickTransitions() throws {
+    let model = PressureLabModel()
+    model.start(at: 100)
+    XCTAssertTrue(model.isCapturing)
+    XCTAssertEqual(model.status, .waiting)
+
+    model.observeInputCapability(false)
+    XCTAssertEqual(model.status, .unsupportedInput)
+    model.observeInputCapability(true)
+    XCTAssertEqual(model.status, .waiting)
+
+    XCTAssertTrue(
+      model.record(
+        try XCTUnwrap(
+          PressureLabEventInput(
+            timestamp: 100.1,
+            normalizedPressure: 0.25,
+            stage: 1,
+            stageTransition: 0
+          )
+        )
+      )
+    )
+    XCTAssertTrue(
+      model.record(
+        try XCTUnwrap(
+          PressureLabEventInput(
+            timestamp: 100.2,
+            normalizedPressure: 0.85,
+            stage: 1,
+            stageTransition: 0.7
+          )
+        )
+      )
+    )
+    XCTAssertTrue(
+      model.record(
+        try XCTUnwrap(
+          PressureLabEventInput(
+            timestamp: 100.3,
+            normalizedPressure: 0.1,
+            stage: 2,
+            stageTransition: 0
+          )
+        )
+      )
+    )
+    XCTAssertTrue(
+      model.record(
+        try XCTUnwrap(
+          PressureLabEventInput(
+            timestamp: 100.4,
+            normalizedPressure: 0.4,
+            stage: 2,
+            stageTransition: -0.5
+          )
+        )
+      )
+    )
+    XCTAssertTrue(
+      model.record(
+        try XCTUnwrap(
+          PressureLabEventInput(
+            timestamp: 100.5,
+            normalizedPressure: 0.2,
+            stage: 1,
+            stageTransition: 0
+          )
+        )
+      )
+    )
+
+    XCTAssertEqual(model.status, .receiving)
+    XCTAssertEqual(model.forceClickTransitionCount, 1)
+    XCTAssertEqual(model.samples.map(\.segmentID), [1, 1, 2, 2, 3])
+    XCTAssertEqual(model.latestSample?.stage, 1)
+    XCTAssertEqual(
+      try XCTUnwrap(model.peakNormalizedPressureForCurrentStage),
+      0.2,
+      accuracy: 0.000_001
+    )
+
+    model.stop()
+    XCTAssertFalse(model.isCapturing)
+    XCTAssertEqual(model.status, .stopped)
+    XCTAssertEqual(model.samples.count, 5)
+
+    model.leaveExperiment()
+    XCTAssertEqual(model.status, .idle)
+    XCTAssertTrue(model.samples.isEmpty)
+    XCTAssertNil(model.inputSupportsPressure)
+  }
+
+  func testPressureLabRejectsMalformedOrOutOfOrderEvents() throws {
+    let model = PressureLabModel()
+    let valid = try XCTUnwrap(
+      PressureLabEventInput(
+        timestamp: 10,
+        normalizedPressure: 0.5,
+        stage: 1,
+        stageTransition: 0
+      )
+    )
+    XCTAssertFalse(model.record(valid))
+
+    model.start(at: .nan)
+    XCTAssertFalse(model.isCapturing)
+    XCTAssertEqual(model.status, .idle)
+
+    model.start(at: 10)
+    XCTAssertNil(
+      PressureLabEventInput(
+        timestamp: 10,
+        normalizedPressure: 1.01,
+        stage: 1,
+        stageTransition: 0
+      )
+    )
+    XCTAssertNil(
+      PressureLabEventInput(
+        timestamp: 10,
+        normalizedPressure: 0.5,
+        stage: 3,
+        stageTransition: 0
+      )
+    )
+    XCTAssertNil(
+      PressureLabEventInput(
+        timestamp: 10,
+        normalizedPressure: 0.5,
+        stage: 1,
+        stageTransition: -.infinity
+      )
+    )
+    XCTAssertFalse(
+      model.record(
+        try XCTUnwrap(
+          PressureLabEventInput(
+            timestamp: 9.99,
+            normalizedPressure: 0.5,
+            stage: 1,
+            stageTransition: 0
+          )
+        )
+      )
+    )
+    XCTAssertTrue(model.record(valid))
+    XCTAssertFalse(
+      model.record(
+        try XCTUnwrap(
+          PressureLabEventInput(
+            timestamp: 9.999,
+            normalizedPressure: 0.6,
+            stage: 1,
+            stageTransition: 0
+          )
+        )
+      )
+    )
+    XCTAssertEqual(model.samples.count, 1)
+  }
+
+  func testPressureLabBoundsRetainedHistory() throws {
+    let model = PressureLabModel()
+    model.start(at: 1_000)
+
+    for index in 0..<300 {
+      XCTAssertTrue(
+        model.record(
+          try XCTUnwrap(
+            PressureLabEventInput(
+              timestamp: 1_000 + Double(index) / 100,
+              normalizedPressure: Double(index % 101) / 100,
+              stage: 1,
+              stageTransition: 0
+            )
+          )
+        )
+      )
+    }
+
+    XCTAssertEqual(model.samples.count, PressureLabModel.maximumSampleCount)
+    XCTAssertEqual(model.samples.first?.id, 61)
+    XCTAssertEqual(model.samples.last?.id, 300)
+    XCTAssertEqual(model.samples.first?.segmentID, 1)
+    XCTAssertEqual(model.forceClickTransitionCount, 0)
+  }
 }
 
 private actor SlowDashboardProvider: SensorProvider {

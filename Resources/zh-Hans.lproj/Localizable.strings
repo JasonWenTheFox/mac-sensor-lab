@@ -246,6 +246,8 @@
 	<string>容量</string>
 	<key>Capacity semantics come from public Foundation volume resource keys.</key>
 	<string>容量语义来自公开的 Foundation 卷资源键。</string>
+	<key>Capture stopped. Samples remain only until cleared or this page is left.</key>
+	<string>采集已停止。样本只保留到清除或离开本页为止。</string>
 	<key>Charge</key>
 	<string>电量</string>
 	<key>Charging</key>
@@ -264,6 +266,8 @@
 	<string>清除图表历史</string>
 	<key>Clear Display Calibration</key>
 	<string>清除显示校准</string>
+	<key>Clear Pressure Samples</key>
+	<string>清除压力样本</string>
 	<key>Clear Reference</key>
 	<string>清除参考</string>
 	<key>Cleared ambient-light calibration</key>
@@ -272,6 +276,8 @@
 	<string>已清除内存中的图表历史</string>
 	<key>Cleared the light-spectrum reference</key>
 	<string>已清除光谱参考</string>
+	<key>Click and press here with a Force Touch trackpad</key>
+	<string>使用 Force Touch 触控板在此点击并继续按压</string>
 	<key>Closed from reference</key>
 	<string>相对参考角度已合上</string>
 	<key>Collecting CPU baseline • load %@</key>
@@ -502,6 +508,14 @@
 	<string>固定白名单中的 AppleSmartBattery 字段。</string>
 	<key>Fixture validated</key>
 	<string>已通过样本验证</string>
+	<key>Force Touch Pressure Lab</key>
+	<string>Force Touch 压力实验</string>
+	<key>Force Touch pressure interaction area</key>
+	<string>Force Touch 压力交互区</string>
+	<key>Force Touch service detected. Start a local capture when ready.</key>
+	<string>已检测到 Force Touch 服务。准备好后可开始本地采集。</string>
+	<key>Force Touch service not detected. Start a local capture to check the active input device.</key>
+	<string>未检测到 Force Touch 服务。可开始本地采集以检查当前输入设备。</string>
 	<key>Force Touch trackpad</key>
 	<string>Force Touch 触控板</string>
 	<key>Foundation URLResourceValues</key>
@@ -574,6 +588,8 @@
 	<string>内置存储</string>
 	<key>JSON Snapshot</key>
 	<string>JSON 快照</string>
+	<key>Keep the pointer inside this area during the gesture.</key>
+	<string>操作期间请让指针保持在此区域内。</string>
 	<key>Keyboard</key>
 	<string>键盘</string>
 	<key>Largest shift</key>
@@ -738,6 +754,8 @@
 	<string>未更改驱动属性，也未尝试特权访问。</string>
 	<key>No driver state was changed and no privileged access was attempted.</key>
 	<string>未更改驱动状态，也未尝试特权访问。</string>
+	<key>No global input monitoring, raw contacts, device identifiers, persistence, or export.</key>
+	<string>不进行全局输入监控，不读取原始触点或设备标识，也不持久化或导出。</string>
 	<key>No interface names or network addresses were exported.</key>
 	<string>未导出接口名称或网络地址。</string>
 	<key>No internal battery detected</key>
@@ -762,6 +780,10 @@
 	<string>无告警</string>
 	<key>Nominal</key>
 	<string>正常</string>
+	<key>Normalized pressure</key>
+	<string>归一化压力</string>
+	<key>Normalized pressure trend with %lld samples</key>
+	<string>归一化压力趋势，共 %lld 个样本</string>
 	<key>Not applicable</key>
 	<string>不适用</string>
 	<key>Not detected</key>
@@ -816,6 +838,8 @@
 	<string>暂停自动采样</string>
 	<key>Paused</key>
 	<string>已暂停</string>
+	<key>Peak in current stage</key>
+	<string>当前阶段内峰值</string>
 	<key>Peak-to-peak</key>
 	<string>峰峰值</string>
 	<key>Percentage used estimate</key>
@@ -862,6 +886,10 @@
 	<string>存在性：%@ • 解码：%@ • 读取路径：%@ • 数据流：%@ • 功能：%@</string>
 	<key>Present</key>
 	<string>存在</string>
+	<key>Pressure Lab is unavailable in Demo mode because it requires live local input.</key>
+	<string>压力实验需要本机实时输入，因此在演示模式下不可用。</string>
+	<key>Pressure is normalized from 0 to 1 within each stage. It is not force, weight, grams, or a calibrated physical measurement.</key>
+	<string>压力值在每个阶段内归一化为 0 到 1。它不是力、重量、克数或经过校准的物理测量。</string>
 	<key>Primary GPU</key>
 	<string>主 GPU</string>
 	<key>Privacy</key>
@@ -932,8 +960,12 @@
 	<string>读取路径不可用</string>
 	<key>Reading in the background…</key>
 	<string>正在后台读取…</string>
+	<key>Reads public AppKit pressure events only inside the interaction area below.</key>
+	<string>只在下方交互区域内读取公开的 AppKit 压力事件。</string>
 	<key>Receive packet rate</key>
 	<string>接收包速率</string>
+	<key>Receiving view-local AppKit pressure events.</key>
+	<string>正在接收仅限当前视图的 AppKit 压力事件。</string>
 	<key>Recent data • source limited</key>
 	<string>最近数据 • 数据源受限</string>
 	<key>Recent live data • waiting for a new SPU report</key>
@@ -998,6 +1030,8 @@
 	<string>需要外部 lux 参考。最多添加 8 个严格递增的点；所有结果仍是估算，不是认证照度计。</string>
 	<key>Resume Automatic Sampling</key>
 	<string>恢复自动采样</string>
+	<key>Retained samples</key>
+	<string>保留样本数</string>
 	<key>Review Raw Sensors</key>
 	<string>查看原始传感器</string>
 	<key>Roll %@°</key>
@@ -1076,12 +1110,22 @@
 	<string>来源：%@</string>
 	<key>Spectral channel %lld</key>
 	<string>光谱通道 %lld</string>
+	<key>Stage</key>
+	<string>阶段</string>
+	<key>Stage 2 entries</key>
+	<string>进入阶段 2 次数</string>
+	<key>Stage transition</key>
+	<string>阶段过渡量</string>
 	<key>Standard lid-angle HID interface not found</key>
 	<string>未找到标准上盖角度 HID 接口</string>
 	<key>Start Continuous CSV Recording…</key>
 	<string>开始连续 CSV 记录…</string>
 	<key>Start Continuous Sensor Recording</key>
 	<string>开始连续传感器记录</string>
+	<key>Start Pressure Capture</key>
+	<string>开始压力采集</string>
+	<key>Start a local capture to check the current input device.</key>
+	<string>开始本地采集以检查当前输入设备。</string>
 	<key>Started recording %@</key>
 	<string>已开始记录 %@</string>
 	<key>State changes</key>
@@ -1090,6 +1134,8 @@
 	<string>本次启动的状态变化</string>
 	<key>Stop Continuous Recording</key>
 	<string>停止连续记录</string>
+	<key>Stop Pressure Capture</key>
+	<string>停止压力采集</string>
 	<key>Stop Recording</key>
 	<string>停止记录</string>
 	<key>Stop continuous CSV recording</key>
@@ -1152,8 +1198,12 @@
 	<string>当前光谱样本无法作为参考</string>
 	<key>The current window could not be bound to an active display.</key>
 	<string>当前窗口无法绑定到活动显示器。</string>
+	<key>The curve is split at every stage change; values from different stages are never added together.</key>
+	<string>曲线会在每次阶段变化处分段；不同阶段的数值不会相加。</string>
 	<key>The interval is remembered. Pause state is intentionally reset on every launch.</key>
 	<string>采样间隔会被记住；每次启动时会有意重置暂停状态。</string>
+	<key>The last click did not advertise pressure events. Try the Force Touch trackpad.</key>
+	<string>上次点击未声明支持压力事件。请尝试使用 Force Touch 触控板。</string>
 	<key>The lid-angle sensor could not be opened</key>
 	<string>无法打开上盖角度传感器</string>
 	<key>The lid-angle sensor is not available on this Mac</key>
@@ -1284,6 +1334,8 @@
 	<string>有意省略卷名称、标识符、挂载路径和系统错误文本。</string>
 	<key>Waiting for at least five minutes and a measurable charge drop.</key>
 	<string>正在等待至少五分钟和可测量的电量下降。</string>
+	<key>Waiting for pressure events inside the interaction area.</key>
+	<string>正在等待交互区域内的压力事件。</string>
 	<key>Wi-Fi</key>
 	<string>Wi-Fi</string>
 	<key>Writable media</key>
