@@ -1,16 +1,59 @@
 import CNVMeSMART
 import Foundation
 
-struct NVMeSMARTScalarReading: Equatable, Sendable {
+struct NVMeSMARTCounterReading: Equatable, Sendable {
+  let dataUnitsRead: UInt128Counter
+  let dataUnitsWritten: UInt128Counter
+  let hostReadCommands: UInt128Counter
+  let hostWriteCommands: UInt128Counter
+  let controllerBusyTime: UInt128Counter
+  let powerCycles: UInt128Counter
+  let powerOnHours: UInt128Counter
+  let unsafeShutdowns: UInt128Counter
+  let mediaErrors: UInt128Counter
+  let errorInformationLogEntries: UInt128Counter
+
+  static let zero = NVMeSMARTCounterReading(
+    dataUnitsRead: .zero,
+    dataUnitsWritten: .zero,
+    hostReadCommands: .zero,
+    hostWriteCommands: .zero,
+    controllerBusyTime: .zero,
+    powerCycles: .zero,
+    powerOnHours: .zero,
+    unsafeShutdowns: .zero,
+    mediaErrors: .zero,
+    errorInformationLogEntries: .zero
+  )
+}
+
+struct NVMeSMARTReading: Equatable, Sendable {
   let criticalWarning: UInt8
   let temperatureKelvin: UInt16
   let availableSpare: UInt8
   let availableSpareThreshold: UInt8
   let percentageUsed: UInt8
+  let counters: NVMeSMARTCounterReading
+
+  init(
+    criticalWarning: UInt8,
+    temperatureKelvin: UInt16,
+    availableSpare: UInt8,
+    availableSpareThreshold: UInt8,
+    percentageUsed: UInt8,
+    counters: NVMeSMARTCounterReading = .zero
+  ) {
+    self.criticalWarning = criticalWarning
+    self.temperatureKelvin = temperatureKelvin
+    self.availableSpare = availableSpare
+    self.availableSpareThreshold = availableSpareThreshold
+    self.percentageUsed = percentageUsed
+    self.counters = counters
+  }
 }
 
 enum NVMeSMARTReadResult: Equatable, Sendable {
-  case success(NVMeSMARTScalarReading)
+  case success(NVMeSMARTReading)
   case systemVolumeUnavailable
   case smartUnavailable
   case interfaceUnavailable
@@ -19,7 +62,7 @@ enum NVMeSMARTReadResult: Equatable, Sendable {
   case readFailed
 }
 
-struct NVMeSMARTScalarMetrics: Equatable, Sendable {
+struct NVMeSMARTMetrics: Equatable, Sendable {
   let criticalWarning: UInt8
   let availableSpareBelowThreshold: Bool
   let temperatureThresholdExceeded: Bool
@@ -31,16 +74,22 @@ struct NVMeSMARTScalarMetrics: Equatable, Sendable {
   let availableSpare: UInt8?
   let availableSpareThreshold: UInt8?
   let percentageUsed: UInt8
-  let invalidFieldCount: Int
+  let counters: NVMeSMARTCounterReading
+  let dataReadCounterBytes: UInt128Counter?
+  let dataWrittenCounterBytes: UInt128Counter?
+  let invalidScalarFieldCount: Int
+  let omittedCounterConversionCount: Int
 
   var hasWarning: Bool { criticalWarning != 0 }
+  var invalidFieldCount: Int { invalidScalarFieldCount + omittedCounterConversionCount }
 }
 
-enum NVMeSMARTScalarDecoder {
+enum NVMeSMARTDecoder {
   private static let knownWarningMask: UInt8 = 0x1F
+  private static let bytesPerDataUnit: UInt64 = 1_000 * 512
 
-  static func decode(_ reading: NVMeSMARTScalarReading) -> NVMeSMARTScalarMetrics {
-    var invalidFieldCount = 0
+  static func decode(_ reading: NVMeSMARTReading) -> NVMeSMARTMetrics {
+    var invalidScalarFieldCount = 0
 
     let temperatureCelsius: Double?
     switch reading.temperatureKelvin {
@@ -50,15 +99,21 @@ enum NVMeSMARTScalarDecoder {
       temperatureCelsius = Double(reading.temperatureKelvin) - 273.15
     default:
       temperatureCelsius = nil
-      invalidFieldCount += 1
+      invalidScalarFieldCount += 1
     }
+
+    let dataReadCounterBytes = reading.counters.dataUnitsRead.multiplied(by: bytesPerDataUnit)
+    let dataWrittenCounterBytes = reading.counters.dataUnitsWritten.multiplied(
+      by: bytesPerDataUnit)
+    let omittedCounterConversionCount =
+      (dataReadCounterBytes == nil ? 1 : 0) + (dataWrittenCounterBytes == nil ? 1 : 0)
 
     let availableSpare: UInt8?
     if reading.availableSpare <= 100 {
       availableSpare = reading.availableSpare
     } else {
       availableSpare = nil
-      invalidFieldCount += 1
+      invalidScalarFieldCount += 1
     }
 
     let availableSpareThreshold: UInt8?
@@ -66,11 +121,11 @@ enum NVMeSMARTScalarDecoder {
       availableSpareThreshold = reading.availableSpareThreshold
     } else {
       availableSpareThreshold = nil
-      invalidFieldCount += 1
+      invalidScalarFieldCount += 1
     }
 
     let warning = reading.criticalWarning
-    return NVMeSMARTScalarMetrics(
+    return NVMeSMARTMetrics(
       criticalWarning: warning,
       availableSpareBelowThreshold: warning & 0x01 != 0,
       temperatureThresholdExceeded: warning & 0x02 != 0,
@@ -82,24 +137,40 @@ enum NVMeSMARTScalarDecoder {
       availableSpare: availableSpare,
       availableSpareThreshold: availableSpareThreshold,
       percentageUsed: reading.percentageUsed,
-      invalidFieldCount: invalidFieldCount
+      counters: reading.counters,
+      dataReadCounterBytes: dataReadCounterBytes,
+      dataWrittenCounterBytes: dataWrittenCounterBytes,
+      invalidScalarFieldCount: invalidScalarFieldCount,
+      omittedCounterConversionCount: omittedCounterConversionCount
     )
   }
 }
 
 private enum NVMeSMARTSystemReader {
   static func read() -> NVMeSMARTReadResult {
-    var data = MSLNVMeSMARTScalarData()
-    let status = MSLReadSystemNVMeSMARTScalars(&data)
+    var data = MSLNVMeSMARTData()
+    let status = MSLReadSystemNVMeSMARTData(&data)
     switch Int(status) {
     case MSL_NVME_SMART_STATUS_SUCCESS:
       return .success(
-        NVMeSMARTScalarReading(
+        NVMeSMARTReading(
           criticalWarning: data.critical_warning,
           temperatureKelvin: data.temperature_kelvin,
           availableSpare: data.available_spare,
           availableSpareThreshold: data.available_spare_threshold,
-          percentageUsed: data.percentage_used
+          percentageUsed: data.percentage_used,
+          counters: NVMeSMARTCounterReading(
+            dataUnitsRead: counter(data.data_units_read),
+            dataUnitsWritten: counter(data.data_units_written),
+            hostReadCommands: counter(data.host_read_commands),
+            hostWriteCommands: counter(data.host_write_commands),
+            controllerBusyTime: counter(data.controller_busy_time),
+            powerCycles: counter(data.power_cycles),
+            powerOnHours: counter(data.power_on_hours),
+            unsafeShutdowns: counter(data.unsafe_shutdowns),
+            mediaErrors: counter(data.media_errors),
+            errorInformationLogEntries: counter(data.error_information_log_entries)
+          )
         )
       )
     case MSL_NVME_SMART_STATUS_SYSTEM_VOLUME_UNAVAILABLE: return .systemVolumeUnavailable
@@ -109,6 +180,10 @@ private enum NVMeSMARTSystemReader {
     case MSL_NVME_SMART_STATUS_TEMPORARILY_UNAVAILABLE: return .temporarilyUnavailable
     default: return .readFailed
     }
+  }
+
+  private static func counter(_ value: MSLUInt128) -> UInt128Counter {
+    UInt128Counter(low: value.low, high: value.high)
   }
 }
 
@@ -169,7 +244,7 @@ public final class NVMeSMARTProvider: SensorProvider, @unchecked Sendable {
   func snapshot(result: NVMeSMARTReadResult) -> SensorSnapshot {
     switch result {
     case .success(let reading):
-      return successSnapshot(metrics: NVMeSMARTScalarDecoder.decode(reading))
+      return successSnapshot(metrics: NVMeSMARTDecoder.decode(reading))
     case .systemVolumeUnavailable:
       return failureSnapshot(
         summary: "System-volume storage mapping was unavailable",
@@ -245,7 +320,7 @@ public final class NVMeSMARTProvider: SensorProvider, @unchecked Sendable {
     }
   }
 
-  private func successSnapshot(metrics: NVMeSMARTScalarMetrics) -> SensorSnapshot {
+  private func successSnapshot(metrics: NVMeSMARTMetrics) -> SensorSnapshot {
     var channels = [
       SensorChannel(
         id: "critical_warning_bits",
@@ -317,15 +392,23 @@ public final class NVMeSMARTProvider: SensorProvider, @unchecked Sendable {
         kind: .estimated
       )
     )
+    channels.append(contentsOf: counterChannels(metrics: metrics))
 
     var notes = [
       "No recognized warning bit is not a complete health assessment.",
       "Percentage used is a controller lifetime-use estimate; 100% does not mean failure and the value can exceed 100%.",
       "Composite temperature describes the controller and NVM, not room temperature.",
+      "Data units are rounded up in groups of 1,000 × 512-byte units; converted counter bytes are exact for the reported unit count, not exact historical I/O bytes.",
+      "Unsafe shutdowns and media errors are controller-reported cumulative facts, not attribution or failure predictions.",
       "Only SMARTReadData for the current system-volume whole disk is used; identify data, device names, serial numbers, paths, and detailed error logs are not read.",
     ]
-    if metrics.invalidFieldCount > 0 {
+    if metrics.invalidScalarFieldCount > 0 {
       notes.append("One or more scalar fields failed validation and were omitted.")
+    }
+    if metrics.omittedCounterConversionCount > 0 {
+      notes.append(
+        "One or more counter-byte conversions exceeded UInt128 and were omitted; raw counters remain available."
+      )
     }
 
     let summary: String
@@ -404,6 +487,115 @@ public final class NVMeSMARTProvider: SensorProvider, @unchecked Sendable {
       value: numericValue,
       formattedValue: SensorFormatting.percentage(numericValue),
       unit: "%",
+      kind: kind
+    )
+  }
+
+  private func counterChannels(metrics: NVMeSMARTMetrics) -> [SensorChannel] {
+    let counters = metrics.counters
+    var channels = [
+      counterChannel(
+        id: "data_units_read",
+        label: "Data units read",
+        value: counters.dataUnitsRead,
+        unit: "data units"
+      )
+    ]
+    if let bytes = metrics.dataReadCounterBytes {
+      channels.append(
+        counterChannel(
+          id: "data_read_counter_bytes",
+          label: "Reported read counter bytes",
+          value: bytes,
+          unit: "bytes",
+          kind: .derived
+        )
+      )
+    }
+    channels.append(
+      counterChannel(
+        id: "data_units_written",
+        label: "Data units written",
+        value: counters.dataUnitsWritten,
+        unit: "data units"
+      )
+    )
+    if let bytes = metrics.dataWrittenCounterBytes {
+      channels.append(
+        counterChannel(
+          id: "data_written_counter_bytes",
+          label: "Reported written counter bytes",
+          value: bytes,
+          unit: "bytes",
+          kind: .derived
+        )
+      )
+    }
+    channels.append(contentsOf: [
+      counterChannel(
+        id: "host_read_commands",
+        label: "Host read commands",
+        value: counters.hostReadCommands,
+        unit: "commands"
+      ),
+      counterChannel(
+        id: "host_write_commands",
+        label: "Host write commands",
+        value: counters.hostWriteCommands,
+        unit: "commands"
+      ),
+      counterChannel(
+        id: "controller_busy_time",
+        label: "Controller busy time",
+        value: counters.controllerBusyTime,
+        unit: "minutes"
+      ),
+      counterChannel(
+        id: "power_cycles",
+        label: "Power cycles",
+        value: counters.powerCycles,
+        unit: "cycles"
+      ),
+      counterChannel(
+        id: "power_on_hours",
+        label: "Power-on hours",
+        value: counters.powerOnHours,
+        unit: "hours"
+      ),
+      counterChannel(
+        id: "unsafe_shutdowns",
+        label: "Unsafe shutdown count",
+        value: counters.unsafeShutdowns,
+        unit: "events"
+      ),
+      counterChannel(
+        id: "media_errors",
+        label: "Media and data integrity errors",
+        value: counters.mediaErrors,
+        unit: "errors"
+      ),
+      counterChannel(
+        id: "error_information_log_entries",
+        label: "Error information log entries",
+        value: counters.errorInformationLogEntries,
+        unit: "entries"
+      ),
+    ])
+    return channels
+  }
+
+  private func counterChannel(
+    id: String,
+    label: String,
+    value: UInt128Counter,
+    unit: String,
+    kind: SensorValueKind = .raw
+  ) -> SensorChannel {
+    SensorChannel(
+      id: id,
+      label: label,
+      formattedValue: value.decimalString,
+      unit: unit,
       kind: kind
     )
   }

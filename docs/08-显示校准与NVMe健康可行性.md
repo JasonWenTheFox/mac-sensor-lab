@@ -1,6 +1,6 @@
 # 08 显示校准与 NVMe 健康可行性
 
-更新：2026-09-08（E2b 设计与证据节点）
+更新：2026-09-08（E2b 设计 + E2c/E2d 实现节点）
 
 ## 结论先行
 
@@ -8,7 +8,7 @@
 - Apple 当前 Xcode SDK 公开了 `IONVMeSMARTInterface` 和 `NVMeSMARTData`。本机的无 `sudo` 、无标识符只读探针成功创建接口并读取 SMART 记录，因此基础 NVMe SMART 日志应优先归类为 **public ordinary**，不再默认假设需要 Helper。
 - “接口是公开的”不等于“每台 Mac 都会返回所有字段”。正式 Provider 仍需无设备、接口创建失败、权限拒绝、离线、损坏值和跨机型 fixture。
 - 不引入 `smartctl`，不解析 `system_profiler` 作为主路径，不为 SMART 新增特权 Helper，不构造单一的“SSD 健康分”。
-- E2c 已按本页第一批边界实现 `storage.nvme_health`，并在同一台 Mac 上通过不含读数/身份的 Diagnostics 真机验证；UInt128 累计计数仍留给 E2d。
+- E2c/E2d 已按本页边界实现 `storage.nvme_health` 首批标量与十组 UInt128 累计计数，并在同一台 Mac 上通过不含读数/身份的 Diagnostics 真机验证。
 
 ## 1. Display calibration slot
 
@@ -68,7 +68,7 @@ axisPhysicalMillimeters = currentAxisPoints * millimetersPerPoint
 1. Apple Developer Documentation 公开列出 [`IONVMeSMARTInterface`](https://developer.apple.com/documentation/iokit/ionvmesmartinterface) 和 [`NVMeSMARTData`](https://developer.apple.com/documentation/iokit/nvmesmartdata)。
 2. 本机 Xcode 26.5 SDK 的 `IOKit.framework/Headers/storage/nvme/NVMeSMARTLibExternal.h` 定义了 SMART-capable property、user-client/interface UUID、`SMARTReadData`、`GetIdentifyData` 和 `GetLogPage`。
 3. 无特权临时探针只匹配 `NVMe SMART Capable` 服务，不调用 identify，不输出 registry name、BSD name、型号、serial、路径或实际健康值。结果为 1 个服务、1 个成功接口、1 次成功读取和 1 份通过基本值域检查的记录。这只是 single-model evidence，不是全平台兼容性承诺。
-4. NVM Express 规范定义了 [SMART / Health Information Log](https://nvmexpress.org/wp-content/uploads/NVM-Express-1_0-Gold.pdf) 的字段语义和单位；Apple header 明确引用 NVM Express 1.0c。
+4. NVM Express [Base Specification 1.4b](https://nvmexpress.org/wp-content/uploads/NVM-Express-1_4b-2020.09.21-Ratified.pdf) 定义了 SMART / Health Information Log 字段、Data Units 单位/向上取整语义和默认 little-endian 编码；Apple header 明确引用 NVM Express 1.0c，当前 SDK 结构与这些基础字段一致。
 5. macOS 自带 `system_profiler SPNVMeDataType -json` 在普通用户下可见 `smart_status`，但 schema 和语义没有稳定的公开编程契约，而且同一输出还包含被本项目禁止的设备标识字段。
 6. [smartmontools](https://github.com/smartmontools/smartmontools/tree/a214aa796e8963279c3ed68389ed3d556d0f1a72) 在 Darwin 上也使用 NVMeSMARTLib，可作调用流程交叉证据；其许可证为 GPL-2.0-or-later，本项目不复制、链接或捆绑它。
 
@@ -89,14 +89,14 @@ axisPhysicalMillimeters = currentAxisPoints * millimetersPerPoint
 | `AVAILABLE_SPARE` | 0…100% 剩余预留容量的归一化百分比 | **Public ordinary** | 首批 Raw |
 | `AVAILABLE_SPARE_THRESHOLD` | 0…100% 预留容量告警阈值 | **Public ordinary** | 首批 Raw |
 | `PERCENTAGE_USED` | 厂商依据用量和预测寿命给出的寿命已用估计；100 不等于已失效，可超过 100，255 是封顶表示 | **Public ordinary** | 首批 Raw/Estimated 语义；不计算 `100 - used`，不叫“Health %” |
-| `DATA_UNITS_READ/WRITTEN` | 128-bit 计数；1 单位表示 1000 × 512 bytes，向上取整 | **Public ordinary** | 第二批；先实现无损 UInt128 十进制转换，不得塞进 `Double` 丢精度 |
-| `HOST_READ/WRITE_COMMANDS` | 128-bit 主机命令计数 | **Public ordinary** | 第二批；无损文本 Raw，不默认绘图 |
-| `CONTROLLER_BUSY_TIME` | 128-bit，单位为分钟 | **Public ordinary** | 第二批；无损文本 Raw |
-| `POWER_CYCLES` | 128-bit 通电周期计数 | **Public ordinary** | 第二批；无损文本 Raw |
-| `POWER_ON_HOURS` | 128-bit 通电小时，不含控制器低功耗状态 | **Public ordinary** | 第二批；无损文本 Raw |
-| `UNSAFE_SHUTDOWNS` | 掉电前未收到 NVMe shutdown notification 的计数 | **Public ordinary** | 第二批；不把它解释为用户过错 |
-| `MEDIA_ERRORS` | 控制器检测到的未恢复数据完整性错误次数 | **Public ordinary** | 第二批；是累计事实，不是故障预测 |
-| `NUM_ERROR_INFO_LOG_ENTRIES` | 控制器生命周期 Error Information log 条目数 | **Public ordinary** | 第二批；只输出计数，首版不读详细 error log |
+| `DATA_UNITS_READ/WRITTEN` | 128-bit 计数；1 单位表示 1000 × 512 bytes，向上取整 | **Public ordinary** | E2d 已实现无损 Raw 十进制与独立 Derived 计数字节值；不声称为精确历史 I/O |
+| `HOST_READ/WRITE_COMMANDS` | 128-bit 主机命令计数 | **Public ordinary** | E2d 已实现无损文本 Raw，不默认绘图 |
+| `CONTROLLER_BUSY_TIME` | 128-bit，单位为分钟 | **Public ordinary** | E2d 已实现无损文本 Raw |
+| `POWER_CYCLES` | 128-bit 通电周期计数 | **Public ordinary** | E2d 已实现无损文本 Raw |
+| `POWER_ON_HOURS` | 128-bit 通电小时，不含控制器低功耗状态 | **Public ordinary** | E2d 已实现无损文本 Raw |
+| `UNSAFE_SHUTDOWNS` | 掉电前未收到 NVMe shutdown notification 的计数 | **Public ordinary** | E2d 已实现；不把它解释为用户过错 |
+| `MEDIA_ERRORS` | 控制器检测到的未恢复数据完整性错误次数 | **Public ordinary** | E2d 已实现；是累计事实，不是故障预测 |
+| `NUM_ERROR_INFO_LOG_ENTRIES` | 控制器生命周期 Error Information log 条目数 | **Public ordinary** | E2d 已实现计数；仍不读详细 error log |
 | 新版规范的温度传感器/告警时长/热管理字段 | 位于 Apple 当前 `NVMeSMARTData.RESERVED2` 区域 | **Public transport, research needed** | 不解码 reserved bytes；需版本、长度和跨机 fixture 后再立项 |
 | `system_profiler` `smart_status` | Apple 系统报告的粗粒度文本 | **Undocumented ordinary** | 不作主路径或 fallback；避免不稳定 schema、进程开销和标识字段泄漏面 |
 | `GetIdentifyData` 中的 serial/model/firmware/OUI | 控制器身份与版本 | **Public ordinary, privacy rejected** | serial/OUI 永久排除；首版整个 identify 调用不进行 |
@@ -105,7 +105,7 @@ axisPhysicalMillimeters = currentAxisPoints * millimetersPerPoint
 
 ## 3. `storage.nvme_health` Provider 边界
 
-以下第一批边界已在 E2c 实现；第二批仍是后续设计。
+以下第一批边界已在 E2c 实现，第二批已在 E2d 实现。
 
 ### 第一批：小而可证明
 
@@ -117,12 +117,12 @@ axisPhysicalMillimeters = currentAxisPoints * millimetersPerPoint
 
 ### 第二批：无损累计计数
 
-Apple header 将寿命计数表达为两个 `UInt64` 组成的 128-bit 数。现有 `SensorChannel.value` 是 `Double?`，不能无损承载 128-bit 整数。正确方案是：
+Apple header 将寿命计数表达为两个 `UInt64` 组成的 128-bit 数。现有 `SensorChannel.value` 是 `Double?`，不能无损承载 128-bit 整数。E2d 的实现是：
 
 1. 建立两个 limb 的无损十进制转换与 fixture；
 2. 原始计数以 `formattedValue` 的十进制文本导出，`value` 保持 `nil`；
 3. 任何人类可读缩写只能作另一个 Derived/Estimated 展示，不能取代无损 Raw；
-4. data units 的 bytes 换算也要检查 128-bit 乘法，不用 `Double` 冒充精确字节数。
+4. data units 的 bytes 换算使用检查式 128-bit 乘法，溢出时省略 Derived 但保留 Raw；该值是报告单位的精确换算，不是精确历史 I/O。
 
 ### 失败状态
 
@@ -141,13 +141,13 @@ Apple header 将寿命计数表达为两个 `UInt64` 组成的 128-bit 数。现
 - **smartmontools：不捆绑、不安装、不静默调用。** 它证明 Darwin 路径可行，但引入外部可执行文件会增加 GPL 分发、版本、安装位置和输出过滤负担，而本项目已有更小的公开 API 路径。
 - **GitHub Actions：无需。** E2b 和后续实现优先使用本地 SDK、fixture 与 `scripts/verify-local.sh`。
 
-## 5. E2b/E2c 验收与后续切片
+## 5. E2b/E2c/E2d 验收与后续切片
 
-E2b 的设计和证据目标已完成：显示校准不再需要持久身份，NVMe SMART 也不再被粗暴归为私有/特权能力。E3 随后完成 IOReport 普通权限可行性 Spike。E2c 现在已交付首批 SMART 标量、固定失败分类、至少 60 秒缓存、纯 fixture 回归和无身份真机诊断。
+E2b 的设计和证据目标已完成：显示校准不再需要持久身份，NVMe SMART 也不再被粗暴归为私有/特权能力。E3 随后完成 IOReport 普通权限可行性 Spike。E2c 已交付首批 SMART 标量、固定失败分类、至少 60 秒缓存和无身份真机诊断；E2d 已交付十组无损 UInt128 累计计数、Data Units 检查式换算和极值/溢出 fixture。
 
 E3 之后的显示/存储实现建议拆成独立节点：
 
 1. [x] `storage.nvme_health` 首批标量和 warning bits；
-2. [ ] UInt128 无损计数模型与其余 SMART 累计事实；
+2. [x] UInt128 无损计数模型与其余 SMART 累计事实；
 3. [ ] session-only Display calibration core，暂无 UI；
 4. [ ] 最小水平 ruler 界面与失效提示，不进行视觉重构。

@@ -149,6 +149,24 @@ public enum SensorDemoProviderRegistry {
           percent("available_spare", "Available spare", 100),
           percent("available_spare_threshold", "Available spare threshold", 10),
           percent("percentage_used", "Percentage used estimate", 7, .estimated),
+          text("data_units_read", "Data units read", "1234567", nil, "data units"),
+          text(
+            "data_read_counter_bytes", "Reported read counter bytes", "632098304000", nil,
+            "bytes", .derived),
+          text("data_units_written", "Data units written", "765432", nil, "data units"),
+          text(
+            "data_written_counter_bytes", "Reported written counter bytes", "391901184000",
+            nil, "bytes", .derived),
+          text("host_read_commands", "Host read commands", "9876543", nil, "commands"),
+          text("host_write_commands", "Host write commands", "4567890", nil, "commands"),
+          text("controller_busy_time", "Controller busy time", "321", nil, "minutes"),
+          text("power_cycles", "Power cycles", "842", nil, "cycles"),
+          text("power_on_hours", "Power-on hours", "6012", nil, "hours"),
+          text("unsafe_shutdowns", "Unsafe shutdown count", "4", nil, "events"),
+          text("media_errors", "Media and data integrity errors", "0", nil, "errors"),
+          text(
+            "error_information_log_entries", "Error information log entries", "2", nil,
+            "entries"),
         ]),
       provider(
         "system.performance", "Performance", .system, .publicAPI, "CPU 38%",

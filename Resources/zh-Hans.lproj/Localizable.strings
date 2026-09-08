@@ -300,6 +300,8 @@
 	<string>综合温度描述控制器与 NVM，并非室温。</string>
 	<key>Continuous recording</key>
 	<string>连续记录</string>
+	<key>Controller busy time</key>
+	<string>控制器忙碌时间</string>
 	<key>Controller estimate; unavailable sentinel values are omitted.</key>
 	<string>控制器估算值；不可用的哨兵值已省略。</string>
 	<key>Controller-reported capacity; it can change as the battery calibrates.</key>
@@ -340,6 +342,12 @@
 	<string>数据源已就绪</string>
 	<key>Data source unavailable</key>
 	<string>数据源不可用</string>
+	<key>Data units are rounded up in groups of 1,000 × 512-byte units; converted counter bytes are exact for the reported unit count, not exact historical I/O bytes.</key>
+	<string>数据单元按 1,000 × 512 字节为一组向上取整；换算的计数字节值对报告单元数是精确的，但不是精确的历史 I/O 字节数。</string>
+	<key>Data units read</key>
+	<string>已读取数据单元</string>
+	<key>Data units written</key>
+	<string>已写入数据单元</string>
 	<key>Decoder ready</key>
 	<string>解码器就绪</string>
 	<key>Decoder unsupported</key>
@@ -408,6 +416,8 @@
 	<string>可推出介质</string>
 	<key>Error</key>
 	<string>错误</string>
+	<key>Error information log entries</key>
+	<string>错误信息日志条目数</string>
 	<key>Errors</key>
 	<string>错误</string>
 	<key>Estimated</key>
@@ -524,6 +534,10 @@
 	<string>仅表示硬件或服务存在。</string>
 	<key>Highest recent pressure</key>
 	<string>近期最高热压力</string>
+	<key>Host read commands</key>
+	<string>主机读取命令</string>
+	<key>Host write commands</key>
+	<string>主机写入命令</string>
 	<key>Import Ambient-Light Calibration</key>
 	<string>导入环境光校准</string>
 	<key>Import Calibration…</key>
@@ -620,6 +634,8 @@
 	<string>与参考的匹配度</string>
 	<key>Max</key>
 	<string>最大</string>
+	<key>Media and data integrity errors</key>
+	<string>介质与数据完整性错误</string>
 	<key>Media block size</key>
 	<string>介质块大小</string>
 	<key>Media read-only warning</key>
@@ -740,6 +756,8 @@
 	<string>已关闭</string>
 	<key>On</key>
 	<string>开</string>
+	<key>One or more counter-byte conversions exceeded UInt128 and were omitted; raw counters remain available.</key>
+	<string>一个或多个计数字节换算超出 UInt128，已省略；原始计数仍可用。</string>
 	<key>One or more scalar fields failed validation and were omitted.</key>
 	<string>一个或多个标量字段未通过校验，已省略。</string>
 	<key>Only SMARTReadData for the current system-volume whole disk is used; identify data, device names, serial numbers, paths, and detailed error logs are not read.</key>
@@ -804,8 +822,12 @@
 	<string>电源</string>
 	<key>Power &amp; Battery</key>
 	<string>电源与电池</string>
+	<key>Power cycles</key>
+	<string>通电次数</string>
 	<key>Power source</key>
 	<string>电源</string>
+	<key>Power-on hours</key>
+	<string>通电小时数</string>
 	<key>Power-source names, IDs, serial numbers, transport details, and adapter metadata are intentionally ignored.</key>
 	<string>有意忽略电源名称、ID、序列号、传输详情和电源适配器元数据。</string>
 	<key>Presence only; continuous access may require additional permission.</key>
@@ -930,6 +952,10 @@
 	<string>报告满充容量 ÷ 设计容量；并非 Apple 的电池健康状态。</string>
 	<key>Reported media capacity</key>
 	<string>报告的介质容量</string>
+	<key>Reported read counter bytes</key>
+	<string>报告的读取计数字节数</string>
+	<key>Reported written counter bytes</key>
+	<string>报告的写入计数字节数</string>
 	<key>Required measurement channel unavailable</key>
 	<string>所需测量通道不可用</string>
 	<key>Required reading unavailable</key>
@@ -1172,6 +1198,10 @@
 	<string>未知</string>
 	<key>Unknown warning bits present</key>
 	<string>存在未知警告位</string>
+	<key>Unsafe shutdown count</key>
+	<string>非正常关机累计次数</string>
+	<key>Unsafe shutdowns and media errors are controller-reported cumulative facts, not attribution or failure predictions.</key>
+	<string>非正常关机与介质错误是控制器报告的累计事实，不用于归因或预测故障。</string>
 	<key>Unsupported</key>
 	<string>不支持</string>
 	<key>Update Reference</key>
@@ -1224,18 +1254,30 @@
 	<string>环境光</string>
 	<key>available modes</key>
 	<string>可用模式数</string>
+	<key>bytes</key>
+	<string>字节</string>
 	<key>color space model</key>
 	<string>色彩空间模型</string>
+	<key>commands</key>
+	<string>条命令</string>
 	<key>current logical size</key>
 	<string>当前逻辑尺寸</string>
 	<key>current pixels</key>
 	<string>当前像素尺寸</string>
 	<key>cycles</key>
 	<string>次</string>
+	<key>data units</key>
+	<string>数据单元</string>
+	<key>entries</key>
+	<string>条</string>
+	<key>errors</key>
+	<string>个错误</string>
 	<key>estimated diagonal</key>
 	<string>估算对角线</string>
 	<key>estimated pixel density</key>
 	<string>估算像素密度</string>
+	<key>events</key>
+	<string>次</string>
 	<key>gyroscope</key>
 	<string>陀螺仪</string>
 	<key>hours</key>

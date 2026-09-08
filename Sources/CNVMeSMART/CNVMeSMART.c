@@ -33,8 +33,13 @@ static int32_t MSLStatusForIOReturn(IOReturn result, bool creating_interface) {
   }
 }
 
-static int32_t MSLReadScalarsFromService(
-    io_service_t service, MSLNVMeSMARTScalarData *output) {
+static MSLUInt128 MSLUInt128FromLittleEndianLimbs(const uint64_t limbs[2]) {
+  MSLUInt128 value = {.low = limbs[0], .high = limbs[1]};
+  return value;
+}
+
+static int32_t MSLReadDataFromService(
+    io_service_t service, MSLNVMeSMARTData *output) {
   IOCFPlugInInterface **plugin = NULL;
   IONVMeSMARTInterface **smart = NULL;
   SInt32 score = 0;
@@ -60,6 +65,17 @@ static int32_t MSLReadScalarsFromService(
     output->available_spare = data.AVAILABLE_SPARE;
     output->available_spare_threshold = data.AVAILABLE_SPARE_THRESHOLD;
     output->percentage_used = data.PERCENTAGE_USED;
+    output->data_units_read = MSLUInt128FromLittleEndianLimbs(data.DATA_UNITS_READ);
+    output->data_units_written = MSLUInt128FromLittleEndianLimbs(data.DATA_UNITS_WRITTEN);
+    output->host_read_commands = MSLUInt128FromLittleEndianLimbs(data.HOST_READ_COMMANDS);
+    output->host_write_commands = MSLUInt128FromLittleEndianLimbs(data.HOST_WRITE_COMMANDS);
+    output->controller_busy_time = MSLUInt128FromLittleEndianLimbs(data.CONTROLLER_BUSY_TIME);
+    output->power_cycles = MSLUInt128FromLittleEndianLimbs(data.POWER_CYCLES);
+    output->power_on_hours = MSLUInt128FromLittleEndianLimbs(data.POWER_ON_HOURS);
+    output->unsafe_shutdowns = MSLUInt128FromLittleEndianLimbs(data.UNSAFE_SHUTDOWNS);
+    output->media_errors = MSLUInt128FromLittleEndianLimbs(data.MEDIA_ERRORS);
+    output->error_information_log_entries =
+        MSLUInt128FromLittleEndianLimbs(data.NUM_ERROR_INFO_LOG_ENTRIES);
   }
 
   (*smart)->Release(smart);
@@ -69,7 +85,7 @@ static int32_t MSLReadScalarsFromService(
              : MSLStatusForIOReturn(read_result, false);
 }
 
-int32_t MSLReadSystemNVMeSMARTScalars(MSLNVMeSMARTScalarData *output) {
+int32_t MSLReadSystemNVMeSMARTData(MSLNVMeSMARTData *output) {
   if (output == NULL) return MSL_NVME_SMART_STATUS_INVALID_ARGUMENT;
   memset(output, 0, sizeof(*output));
 
@@ -89,7 +105,7 @@ int32_t MSLReadSystemNVMeSMARTScalars(MSLNVMeSMARTScalarData *output) {
     status = MSL_NVME_SMART_STATUS_SMART_UNAVAILABLE;
     for (unsigned depth = 0; depth < 32 && current != IO_OBJECT_NULL; depth++) {
       if (MSLRegistryEntryIsNVMeSMARTCapable(current)) {
-        status = MSLReadScalarsFromService(current, output);
+        status = MSLReadDataFromService(current, output);
         break;
       }
 

@@ -19,18 +19,36 @@ enum {
 };
 
 typedef struct {
+  uint64_t low;
+  uint64_t high;
+} MSLUInt128;
+
+typedef struct {
   uint8_t critical_warning;
   uint16_t temperature_kelvin;
   uint8_t available_spare;
   uint8_t available_spare_threshold;
   uint8_t percentage_used;
-} MSLNVMeSMARTScalarData;
+  MSLUInt128 data_units_read;
+  MSLUInt128 data_units_written;
+  MSLUInt128 host_read_commands;
+  MSLUInt128 host_write_commands;
+  MSLUInt128 controller_busy_time;
+  MSLUInt128 power_cycles;
+  MSLUInt128 power_on_hours;
+  MSLUInt128 unsafe_shutdowns;
+  MSLUInt128 media_errors;
+  MSLUInt128 error_information_log_entries;
+} MSLNVMeSMARTData;
 
-/// Reads only the scalar SMART fields for the whole disk backing the current system volume.
+/// Reads a fixed subset of SMART fields for the whole disk backing the current system volume.
+///
+/// Each 128-bit counter is copied as low and high 64-bit limbs from the little-endian NVMe
+/// field; no floating-point conversion occurs.
 ///
 /// The implementation does not read identify data, names, serial numbers, BSD paths, registry
 /// paths, detailed error logs, or any other storage device. It performs no write operation.
-int32_t MSLReadSystemNVMeSMARTScalars(MSLNVMeSMARTScalarData *output);
+int32_t MSLReadSystemNVMeSMARTData(MSLNVMeSMARTData *output);
 
 #ifdef __cplusplus
 }
