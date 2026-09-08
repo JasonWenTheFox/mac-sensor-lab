@@ -716,6 +716,107 @@ final class SensorDashboardModelTests: XCTestCase {
     XCTAssertEqual(model.samples.first?.segmentID, 1)
     XCTAssertEqual(model.forceClickTransitionCount, 0)
   }
+
+  func testWiFiChannelScanModelPublishesACompletedFixtureAndCooldown() async throws {
+    let result = wifiScanFixture()
+    let model = WiFiChannelScanModel(
+      timeout: .seconds(1),
+      cooldown: .seconds(1),
+      operation: { .success(result) }
+    )
+
+    model.start()
+    await waitUntil { model.status != .scanning }
+
+    XCTAssertEqual(model.status, .ready)
+    XCTAssertEqual(model.result, result)
+    XCTAssertFalse(model.isAwaitingResult)
+    XCTAssertFalse(model.isOperationInFlight)
+    XCTAssertTrue(model.isCoolingDown)
+    XCTAssertFalse(model.canStart)
+  }
+
+  func testWiFiChannelScanModelTimesOutPresentationWithoutStartingAnotherScan() async {
+    let result = wifiScanFixture()
+    let model = WiFiChannelScanModel(
+      timeout: .milliseconds(10),
+      cooldown: .seconds(1),
+      operation: {
+        try? await Task.sleep(for: .milliseconds(60))
+        return .success(result)
+      }
+    )
+
+    model.start()
+    await waitUntil { model.status == .timedOutWaiting }
+
+    XCTAssertNil(model.result)
+    XCTAssertFalse(model.isAwaitingResult)
+    XCTAssertTrue(model.isOperationInFlight)
+    XCTAssertFalse(model.canStart)
+
+    await waitUntil { !model.isOperationInFlight }
+    XCTAssertEqual(model.status, .timedOutWaiting)
+    XCTAssertNil(model.result)
+    XCTAssertTrue(model.isCoolingDown)
+  }
+
+  func testWiFiChannelScanModelStopWaitingDiscardsLateResultAndLeavingClearsSession() async {
+    let result = wifiScanFixture()
+    let model = WiFiChannelScanModel(
+      timeout: .seconds(1),
+      cooldown: .milliseconds(1),
+      operation: {
+        try? await Task.sleep(for: .milliseconds(30))
+        return .success(result)
+      }
+    )
+
+    model.start()
+    model.stopWaiting()
+    XCTAssertEqual(model.status, .stoppedWaiting)
+    XCTAssertTrue(model.isOperationInFlight)
+    XCTAssertNil(model.result)
+
+    await waitUntil { !model.isOperationInFlight }
+    XCTAssertEqual(model.status, .stoppedWaiting)
+    XCTAssertNil(model.result)
+
+    model.leaveExperiment()
+    XCTAssertEqual(model.status, .idle)
+    XCTAssertNil(model.result)
+  }
+
+  private func waitUntil(
+    timeout: Duration = .seconds(1),
+    condition: @MainActor () -> Bool
+  ) async {
+    let clock = ContinuousClock()
+    let deadline = clock.now.advanced(by: timeout)
+    while !condition(), clock.now < deadline {
+      await Task.yield()
+    }
+  }
+
+  private func wifiScanFixture() -> WiFiChannelScanResult {
+    WiFiChannelScanResult(
+      completedAt: Date(timeIntervalSince1970: 10),
+      reportedRecordCount: 1,
+      acceptedRecordCount: 1,
+      discardedRecordCount: 0,
+      truncatedRecordCount: 0,
+      channels: [
+        WiFiChannelScanSummary(
+          band: .band5GHz,
+          channelNumber: 44,
+          reportedRecordCount: 1,
+          strongestRSSIDBm: -50,
+          averageRSSIDBm: -50,
+          reportedChannelWidthsMHz: [80]
+        )
+      ]
+    )
+  }
 }
 
 private actor SlowDashboardProvider: SensorProvider {

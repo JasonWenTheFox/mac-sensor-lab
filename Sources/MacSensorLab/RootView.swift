@@ -6,6 +6,14 @@ struct RootView: View {
   @ObservedObject var model: SensorDashboardModel
   @StateObject private var displayRulerModel = DisplayRulerModel()
   @StateObject private var pressureLabModel = PressureLabModel()
+  @StateObject private var wifiChannelScanModel: WiFiChannelScanModel
+
+  init(model: SensorDashboardModel) {
+    self.model = model
+    _wifiChannelScanModel = StateObject(
+      wrappedValue: WiFiChannelScanModel(isDemoMode: model.isDemoMode)
+    )
+  }
 
   var body: some View {
     NavigationSplitView {
@@ -53,6 +61,7 @@ struct RootView: View {
               ambientSpectralReference: model.ambientSpectralReference,
               displayRulerModel: displayRulerModel,
               pressureLabModel: pressureLabModel,
+              wifiChannelScanModel: wifiChannelScanModel,
               onSetAmbientCalibration: model.setAmbientLuxCalibration,
               onUndoAmbientCalibrationPoint: model.undoLastAmbientLuxCalibrationPoint,
               onClearAmbientCalibration: model.clearAmbientLuxCalibration,
@@ -626,6 +635,7 @@ private struct ExperimentsView: View {
   let ambientSpectralReference: AmbientSpectralFingerprint?
   @ObservedObject var displayRulerModel: DisplayRulerModel
   @ObservedObject var pressureLabModel: PressureLabModel
+  @ObservedObject var wifiChannelScanModel: WiFiChannelScanModel
   let onSetAmbientCalibration: (Double, Double) -> Void
   let onUndoAmbientCalibrationPoint: () -> Void
   let onClearAmbientCalibration: () -> Void
@@ -734,6 +744,12 @@ private struct ExperimentsView: View {
         model: pressureLabModel,
         isDemoMode: isDemoMode,
         forceTouchPresence: forceTouchPresence
+      )
+      .padding(.top, 16)
+
+      WiFiChannelScanPanel(
+        model: wifiChannelScanModel,
+        isDemoMode: isDemoMode
       )
       .padding(.top, 16)
 

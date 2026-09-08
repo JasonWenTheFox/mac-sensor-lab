@@ -1894,6 +1894,119 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertNil(WiFiRadioMeasurements.transmitRate(.infinity))
   }
 
+  func testWiFiChannelScanReducerAggregatesOnlyNonIdentifyingRadioFacts() throws {
+    let completedAt = Date(timeIntervalSince1970: 1_234)
+    let result = WiFiChannelScanReducer.reduce(
+      [
+        WiFiChannelScanReading(
+          channelNumber: 6,
+          channelWidthRawValue: 1,
+          channelBandRawValue: 1,
+          rssiDBm: -65
+        ),
+        WiFiChannelScanReading(
+          channelNumber: 6,
+          channelWidthRawValue: 2,
+          channelBandRawValue: 1,
+          rssiDBm: -45
+        ),
+        WiFiChannelScanReading(
+          channelNumber: 44,
+          channelWidthRawValue: 3,
+          channelBandRawValue: 2,
+          rssiDBm: 0
+        ),
+        WiFiChannelScanReading(
+          channelNumber: 0,
+          channelWidthRawValue: 1,
+          channelBandRawValue: 1,
+          rssiDBm: -30
+        ),
+        WiFiChannelScanReading(
+          channelNumber: 5,
+          channelWidthRawValue: 1,
+          channelBandRawValue: 99,
+          rssiDBm: -30
+        ),
+      ],
+      completedAt: completedAt
+    )
+
+    XCTAssertEqual(result.completedAt, completedAt)
+    XCTAssertEqual(result.reportedRecordCount, 5)
+    XCTAssertEqual(result.acceptedRecordCount, 3)
+    XCTAssertEqual(result.discardedRecordCount, 2)
+    XCTAssertEqual(result.truncatedRecordCount, 0)
+    XCTAssertEqual(result.channels.map(\.id), ["1-6", "2-44"])
+
+    let channel6 = try XCTUnwrap(result.channels.first)
+    XCTAssertEqual(channel6.reportedRecordCount, 2)
+    XCTAssertEqual(channel6.strongestRSSIDBm, -45)
+    XCTAssertEqual(try XCTUnwrap(channel6.averageRSSIDBm), -55, accuracy: 0.001)
+    XCTAssertEqual(channel6.reportedChannelWidthsMHz, [20, 40])
+
+    let channel44 = try XCTUnwrap(result.channels.last)
+    XCTAssertNil(channel44.strongestRSSIDBm)
+    XCTAssertNil(channel44.averageRSSIDBm)
+    XCTAssertEqual(channel44.reportedChannelWidthsMHz, [80])
+  }
+
+  func testWiFiChannelScanReducerAppliesARecordSafetyLimit() {
+    let readings = (0..<520).map { index in
+      WiFiChannelScanReading(
+        channelNumber: index % 11 + 1,
+        channelWidthRawValue: 1,
+        channelBandRawValue: 1,
+        rssiDBm: -60
+      )
+    }
+    let result = WiFiChannelScanReducer.reduce(readings, reportedRecordCount: 530)
+
+    XCTAssertEqual(result.reportedRecordCount, 530)
+    XCTAssertEqual(result.acceptedRecordCount, 512)
+    XCTAssertEqual(result.discardedRecordCount, 0)
+    XCTAssertEqual(result.truncatedRecordCount, 18)
+    XCTAssertEqual(result.channels.reduce(0) { $0 + $1.reportedRecordCount }, 512)
+  }
+
+  func testWiFiChannelScanClassifiesCoreWLANFailuresWithoutErrorText() {
+    func error(_ code: Int) -> NSError {
+      NSError(domain: "com.apple.coreWLAN.error", code: code)
+    }
+
+    XCTAssertEqual(WiFiChannelScanner.classify(error(-3930)), .operationNotPermitted)
+    XCTAssertEqual(WiFiChannelScanner.classify(error(-3905)), .systemTimeout)
+    XCTAssertEqual(WiFiChannelScanner.classify(error(-3903)), .unsupported)
+    XCTAssertEqual(WiFiChannelScanner.classify(error(-3928)), .interfaceUnavailable)
+    XCTAssertEqual(WiFiChannelScanner.classify(error(-3902)), .failed)
+    XCTAssertEqual(
+      WiFiChannelScanner.classify(NSError(domain: NSCocoaErrorDomain, code: 1)),
+      .failed
+    )
+  }
+
+  func testWiFiChannelScannerSourceExcludesIdentityCacheAndDirectedScanPaths() throws {
+    let projectRoot = URL(fileURLWithPath: #filePath)
+      .deletingLastPathComponent()
+      .deletingLastPathComponent()
+      .deletingLastPathComponent()
+    let sourceURL = projectRoot.appendingPathComponent(
+      "Sources/SensorCore/WiFiChannelScan.swift"
+    )
+    let source = try String(contentsOf: sourceURL, encoding: .utf8)
+
+    XCTAssertTrue(
+      source.contains("scanForNetworks(withName: nil, includeHidden: false)")
+    )
+    for forbidden in [
+      ".ssid", ".ssidData", ".bssid", ".countryCode", ".informationElementData",
+      ".cachedScanResults", "CWEventTypeScanCacheUpdated", ".hardwareAddress",
+      ".interfaceName",
+    ] {
+      XCTAssertFalse(source.contains(forbidden), "Forbidden Wi-Fi access path: \(forbidden)")
+    }
+  }
+
   func testDisplayCalibrationMeasurementValidatesAndComputesHorizontalGeometry() throws {
     let mode = try XCTUnwrap(
       DisplayCalibrationModeSignature(

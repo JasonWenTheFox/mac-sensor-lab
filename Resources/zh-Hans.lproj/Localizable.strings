@@ -26,6 +26,8 @@
 	<string>%@ • %lld 台活动显示器</string>
 	<key>%@ • recent samples</key>
 	<string>%@ • 最近样本</string>
+	<key>%lld accepted records across %lld channels</key>
+	<string>已接受 %lld 条记录，分布于 %lld 个信道</string>
 	<key>%lld active displays</key>
 	<string>%lld 台活动显示器</string>
 	<key>%lld active • %lld EDR capable</key>
@@ -34,12 +36,16 @@
 	<string>%lld 次变化</string>
 	<key>%lld experimental sensor types detected</key>
 	<string>检测到 %lld 类实验性传感器</string>
+	<key>%lld malformed records discarded • %lld records omitted by the safety limit</key>
+	<string>已丢弃 %lld 条异常记录 • 安全上限省略了 %lld 条记录</string>
 	<key>%lld of %lld capabilities detected</key>
 	<string>已检测到 %lld/%lld 项能力</string>
 	<key>%lld physical • %lld logical cores</key>
 	<string>%lld 个物理核心 • %lld 个逻辑核心</string>
 	<key>%lld read-only channels</key>
 	<string>%lld 个只读通道</string>
+	<key>%lld records</key>
+	<string>%lld 条记录</string>
 	<key>%lld rows • %@</key>
 	<string>%lld 行 • %@</string>
 	<key>%lld samples retained. Ordinal spacing is not physical and no temperature is inferred.</key>
@@ -50,10 +56,14 @@
 	<string>、</string>
 	<key>50 MB safety limit</key>
 	<string>50 MB 安全上限</string>
+	<key>A Wi-Fi interface was not reported.</key>
+	<string>系统未报告 Wi-Fi 接口。</string>
 	<key>A shared model-class identifier, not a unique device identifier.</key>
 	<string>这是同类机型共享的标识符，不是设备唯一标识。</string>
 	<key>A shared product-family name, not a chip identifier.</key>
 	<string>这是共享的产品系列名称，不是芯片唯一标识。</string>
+	<key>A short cooldown prevents repeated scans.</key>
+	<string>短暂冷却可避免重复扫描。</string>
 	<key>AC power</key>
 	<string>交流电源</string>
 	<key>AGX PerformanceStatistics keys are undocumented and may change across macOS or GPU generations.</key>
@@ -250,6 +260,8 @@
 	<string>校准点无效、不单调，或超过了 8 点上限</string>
 	<key>Camera</key>
 	<string>摄像头</string>
+	<key>Cancel</key>
+	<string>取消</string>
 	<key>Capability only; no authentication prompt or enrollment state is requested.</key>
 	<string>仅检查能力；不会发起认证提示，也不会请求录入状态。</string>
 	<key>Capacity</key>
@@ -260,6 +272,10 @@
 	<string>采集已停止。样本只保留到清除或离开本页为止。</string>
 	<key>Channel</key>
 	<string>信道</string>
+	<key>Channel %lld</key>
+	<string>信道 %lld</string>
+	<key>Channel snapshot available for this session.</key>
+	<string>本次会话的信道快照已可用。</string>
 	<key>Channel width</key>
 	<string>信道宽度</string>
 	<key>Charge</key>
@@ -340,6 +356,8 @@
 	<string>CoreGraphics 与 AppKit 显示能力</string>
 	<key>CoreGraphics may estimate physical size at 72 DPI when EDID is unavailable, so physical dimensions and PPI remain Estimated.</key>
 	<string>EDID 不可用时 CoreGraphics 可能按 72 DPI 估算物理尺寸，因此物理尺寸和 PPI 始终标为估算值。</string>
+	<key>CoreWLAN reported that the scan timed out.</key>
+	<string>CoreWLAN 报告扫描超时。</string>
 	<key>Could not read system-volume capacity</key>
 	<string>无法读取系统卷容量</string>
 	<key>Could not read the system volume</key>
@@ -388,6 +406,8 @@
 	<string>演示数据 — 不是实时传感器读数</string>
 	<key>Demo fixture</key>
 	<string>演示夹具</string>
+	<key>Demo mode uses fixed, non-identifying fixture data and does not access Wi-Fi hardware.</key>
+	<string>演示模式使用固定、不可识别身份的样例数据，不访问 Wi-Fi 硬件。</string>
 	<key>Derived</key>
 	<string>派生</string>
 	<key>Derived tools unlock only when their data source is verified.</key>
@@ -586,6 +606,8 @@
 	<string>主机读取命令</string>
 	<key>Host write commands</key>
 	<string>主机写入命令</string>
+	<key>Idle — no nearby scan has run this session.</key>
+	<string>空闲 — 本次会话尚未运行附近信道扫描。</string>
 	<key>Import Ambient-Light Calibration</key>
 	<string>导入环境光校准</string>
 	<key>Import Calibration…</key>
@@ -742,6 +764,8 @@
 	<string>NVMe SMART 接口不可用</string>
 	<key>NVMe SMART read failed</key>
 	<string>NVMe SMART 读取失败</string>
+	<key>Nearby Wi-Fi Channels</key>
+	<string>附近 Wi-Fi 信道</string>
 	<key>Network</key>
 	<string>网络</string>
 	<key>Network Throughput</key>
@@ -786,6 +810,8 @@
 	<string>未检测到内置电池</string>
 	<key>No known Apple SPU sensors detected</key>
 	<string>未检测到已知的 Apple SPU 传感器</string>
+	<key>No network name, access-point address, country code, interface identity, information elements, location, persistence, or export.</key>
+	<string>不读取网络名称、接入点地址、国家代码、接口身份、信息元素或位置，也不持久化或导出。</string>
 	<key>No network name, access-point address, interface identity, location, or scan results are collected.</key>
 	<string>不收集网络名称、接入点地址、接口身份、位置或扫描结果。</string>
 	<key>No private data fields are read during capability discovery.</key>
@@ -970,6 +996,8 @@
 	<string>RMS 变化</string>
 	<key>RSSI</key>
 	<string>RSSI</string>
+	<key>RSSI unavailable</key>
+	<string>RSSI 不可用</string>
 	<key>Rates need two samples; a counter reset or device change starts a new baseline.</key>
 	<string>速率需要两次采样；计数器重置或设备变化会开始新的基线。</string>
 	<key>Rates need two samples; the first read or an active-interface count change establishes a baseline.</key>
@@ -1058,6 +1086,8 @@
 	<string>报告的介质容量</string>
 	<key>Reported read counter bytes</key>
 	<string>报告的读取计数字节数</string>
+	<key>Reported records and RSSI are a momentary view of advertisements, not airtime use, interference, throughput, or a complete congestion measurement.</key>
+	<string>报告的记录数与 RSSI 只是广播信号的瞬时视图，不代表空口占用、干扰、吞吐量或完整的拥塞测量。</string>
 	<key>Reported written counter bytes</key>
 	<string>报告的写入计数字节数</string>
 	<key>Required measurement channel unavailable</key>
@@ -1076,6 +1106,14 @@
 	<string>查看原始传感器</string>
 	<key>Roll %@°</key>
 	<string>横滚 %@°</string>
+	<key>Run Demo Scan</key>
+	<string>运行演示扫描</string>
+	<key>Run one demo scan?</key>
+	<string>运行一次演示扫描？</string>
+	<key>Run one nearby-channel scan?</key>
+	<string>运行一次附近信道扫描？</string>
+	<key>Runs one user-started CoreWLAN scan and immediately reduces the result to radio-channel summaries.</key>
+	<string>仅在用户主动操作后运行一次 CoreWLAN 扫描，并立即将结果缩减为无线电信道摘要。</string>
 	<key>SMART and NVMe health fields are not inferred from Disk Arbitration metadata.</key>
 	<string>不会根据 Disk Arbitration 元数据推断 SMART 或 NVMe 健康字段。</string>
 	<key>SMART warning bits reported</key>
@@ -1104,6 +1142,10 @@
 	<string>已保存环境光校准点 %lld</string>
 	<key>Saved the current light spectrum as a reference</key>
 	<string>已将当前光谱保存为参考</string>
+	<key>Scan Nearby Channels</key>
+	<string>扫描附近信道</string>
+	<key>Scanning briefly uses the Wi-Fi radio and can momentarily affect connectivity. Results stay in this panel and omit network identities.</key>
+	<string>扫描会短暂使用 Wi-Fi 无线电，可能瞬时影响连接。结果只保留在此面板中，并省略网络身份。</string>
 	<key>Secure Enclave presence is not inferred from Touch ID capability.</key>
 	<string>不会根据 Touch ID 能力推断 Secure Enclave 是否存在。</string>
 	<key>Security</key>
@@ -1170,6 +1212,8 @@
 	<string>开始连续 CSV 记录…</string>
 	<key>Start Continuous Sensor Recording</key>
 	<string>开始连续传感器记录</string>
+	<key>Start One Scan</key>
+	<string>开始一次扫描</string>
 	<key>Start Pressure Capture</key>
 	<string>开始压力采集</string>
 	<key>Start a local capture to check the current input device.</key>
@@ -1186,10 +1230,16 @@
 	<string>停止压力采集</string>
 	<key>Stop Recording</key>
 	<string>停止记录</string>
+	<key>Stop Waiting</key>
+	<string>停止等待</string>
 	<key>Stop continuous CSV recording</key>
 	<string>停止连续 CSV 记录</string>
 	<key>Stopped %@ after %lld rows (%@)</key>
 	<string>已停止 %@，共 %lld 行（%@）</string>
+	<key>Stopped waiting after 20 seconds; any late result will be discarded.</key>
+	<string>等待 20 秒后已停止；任何迟到结果都将被丢弃。</string>
+	<key>Stopped waiting; any late system result will be discarded.</key>
+	<string>已停止等待；任何迟到的系统结果都将被丢弃。</string>
 	<key>Storage</key>
 	<string>存储</string>
 	<key>Storage capacity available</key>
@@ -1242,6 +1292,10 @@
 	<string>本 App 不会请求 sudo 或更改 HID 驱动属性。</string>
 	<key>The App will not request sudo or attempt a privileged helper in this build.</key>
 	<string>此构建不会请求 sudo，也不会尝试特权 Helper。</string>
+	<key>The Wi-Fi network service is inactive or unavailable.</key>
+	<string>Wi-Fi 网络服务未启用或不可用。</string>
+	<key>The Wi-Fi scan failed without exposing system error details.</key>
+	<string>Wi-Fi 扫描失败；未暴露系统错误详情。</string>
 	<key>The current spectral sample cannot be used as a reference</key>
 	<string>当前光谱样本无法作为参考</string>
 	<key>The current window could not be bound to an active display.</key>
@@ -1260,10 +1314,14 @@
 	<string>上盖角度传感器暂时繁忙</string>
 	<key>The safe reader did not wake or reconfigure the SPU.</key>
 	<string>安全读取器没有唤醒或重新配置 SPU。</string>
+	<key>The scan completed without usable channel records.</key>
+	<string>扫描已完成，但没有可用的信道记录。</string>
 	<key>The support report contains provider status and stable channel metadata, never sensor readings, notes, source strings, machine identifiers, or file paths.</key>
 	<string>支持报告只包含 Provider 状态和稳定的通道元数据，不包含传感器读数、备注、来源字符串、机器标识或文件路径。</string>
 	<key>The support report contains sensor availability and channel types, but no readings.</key>
 	<string>支持报告包含传感器可用性和通道类型，但不包含读数。</string>
+	<key>The system scan may still be finishing.</key>
+	<string>系统扫描可能仍在结束过程中。</string>
 	<key>Thermal</key>
 	<string>热状态</string>
 	<key>Thermal Trend</key>
@@ -1278,6 +1336,8 @@
 	<string>热压力等级</string>
 	<key>Thermals</key>
 	<string>散热状态</string>
+	<key>This Wi-Fi scan is not supported on the current system.</key>
+	<string>当前系统不支持此 Wi-Fi 扫描。</string>
 	<key>This build never runs as root, changes fan settings, writes SMC values, or modifies Apple SPU driver state.</key>
 	<string>此构建绝不以 root 身份运行，不改变风扇设置、不写入 SMC 值，也不修改 Apple SPU 驱动状态。</string>
 	<key>This fingerprint compares light sources on this Mac; it is not a color-temperature measurement.</key>
@@ -1408,6 +1468,8 @@
 	<string>正在等待至少五分钟和可测量的电量下降。</string>
 	<key>Waiting for pressure events inside the interaction area.</key>
 	<string>正在等待交互区域内的压力事件。</string>
+	<key>Waiting for the system Wi-Fi scan…</key>
+	<string>正在等待系统 Wi-Fi 扫描…</string>
 	<key>Wi-Fi</key>
 	<string>Wi-Fi</string>
 	<key>Wi-Fi Radio</key>
@@ -1416,6 +1478,8 @@
 	<string>Wi-Fi 信号</string>
 	<key>Wi-Fi interface was not reported</key>
 	<string>未报告 Wi-Fi 接口</string>
+	<key>Wi-Fi is off or its power state is unavailable.</key>
+	<string>Wi-Fi 已关闭或其电源状态不可用。</string>
 	<key>Wi-Fi network service</key>
 	<string>Wi-Fi 网络服务</string>
 	<key>Wi-Fi power</key>
@@ -1484,6 +1548,8 @@
 	<string>macOS 拒绝访问上盖角度传感器</string>
 	<key>macOS denied ordinary read access for %lld provider(s). Raw Sensors shows the provider-specific reason.</key>
 	<string>macOS 拒绝了 %lld 个 Provider 的普通只读访问。“原始传感器”会显示各 Provider 的具体原因。</string>
+	<key>macOS did not permit this Wi-Fi scan.</key>
+	<string>macOS 未允许此次 Wi-Fi 扫描。</string>
 	<key>maximum EDR headroom</key>
 	<string>最大 EDR 余量</string>
 	<key>maximum frame rate</key>

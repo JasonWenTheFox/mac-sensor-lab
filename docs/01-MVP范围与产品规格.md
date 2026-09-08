@@ -50,7 +50,9 @@
 
 网络和磁盘活动实验分别对比汇总收发速率与汇总读写速率；两条历史都必须有界，只显示近期均值与趋势，不得为了解释曲线而加入接口、地址、设备、卷或路径身份。
 
-Wi-Fi Signal 实验分别保留当前关联链路的 RSSI/noise 有界历史，并展示派生 SNR、频道、宽度、频段、PHY、协商发送速率、发送功率和安全模式。它不读取 SSID/BSSID、MAC/IP、接口名、国家代码或位置，不扫描附近网络；协商 PHY 速率不得冒充应用实际吞吐量，RSSI 不得直接换算为距离或未经定义的质量百分比。
+Wi-Fi Signal 实验分别保留当前关联链路的 RSSI/noise 有界历史，并展示派生 SNR、频道、宽度、频段、PHY、协商发送速率、发送功率和安全模式。它不读取 SSID/BSSID、MAC/IP、接口名、国家代码或位置，不参与附近网络扫描；协商 PHY 速率不得冒充应用实际吞吐量，RSSI 不得直接换算为距离或未经定义的质量百分比。
+
+Nearby Wi-Fi Channels 是独立的用户主动实验：首次按钮只显示影响和隐私说明，用户再次确认后才运行一次非定向、排除 hidden 的公开 CoreWLAN 扫描。`CWNetwork` 必须立即缩减为频段、信道、报告记录数、有效 RSSI 和报告带宽，最多处理 512 条；不得调用 SSID/SSIDData/BSSID/countryCode/informationElementData 或接口身份 getter。结果只留在面板内存，离页清除，不进入 Provider 自动采样、Snapshot、Diagnostics、JSON/CSV 或连续记录。20 秒 UI watchdog 和“停止等待”只丢弃迟到结果，不能伪称中止无公开取消 API 的 CoreWLAN 阻塞调用；原调用结束前始终禁止另一轮扫描，结束后再冷却 10 秒。报告记录数与 RSSI 只是瞬时广播视图，不得命名为空口占用、干扰、吞吐量或完整拥塞测量。
 
 ### About & Diagnostics
 
