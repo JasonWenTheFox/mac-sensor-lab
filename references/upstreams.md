@@ -9,6 +9,7 @@
 | [Kyome22/OpenMultitouchSupport](https://github.com/Kyome22/OpenMultitouchSupport) | `15c6bb0c6a2d2858559493a28ab23f7ac58648a3` | MIT | 原始触点、压力、面积与状态 API 参考；4.0.0 静态审计因设备标识日志、私有框架、Sandbox/发布边界而拒绝直接接入 |
 | [samhenrigold/LidAngleSensor](https://github.com/samhenrigold/LidAngleSensor) | `f7e4e5cb46fe13a518091ce5d47f0ec2e3fecd80` | Apache-2.0 | 原生 Swift IOKit 开合角设备探测和 feature report 参考 |
 | [exelban/stats](https://github.com/exelban/stats) | `db5fee1eae913e24a7e0c4a0395092d867cf902d` | MIT | SMC、HID 温度、电压、电流和 IOReport 功耗参考 |
+| [tlkh/asitop](https://github.com/tlkh/asitop) | `74ebe2cbc23d5b1eec874aebb1b9bacfe0e670cd` | MIT | 仅用于区分 `powermetrics`/sudo 路径及其已停用 bandwidth 解析；不复制、捆绑或运行 |
 | [smartmontools/smartmontools](https://github.com/smartmontools/smartmontools) | `a214aa796e8963279c3ed68389ed3d556d0f1a72` | GPL-2.0-or-later | 仅交叉核对 Darwin NVMeSMARTLib 调用流程；不复制、链接、捆绑或静默调用 |
 | [pirate/mac-hardware-toys](https://github.com/pirate/mac-hardware-toys) | `5ed3c81540e214e1d1f99160d9c3c0446a7db506` | **未发现仓库级明确许可证** | 只研究产品思路；禁止复制代码或资源 |
 

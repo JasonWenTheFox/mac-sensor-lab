@@ -65,7 +65,7 @@ Live commands may read local sensors and the unfiltered probe can print a full s
 
 - Use the privacy-safe compatibility form for model-specific problems and GitHub private vulnerability reporting for security issues.
 - New providers require stable non-identifying IDs, documented units/provenance/failure behavior, fixture tests, and truthful data-nature labels.
-- Hardware inventory, capability semantics, and export schemas are described in [docs/07-硬件清单与能力语义.md](docs/07-硬件清单与能力语义.md). Detailed implementation status and boundaries are in [docs/05-当前实现与后续路线.md](docs/05-当前实现与后续路线.md); the anonymous compatibility workflow is in [docs/06-匿名兼容性贡献指南.md](docs/06-匿名兼容性贡献指南.md).
+- Hardware inventory, capability semantics, and export schemas are described in [docs/07-硬件清单与能力语义.md](docs/07-硬件清单与能力语义.md). Detailed implementation status and boundaries are in [docs/05-当前实现与后续路线.md](docs/05-当前实现与后续路线.md); the Display/NVMe and IOReport feasibility records are [docs/08-显示校准与NVMe健康可行性.md](docs/08-显示校准与NVMe健康可行性.md) and [docs/09-IOReport普通权限可行性.md](docs/09-IOReport普通权限可行性.md); the anonymous compatibility workflow is in [docs/06-匿名兼容性贡献指南.md](docs/06-匿名兼容性贡献指南.md).
 - See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) before contributing.
 
 Original code and artwork are MIT licensed. Adapted and referenced upstream material remains under its recorded license.

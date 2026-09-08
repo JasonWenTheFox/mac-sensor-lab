@@ -65,7 +65,7 @@ swift run sensorlab-probe -- --diagnostics
 
 - 兼容性问题使用仓库的隐私安全 Issue 表单；安全问题使用 GitHub 私密漏洞报告；
 - 新 Provider 必须有稳定且非识别性的 ID、单位/来源/失败路径、fixture 测试和明确的数据性质；
-- 硬件清单、能力语义与导出 schema 见 [`docs/07-硬件清单与能力语义.md`](docs/07-硬件清单与能力语义.md)；详细边界与路线见 [`docs/05-当前实现与后续路线.md`](docs/05-当前实现与后续路线.md)；匿名跨机型流程见 [`docs/06-匿名兼容性贡献指南.md`](docs/06-匿名兼容性贡献指南.md)；
+- 硬件清单、能力语义与导出 schema 见 [`docs/07-硬件清单与能力语义.md`](docs/07-硬件清单与能力语义.md)；详细边界与路线见 [`docs/05-当前实现与后续路线.md`](docs/05-当前实现与后续路线.md)；显示/NVMe 与 IOReport 的实现前证据分别见 [`docs/08-显示校准与NVMe健康可行性.md`](docs/08-显示校准与NVMe健康可行性.md) 和 [`docs/09-IOReport普通权限可行性.md`](docs/09-IOReport普通权限可行性.md)；匿名跨机型流程见 [`docs/06-匿名兼容性贡献指南.md`](docs/06-匿名兼容性贡献指南.md)；
 - 贡献规则、安全策略和第三方归属见 [`CONTRIBUTING.md`](CONTRIBUTING.md)、[`SECURITY.md`](SECURITY.md) 和 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)。
 
 原创代码与图标使用 MIT 许可证；上游材料继续遵守各自许可证。

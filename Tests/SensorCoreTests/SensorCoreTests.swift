@@ -2792,6 +2792,160 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertTrue(resolved.channels.isEmpty)
   }
 
+  func testIOReportPolicyNormalizesOnlyAllowlistedSyntheticMetadata() {
+    let complex = IOReportChannelPolicy.candidate(
+      for: IOReportChannelMetadata(
+        group: "CPU Stats",
+        subgroup: "CPU Complex Performance States",
+        channel: "Synthetic complex channel",
+        unit: nil,
+        format: .state
+      )
+    )
+    let core = IOReportChannelPolicy.candidate(
+      for: IOReportChannelMetadata(
+        group: "CPU Stats",
+        subgroup: "CPU Core Performance States",
+        channel: "Synthetic core channel",
+        unit: nil,
+        format: .state
+      )
+    )
+
+    XCTAssertEqual(
+      complex,
+      IOReportCandidate(metric: .cpuComplexResidency, normalization: .residencyRatioOnly)
+    )
+    XCTAssertEqual(
+      core,
+      IOReportCandidate(metric: .cpuCoreResidency, normalization: .residencyRatioOnly)
+    )
+
+    let energyFixtures: [(String, String, IOReportCandidateMetric, Double)] = [
+      ("Synthetic CPU Energy", "J", .cpuEnergy, 1),
+      ("Synthetic CPU Energy", "mJ", .cpuEnergy, 1e-3),
+      ("Synthetic GPU Energy", "uJ", .gpuEnergy, 1e-6),
+      ("ANE Synthetic Counter", "µJ", .aneEnergy, 1e-6),
+      ("ANE Synthetic Counter", "μJ", .aneEnergy, 1e-6),
+      ("DRAM Synthetic Counter", "nJ", .dramEnergy, 1e-9),
+      ("PCI Synthetic Energy", "pJ", .pciEnergy, 1e-12),
+    ]
+    for (channel, unit, expectedMetric, expectedScale) in energyFixtures {
+      let candidate = IOReportChannelPolicy.candidate(
+        for: IOReportChannelMetadata(
+          group: "Energy Model",
+          subgroup: nil,
+          channel: channel,
+          unit: unit,
+          format: .simple
+        )
+      )
+      XCTAssertEqual(candidate?.metric, expectedMetric)
+      guard case .joulesPerCount(let scale) = candidate?.normalization else {
+        return XCTFail("Expected a normalized energy-counter candidate")
+      }
+      XCTAssertEqual(scale, expectedScale)
+    }
+  }
+
+  func testIOReportPolicyRejectsUnknownUnsafeAndSchemaMismatchedMetadata() {
+    let rejected: [IOReportChannelMetadata] = [
+      IOReportChannelMetadata(
+        group: "Energy Model",
+        subgroup: nil,
+        channel: "Synthetic Media Counter",
+        unit: "nJ",
+        format: .simple
+      ),
+      IOReportChannelMetadata(
+        group: "Energy Model",
+        subgroup: nil,
+        channel: "Synthetic CPU Energy",
+        unit: "ticks",
+        format: .simple
+      ),
+      IOReportChannelMetadata(
+        group: "Energy Model",
+        subgroup: "Unexpected",
+        channel: "Synthetic CPU Energy",
+        unit: "nJ",
+        format: .simple
+      ),
+      IOReportChannelMetadata(
+        group: "CPU Stats",
+        subgroup: "CPU Core Performance States",
+        channel: "Synthetic core channel",
+        unit: nil,
+        format: .simple
+      ),
+      IOReportChannelMetadata(
+        group: "CPU Stats",
+        subgroup: "Unknown State Group",
+        channel: "Synthetic core channel",
+        unit: nil,
+        format: .state
+      ),
+      IOReportChannelMetadata(
+        group: "Energy Model",
+        subgroup: nil,
+        channel: "Synthetic CPU Energy\nprivate topology",
+        unit: "nJ",
+        format: .simple
+      ),
+      IOReportChannelMetadata(
+        group: "Energy Model",
+        subgroup: nil,
+        channel: String(repeating: "x", count: 129) + " CPU Energy",
+        unit: "nJ",
+        format: .simple
+      ),
+    ]
+
+    XCTAssertTrue(rejected.allSatisfy { IOReportChannelPolicy.candidate(for: $0) == nil })
+  }
+
+  func testIOReportDeltaMathRejectsResetInvalidDurationAndOverflow() {
+    XCTAssertEqual(
+      try XCTUnwrap(
+        IOReportDeltaMath.powerWatts(
+          rawDelta: 500,
+          elapsedSeconds: 0.5,
+          joulesPerCount: 1e-3
+        )
+      ),
+      1,
+      accuracy: 0.000_001
+    )
+    XCTAssertEqual(
+      IOReportDeltaMath.powerWatts(rawDelta: 0, elapsedSeconds: 1, joulesPerCount: 1e-9),
+      0
+    )
+    XCTAssertNil(
+      IOReportDeltaMath.powerWatts(rawDelta: -1, elapsedSeconds: 1, joulesPerCount: 1e-9)
+    )
+    XCTAssertNil(
+      IOReportDeltaMath.powerWatts(rawDelta: 1, elapsedSeconds: 0, joulesPerCount: 1e-9)
+    )
+    XCTAssertNil(
+      IOReportDeltaMath.powerWatts(
+        rawDelta: 1,
+        elapsedSeconds: 1,
+        joulesPerCount: .infinity
+      )
+    )
+
+    XCTAssertEqual(
+      try XCTUnwrap(IOReportDeltaMath.residencyShare(active: [30, 20], idle: [50])),
+      0.5,
+      accuracy: 0.000_001
+    )
+    XCTAssertNil(IOReportDeltaMath.residencyShare(active: [1, -1], idle: [2]))
+    XCTAssertNil(IOReportDeltaMath.residencyShare(active: [], idle: []))
+    XCTAssertNil(
+      IOReportDeltaMath.residencyShare(active: [.max, .max], idle: [.max, .max])
+    )
+  }
+
   private func makeSPUSnapshot(
     status: SensorStatus,
     channels: [SensorChannel] = [],
