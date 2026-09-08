@@ -16,6 +16,7 @@ public enum SensorProviderRegistry {
       SystemPerformanceProvider(),
       GPUPerformanceProvider(),
       NetworkThroughputProvider(),
+      WiFiRadioProvider(),
       PublicPowerSourceProvider(),
       BatteryProvider(),
       ThermalProvider(),

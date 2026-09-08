@@ -14,15 +14,17 @@
 
 Mac Sensor Lab 把能力分成三层，并在界面和导出中保留数据来源：
 
-1. **原始事实**：24 个独立 Provider，包括非唯一机型类别、SoC、CPU 拓扑、统一内存、Metal GPU 与 Touch ID 能力，每显示器模式/色域/EDR/估算尺寸，系统盘介质属性与 NVMe SMART 标量/无损累计计数，以及系统性能、网络/磁盘汇总、电池/电源、热压力、只读 SMC、SPU 环境光/运动和上盖角度。
+1. **原始事实**：25 个独立 Provider，包括非唯一机型类别、SoC、CPU 拓扑、统一内存、Metal GPU 与 Touch ID 能力，每显示器模式/色域/EDR/估算尺寸，系统盘介质属性与 NVMe SMART 标量/无损累计计数，当前 Wi-Fi 无线电链路，以及系统性能、网络/磁盘汇总、电池/电源、热压力、只读 SMC、SPU 环境光/运动和上盖角度。
 2. **可理解展示**：独立硬件清单页，卡片可按需展开全部事实；同时展示状态、单位、来源、硬件领域、访问级别、兼容性证据、五段就绪状态、Raw/Derived/Estimated/Calibrated 类型、历史曲线、搜索和版本化 JSON/CSV 导出。
-3. **实验解释**：会话内显示器物理尺、Force Touch 归一化压力/stage 可视化、水平/运动趋势、上盖量角器、光照校准、四通道环境光谱相对指纹、电池趋势、热压力、部件温度、系统功耗、网络和磁盘活动。
+3. **实验解释**：会话内显示器物理尺、Force Touch 归一化压力/stage 可视化、Wi-Fi 信号/噪声趋势、水平/运动趋势、上盖量角器、光照校准、四通道环境光谱相对指纹、电池趋势、热压力、部件温度、系统功耗、网络和磁盘活动。
 
 环境光谱指纹只比较四个未知响应通道的相对比例，可保存当前光型作为本地参考并显示相似度；它不会冒充色温、光谱波长或 lux。环境照度只有在用户提供外部 lux 参考并校准后才标为 `Estimated`。内部温度不是室温，内部功耗不是插座功率，1–10 秒采样也不宣称能分析振动频率。
 
 显示器物理尺寸在系统无法取得 EDID 时可能是 CoreGraphics 的 72 DPI 推算，因此系统尺寸、对角线和 PPI 始终标为 `Estimated`。实验页的物理尺允许用户用真实尺具校准当前显示器的水平轴，并把 `System Estimated` 与 `User Calibrated` 结果并列；它不推断垂直尺寸或对角线，结果只在当前 App 会话和显示模式中有效，也不进入 Snapshot 或导出。存储硬件仅汇总系统卷关联整盘的固定类别和数值，不从 Disk Arbitration 猜测 SMART。独立的 NVMe SMART Provider 只调用 Apple 公开 `SMARTReadData`，展示警告位、综合温度、备用空间、寿命消耗估算和 10 组 128-bit 累计计数。这些计数用无损十进制文本表示，不转为 `Double`；Data Units 的字节通道是报告单位的精确换算，由于原始单位向上取整，不代表精确历史 I/O 字节数。Provider 不读取设备型号、序列号、UUID、卷名、路径、identify 数据或详细错误日志，也不把字段合成单一“健康分”。
 
 Force Touch Pressure Lab 由用户主动开始，只在 App 自己的交互区通过公开 AppKit 事件读取 `pressure`、`stage` 和 `stageTransition`。曲线在每次 stage 变化处分段，只保留最多 240 个内存样本，并在停止或离页后按界面说明清除；它不安装输入监控、不读取原始触点或设备 ID，也不进入 Snapshot 或导出。0…1 的 pressure 只表示每个 stage 内的归一化输入，不能解释为力、重量、克数或经过校准的物理测量。
+
+Wi-Fi Radio Provider 使用公开 CoreWLAN getter 展示开关/服务/关联状态、RSSI、噪声、派生 SNR、频道、带宽、频段、PHY、安全模式、协商发送速率和发送功率；有错误哨兵或未知枚举时省略该字段。它不读取网络名、接入点地址、MAC/IP、接口名、国家代码或位置，不扫描附近网络，也不请求定位权限。协商 PHY 速率不是应用实际吞吐量。
 
 慢 Provider 有独立的两秒协调等待边界；超时只让该模块降级，不会阻塞整页刷新，也不会在仍有同步读取占用时重复启动同一读取。
 
@@ -67,7 +69,7 @@ swift run sensorlab-probe -- --diagnostics
 
 - 兼容性问题使用仓库的隐私安全 Issue 表单；安全问题使用 GitHub 私密漏洞报告；
 - 新 Provider 必须有稳定且非识别性的 ID、单位/来源/失败路径、fixture 测试和明确的数据性质；
-- 硬件清单、能力语义与导出 schema 见 [`docs/07-硬件清单与能力语义.md`](docs/07-硬件清单与能力语义.md)；详细边界与路线见 [`docs/05-当前实现与后续路线.md`](docs/05-当前实现与后续路线.md)；显示/NVMe 与 IOReport 的实现前证据分别见 [`docs/08-显示校准与NVMe健康可行性.md`](docs/08-显示校准与NVMe健康可行性.md) 和 [`docs/09-IOReport普通权限可行性.md`](docs/09-IOReport普通权限可行性.md)；匿名跨机型流程见 [`docs/06-匿名兼容性贡献指南.md`](docs/06-匿名兼容性贡献指南.md)；
+- 硬件清单、能力语义与导出 schema 见 [`docs/07-硬件清单与能力语义.md`](docs/07-硬件清单与能力语义.md)；详细边界与路线见 [`docs/05-当前实现与后续路线.md`](docs/05-当前实现与后续路线.md)；显示/NVMe、IOReport 与 Wi-Fi 的实现证据分别见 [`docs/08-显示校准与NVMe健康可行性.md`](docs/08-显示校准与NVMe健康可行性.md)、[`docs/09-IOReport普通权限可行性.md`](docs/09-IOReport普通权限可行性.md) 和 [`docs/10-Wi-Fi无线电边界.md`](docs/10-Wi-Fi无线电边界.md)；匿名跨机型流程见 [`docs/06-匿名兼容性贡献指南.md`](docs/06-匿名兼容性贡献指南.md)；
 - 贡献规则、安全策略和第三方归属见 [`CONTRIBUTING.md`](CONTRIBUTING.md)、[`SECURITY.md`](SECURITY.md) 和 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)。
 
 原创代码与图标使用 MIT 许可证；上游材料继续遵守各自许可证。

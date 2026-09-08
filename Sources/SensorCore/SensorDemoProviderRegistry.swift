@@ -206,6 +206,24 @@ public enum SensorDemoProviderRegistry {
           number("network_send_packet_rate", "Send packet rate", 260, "packets/s", .derived),
         ]),
       provider(
+        "connectivity.wifi_radio", "Wi-Fi Radio", .system, .publicAPI,
+        "Wi-Fi radio metrics available",
+        [
+          text("wifi_power_on", "Wi-Fi power", "On", 1),
+          text("wifi_service_active", "Wi-Fi network service", "Active", 1),
+          text("wifi_associated", "Associated radio link", "Associated", 1, nil, .derived),
+          number("wifi_rssi", "RSSI", -54, "dBm"),
+          number("wifi_noise", "Noise", -92, "dBm"),
+          number("wifi_snr", "Signal-to-noise ratio", 38, "dB", .derived),
+          number("wifi_channel", "Channel", 149),
+          number("wifi_channel_width", "Channel width", 80, "MHz"),
+          text("wifi_band", "Band", "5 GHz"),
+          text("wifi_phy_mode", "PHY mode", "802.11ax"),
+          number("wifi_transmit_rate", "Transmit rate", 1_200, "Mbps"),
+          number("wifi_transmit_power", "Transmit power", 100, "mW"),
+          text("wifi_security", "Security", "WPA3 Personal"),
+        ]),
+      provider(
         "power.source", "System Power Source", .power, .publicAPI, "78% • Battery",
         [
           text("active_source", "Active power source", "Battery"),

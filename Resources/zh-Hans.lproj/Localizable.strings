@@ -72,6 +72,8 @@
 	<string>加速度计</string>
 	<key>Access level and compatibility evidence remain visible on every card.</key>
 	<string>每张卡片都会显示访问级别与兼容性证据。</string>
+	<key>Active</key>
+	<string>活跃</string>
 	<key>Active display hardware</key>
 	<string>活动显示硬件</string>
 	<key>Active displays</key>
@@ -126,6 +128,12 @@
 	<string>AppleSMC 暂时繁忙</string>
 	<key>Architecture</key>
 	<string>架构</string>
+	<key>Associated</key>
+	<string>已关联</string>
+	<key>Associated Wi-Fi signal unavailable</key>
+	<string>已关联 Wi-Fi 的信号读数不可用</string>
+	<key>Associated radio link</key>
+	<string>无线链路关联状态</string>
 	<key>Audio</key>
 	<string>音频</string>
 	<key>Automatic sampling</key>
@@ -160,6 +168,8 @@
 	<string>系统运行队列中的平均进程数；不是 CPU 百分比。</string>
 	<key>Backing scale</key>
 	<string>缩放倍率</string>
+	<key>Band</key>
+	<string>频段</string>
 	<key>Battery</key>
 	<string>电池</string>
 	<key>Battery Trend</key>
@@ -248,6 +258,10 @@
 	<string>容量语义来自公开的 Foundation 卷资源键。</string>
 	<key>Capture stopped. Samples remain only until cleared or this page is left.</key>
 	<string>采集已停止。样本只保留到清除或离开本页为止。</string>
+	<key>Channel</key>
+	<string>信道</string>
+	<key>Channel width</key>
+	<string>信道宽度</string>
 	<key>Charge</key>
 	<string>电量</string>
 	<key>Charging</key>
@@ -426,6 +440,8 @@
 	<string>平台文档保证</string>
 	<key>Domain: %@ • Access: %@ • Evidence: %@</key>
 	<string>领域：%@ • 访问：%@ • 证据：%@</string>
+	<key>Dynamic WEP</key>
+	<string>动态 WEP</string>
 	<key>EDR capability</key>
 	<string>EDR 能力</string>
 	<key>EDR-capable displays</key>
@@ -436,6 +452,8 @@
 	<string>可推出介质</string>
 	<key>Enter 10–2000 mm and choose a line width that produces a plausible 10–2000 PPI result.</key>
 	<string>请输入 10–2000 mm，并选择能得到合理 10–2000 PPI 结果的线段宽度。</string>
+	<key>Enterprise security</key>
+	<string>企业级安全</string>
 	<key>Error</key>
 	<string>错误</string>
 	<key>Error information log entries</key>
@@ -576,6 +594,8 @@
 	<string>已导入光照校准 %@</string>
 	<key>In development</key>
 	<string>开发中</string>
+	<key>Inactive</key>
+	<string>未活跃</string>
 	<key>Included</key>
 	<string>已包含</string>
 	<key>Includes provider status and stable channel metadata, but no sensor readings or machine identifiers.</key>
@@ -734,10 +754,14 @@
 	<string>没有更改任何 Apple SPU 驱动属性。</string>
 	<key>No SMC write or fan-control method exists in this target.</key>
 	<string>此 Target 中不存在 SMC 写入或风扇控制方法。</string>
+	<key>No SSID, BSSID, MAC address, country code, interface name, scan result, IP address, or location was read.</key>
+	<string>未读取 SSID、BSSID、MAC 地址、国家代码、接口名称、扫描结果、IP 地址或位置。</string>
 	<key>No Sensors Found</key>
 	<string>未找到传感器</string>
 	<key>No active display detected</key>
 	<string>未检测到活动显示器</string>
+	<key>No associated Wi-Fi channel was reported</key>
+	<string>未报告已关联的 Wi-Fi 信道</string>
 	<key>No compatible Apple SPU report devices found</key>
 	<string>未发现兼容的 Apple SPU 报告设备</string>
 	<key>No device identifier or system error text is exported.</key>
@@ -762,6 +786,8 @@
 	<string>未检测到内置电池</string>
 	<key>No known Apple SPU sensors detected</key>
 	<string>未检测到已知的 Apple SPU 传感器</string>
+	<key>No network name, access-point address, interface identity, location, or scan results are collected.</key>
+	<string>不收集网络名称、接入点地址、接口身份、位置或扫描结果。</string>
 	<key>No private data fields are read during capability discovery.</key>
 	<string>能力发现期间不读取私有数据字段。</string>
 	<key>No process list or identifying information was requested.</key>
@@ -778,6 +804,8 @@
 	<string>不导出卷路径或系统错误文本。</string>
 	<key>No warning</key>
 	<string>无告警</string>
+	<key>Noise</key>
+	<string>噪声</string>
 	<key>Nominal</key>
 	<string>正常</string>
 	<key>Normalized pressure</key>
@@ -786,10 +814,14 @@
 	<string>归一化压力趋势，共 %lld 个样本</string>
 	<key>Not applicable</key>
 	<string>不适用</string>
+	<key>Not associated</key>
+	<string>未关联</string>
 	<key>Not detected</key>
 	<string>未检测到</string>
 	<key>Not implemented • provider pending</key>
 	<string>尚未实现 • 等待 Provider</string>
+	<key>OWE transition</key>
+	<string>OWE 过渡</string>
 	<key>Observed drain</key>
 	<string>观察到的耗电速率</string>
 	<key>Observed on multiple models</key>
@@ -818,6 +850,8 @@
 	<string>仅读取固定白名单计数器；不导出注册表名称、ID 或设备身份字段。</string>
 	<key>Only the whole-disk object associated with the current system volume is summarized.</key>
 	<string>仅汇总与当前系统卷关联的整盘对象。</string>
+	<key>Open network</key>
+	<string>开放网络</string>
 	<key>Opened from reference</key>
 	<string>相对参考角度已张开</string>
 	<key>Opening angle</key>
@@ -832,6 +866,8 @@
 	<string>这次读取完成前，其他传感器仍会继续更新。</string>
 	<key>Overview</key>
 	<string>概览</string>
+	<key>PHY mode</key>
+	<string>PHY 模式</string>
 	<key>Partition scheme class</key>
 	<string>分区方案类别</string>
 	<key>Pause Automatic Sampling</key>
@@ -854,6 +890,8 @@
 	<string>权限处理</string>
 	<key>Permission required</key>
 	<string>需要权限</string>
+	<key>Personal security</key>
+	<string>个人级安全</string>
 	<key>Physical Display Ruler</key>
 	<string>显示器物理尺</string>
 	<key>Physical memory</key>
@@ -930,6 +968,8 @@
 	<string>公开电源信息不可用</string>
 	<key>RMS variation</key>
 	<string>RMS 变化</string>
+	<key>RSSI</key>
+	<string>RSSI</string>
 	<key>Rates need two samples; a counter reset or device change starts a new baseline.</key>
 	<string>速率需要两次采样；计数器重置或设备变化会开始新的基线。</string>
 	<key>Rates need two samples; the first read or an active-interface count change establishes a baseline.</key>
@@ -1066,6 +1106,8 @@
 	<string>已将当前光谱保存为参考</string>
 	<key>Secure Enclave presence is not inferred from Touch ID capability.</key>
 	<string>不会根据 Touch ID 能力推断 Secure Enclave 是否存在。</string>
+	<key>Security</key>
+	<string>安全模式</string>
 	<key>Security Hardware</key>
 	<string>安全硬件</string>
 	<key>Send packet rate</key>
@@ -1094,8 +1136,14 @@
 	<string>收起详细事实</string>
 	<key>Showing the last successful sample from %@ seconds ago; its original timestamp is preserved.</key>
 	<string>显示 %@ 秒前最后一次成功采样；保留其原始时间戳。</string>
+	<key>Shows current public radio metrics without network identity or scanning</key>
+	<string>显示当前公开无线电指标，不读取网络身份或进行扫描</string>
 	<key>Shows raw light first; lux requires model-specific calibration</key>
 	<string>先显示原始光照值；lux 需要特定机型的校准</string>
+	<key>Signal and noise are current radio-link readings; transmit rate is the negotiated PHY rate, not application throughput.</key>
+	<string>信号和噪声是当前无线链路读数；传输速率是协商后的 PHY 速率，不是应用吞吐量。</string>
+	<key>Signal-to-noise ratio</key>
+	<string>信噪比</string>
 	<key>Single-point scale: %@ lux at raw %@.</key>
 	<string>单点缩放：%@ lux（原始值 %@）。</string>
 	<key>Smart battery</key>
@@ -1256,6 +1304,12 @@
 	<string>跟踪内部 SMC 功耗遥测；不是插座侧功率</string>
 	<key>Tracks public pressure states as an ordinal history, not temperature</key>
 	<string>将公开热压力状态记录为序数历史，而非温度</string>
+	<key>Transmit power</key>
+	<string>发射功率</string>
+	<key>Transmit rate</key>
+	<string>传输速率</string>
+	<key>Transmit rate is the current negotiated PHY rate, not application throughput.</key>
+	<string>传输速率是当前协商后的 PHY 速率，不是应用吞吐量。</string>
 	<key>Trend estimate pauses while connected to power or charging.</key>
 	<string>连接电源或充电时暂停趋势估算。</string>
 	<key>Try a provider, channel, domain, access, status, or stable ID.</key>
@@ -1332,12 +1386,46 @@
 	<string>电压 × 电流；并非插座侧功率。</string>
 	<key>Volume names, identifiers, mount paths, and system error text are intentionally omitted.</key>
 	<string>有意省略卷名称、标识符、挂载路径和系统错误文本。</string>
+	<key>WPA Enterprise</key>
+	<string>WPA 企业级</string>
+	<key>WPA Personal</key>
+	<string>WPA 个人级</string>
+	<key>WPA/WPA2 Enterprise</key>
+	<string>WPA/WPA2 企业级</string>
+	<key>WPA/WPA2 Personal</key>
+	<string>WPA/WPA2 个人级</string>
+	<key>WPA2 Enterprise</key>
+	<string>WPA2 企业级</string>
+	<key>WPA2 Personal</key>
+	<string>WPA2 个人级</string>
+	<key>WPA3 Enterprise</key>
+	<string>WPA3 企业级</string>
+	<key>WPA3 Personal</key>
+	<string>WPA3 个人级</string>
+	<key>WPA3 transition</key>
+	<string>WPA3 过渡</string>
 	<key>Waiting for at least five minutes and a measurable charge drop.</key>
 	<string>正在等待至少五分钟和可测量的电量下降。</string>
 	<key>Waiting for pressure events inside the interaction area.</key>
 	<string>正在等待交互区域内的压力事件。</string>
 	<key>Wi-Fi</key>
 	<string>Wi-Fi</string>
+	<key>Wi-Fi Radio</key>
+	<string>Wi-Fi 无线电</string>
+	<key>Wi-Fi Signal</key>
+	<string>Wi-Fi 信号</string>
+	<key>Wi-Fi interface was not reported</key>
+	<string>未报告 Wi-Fi 接口</string>
+	<key>Wi-Fi network service</key>
+	<string>Wi-Fi 网络服务</string>
+	<key>Wi-Fi power</key>
+	<string>Wi-Fi 电源</string>
+	<key>Wi-Fi power is off or unavailable</key>
+	<string>Wi-Fi 电源已关闭或状态不可用</string>
+	<key>Wi-Fi radio metrics available</key>
+	<string>Wi-Fi 无线电指标可用</string>
+	<key>Wi-Fi service is inactive or unavailable</key>
+	<string>Wi-Fi 网络服务未活跃或不可用</string>
 	<key>Writable media</key>
 	<string>可写介质</string>
 	<key>Write errors</key>
@@ -1348,6 +1436,8 @@
 	<string>写操作</string>
 	<key>Yes</key>
 	<string>是</string>
+	<key>Zero-valued CoreWLAN error sentinels and unknown enum values are omitted.</key>
+	<string>会省略 CoreWLAN 的零值错误哨兵和未知枚举值。</string>
 	<key>accelerometer</key>
 	<string>加速度计</string>
 	<key>ambient light</key>

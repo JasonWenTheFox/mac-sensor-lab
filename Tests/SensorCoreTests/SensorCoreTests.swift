@@ -484,18 +484,24 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertEqual(batteryHistory["power.source/battery_charge"]?.map(\.value), [78])
 
     var pairedHistory: [String: [SensorHistoryPoint]] = [:]
-    for channelID in ["network_send_rate", "disk_write_rate", "gpu_hotspot"] {
+    for channelID in [
+      "network_send_rate", "disk_write_rate", "gpu_hotspot",
+      "wifi_rssi", "wifi_noise", "wifi_snr",
+    ] {
       SensorHistoryRetention.append(
         snapshot(providerID: "rate.fixture", channelID: channelID, value: 42, timestamp: 6),
         to: &pairedHistory,
-        maximumSeriesCount: 3,
+        maximumSeriesCount: 6,
         maximumPointsPerSeries: 2
       )
     }
-    XCTAssertEqual(pairedHistory.count, 3)
+    XCTAssertEqual(pairedHistory.count, 6)
     XCTAssertEqual(pairedHistory["rate.fixture/network_send_rate"]?.map(\.value), [42])
     XCTAssertEqual(pairedHistory["rate.fixture/disk_write_rate"]?.map(\.value), [42])
     XCTAssertEqual(pairedHistory["rate.fixture/gpu_hotspot"]?.map(\.value), [42])
+    XCTAssertEqual(pairedHistory["rate.fixture/wifi_rssi"]?.map(\.value), [42])
+    XCTAssertEqual(pairedHistory["rate.fixture/wifi_noise"]?.map(\.value), [42])
+    XCTAssertEqual(pairedHistory["rate.fixture/wifi_snr"]?.map(\.value), [42])
 
     var malformedHistory: [String: [SensorHistoryPoint]] = [:]
     SensorHistoryRetention.append(
@@ -1752,6 +1758,140 @@ final class SensorCoreTests: XCTestCase {
         pointHeight: 900
       )
     )
+  }
+
+  func testWiFiRadioSnapshotKeepsPublicMetricsSeparateFromNetworkIdentity() throws {
+    let snapshot = WiFiRadioProvider().snapshot(
+      reading: WiFiRadioReading(
+        powerOn: true,
+        serviceActive: true,
+        channel: WiFiRadioChannelReading(number: 149, widthRawValue: 3, bandRawValue: 2),
+        rssiDBm: -54,
+        noiseDBm: -92,
+        transmitRateMbps: 1_200,
+        transmitPowerMW: 100,
+        phyModeRawValue: 6,
+        securityRawValue: 11
+      )
+    )
+    let channels = Dictionary(uniqueKeysWithValues: snapshot.channels.map { ($0.id, $0) })
+
+    XCTAssertEqual(snapshot.status, .available)
+    XCTAssertEqual(snapshot.domain, .wifi)
+    XCTAssertEqual(snapshot.accessLevel, .publicOrdinary)
+    XCTAssertEqual(snapshot.readiness.stream, .active)
+    XCTAssertEqual(try XCTUnwrap(channels["wifi_rssi"]?.value), -54, accuracy: 0.001)
+    XCTAssertEqual(try XCTUnwrap(channels["wifi_noise"]?.value), -92, accuracy: 0.001)
+    XCTAssertEqual(try XCTUnwrap(channels["wifi_snr"]?.value), 38, accuracy: 0.001)
+    XCTAssertEqual(channels["wifi_snr"]?.kind, .derived)
+    XCTAssertEqual(channels["wifi_channel"]?.formattedValue, "149")
+    XCTAssertEqual(channels["wifi_channel_width"]?.formattedValue, "80")
+    XCTAssertEqual(channels["wifi_band"]?.formattedValue, "5 GHz")
+    XCTAssertEqual(channels["wifi_phy_mode"]?.formattedValue, "802.11ax")
+    XCTAssertEqual(channels["wifi_security"]?.formattedValue, "WPA3 Personal")
+
+    let forbiddenIDs = ["ssid", "bssid", "mac", "address", "interface", "country", "scan", "ip"]
+    XCTAssertFalse(
+      snapshot.channels.map(\.id).contains { id in
+        forbiddenIDs.contains { id.localizedCaseInsensitiveContains($0) }
+      }
+    )
+    XCTAssertTrue(SensorContractAudit.issues(for: [snapshot]).isEmpty)
+  }
+
+  func testWiFiRadioSnapshotSeparatesMissingOffAndUnassociatedStates() {
+    let provider = WiFiRadioProvider()
+    let unavailable = provider.snapshot(reading: nil)
+    XCTAssertEqual(unavailable.status, .unavailable)
+    XCTAssertEqual(unavailable.summary, "Wi-Fi interface was not reported")
+    XCTAssertEqual(unavailable.readiness.hardwarePresence, .unknown)
+    XCTAssertEqual(unavailable.readiness.feature, .unknown)
+
+    let off = provider.snapshot(
+      reading: WiFiRadioReading(
+        powerOn: false,
+        serviceActive: false,
+        channel: nil,
+        rssiDBm: 0,
+        noiseDBm: 0,
+        transmitRateMbps: 0,
+        transmitPowerMW: 0,
+        phyModeRawValue: 0,
+        securityRawValue: .max
+      )
+    )
+    XCTAssertEqual(off.status, .degraded)
+    XCTAssertEqual(off.summary, "Wi-Fi power is off or unavailable")
+    XCTAssertEqual(off.readiness.hardwarePresence, .present)
+    XCTAssertEqual(off.readiness.readPath, .ready)
+    XCTAssertEqual(off.readiness.stream, .inactive)
+    XCTAssertEqual(off.channels.first(where: { $0.id == "wifi_power_on" })?.value, 0)
+
+    let inactive = provider.snapshot(
+      reading: WiFiRadioReading(
+        powerOn: true,
+        serviceActive: false,
+        channel: nil,
+        rssiDBm: 0,
+        noiseDBm: 0,
+        transmitRateMbps: 0,
+        transmitPowerMW: 0,
+        phyModeRawValue: 0,
+        securityRawValue: .max
+      )
+    )
+    XCTAssertEqual(inactive.status, .degraded)
+    XCTAssertEqual(inactive.summary, "Wi-Fi service is inactive or unavailable")
+    XCTAssertEqual(inactive.channels.first(where: { $0.id == "wifi_service_active" })?.value, 0)
+
+    let unassociated = provider.snapshot(
+      reading: WiFiRadioReading(
+        powerOn: true,
+        serviceActive: true,
+        channel: nil,
+        rssiDBm: 0,
+        noiseDBm: 0,
+        transmitRateMbps: 0,
+        transmitPowerMW: 0,
+        phyModeRawValue: 0,
+        securityRawValue: .max
+      )
+    )
+    XCTAssertEqual(unassociated.status, .degraded)
+    XCTAssertEqual(unassociated.summary, "No associated Wi-Fi channel was reported")
+    XCTAssertEqual(
+      unassociated.channels.first(where: { $0.id == "wifi_associated" })?.value,
+      0
+    )
+  }
+
+  func testWiFiRadioSnapshotRejectsErrorSentinelsAndUnknownEnums() {
+    let snapshot = WiFiRadioProvider().snapshot(
+      reading: WiFiRadioReading(
+        powerOn: true,
+        serviceActive: true,
+        channel: WiFiRadioChannelReading(number: 0, widthRawValue: 99, bandRawValue: 99),
+        rssiDBm: 0,
+        noiseDBm: 0,
+        transmitRateMbps: .nan,
+        transmitPowerMW: 0,
+        phyModeRawValue: 99,
+        securityRawValue: .max
+      )
+    )
+
+    XCTAssertEqual(snapshot.status, .degraded)
+    XCTAssertEqual(snapshot.summary, "Associated Wi-Fi signal unavailable")
+    XCTAssertEqual(
+      Set(snapshot.channels.map(\.id)),
+      [
+        "wifi_power_on", "wifi_service_active", "wifi_associated",
+      ])
+    XCTAssertEqual(snapshot.channels.first(where: { $0.id == "wifi_associated" })?.value, 1)
+    XCTAssertTrue(snapshot.channels.allSatisfy { $0.value?.isFinite ?? true })
+    XCTAssertNil(WiFiRadioMeasurements.rssi(-121))
+    XCTAssertNil(WiFiRadioMeasurements.noise(-141))
+    XCTAssertNil(WiFiRadioMeasurements.transmitRate(.infinity))
   }
 
   func testDisplayCalibrationMeasurementValidatesAndComputesHorizontalGeometry() throws {

@@ -422,6 +422,7 @@ private struct SensorSemanticProfile {
     "system.performance",
     "system.gpu_performance",
     "system.network_throughput",
+    "connectivity.wifi_radio",
     "storage.disk_io",
     "motion.spu_live",
   ]
@@ -435,6 +436,7 @@ private struct SensorSemanticProfile {
       switch providerID {
       case "system.gpu_performance", "hardware.gpu": .gpu
       case "system.network_throughput": .network
+      case "connectivity.wifi_radio": .wifi
       case "power.source": .power
       case "power.battery": .battery
       case "thermal.pressure", "thermal.smc": .thermal

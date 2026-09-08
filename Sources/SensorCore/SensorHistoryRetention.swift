@@ -25,6 +25,7 @@ public enum SensorHistoryRetention {
     "cpu_utilization",
     "gpu_device_utilization",
     "network_receive_rate",
+    "wifi_rssi",
     "disk_read_rate",
     "cpu_hotspot",
     "system_power",
@@ -41,6 +42,8 @@ public enum SensorHistoryRetention {
         "thermal_pressure_level",
         "gpu_hotspot",
         "network_send_rate",
+        "wifi_noise",
+        "wifi_snr",
         "disk_write_rate",
       ]
   )

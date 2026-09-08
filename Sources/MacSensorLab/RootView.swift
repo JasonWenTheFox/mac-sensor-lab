@@ -674,6 +674,12 @@ private struct ExperimentsView: View {
         "Compares recent aggregate receive and send rates"
       )),
     Experiment(
+      name: L10n.text("Wi-Fi Signal"), symbol: "wifi",
+      providerID: "connectivity.wifi_radio", channelID: "wifi_rssi",
+      description: L10n.text(
+        "Shows current public radio metrics without network identity or scanning"
+      )),
+    Experiment(
       name: L10n.text("Disk Activity"), symbol: "internaldrive",
       providerID: "storage.disk_io", channelID: "disk_read_rate",
       description: L10n.text(
@@ -939,7 +945,14 @@ private struct ExperimentsView: View {
           .foregroundStyle(.secondary)
       }
 
-      if channelID == "cpu_hotspot",
+      if channelID == "wifi_rssi" {
+        WiFiSignalPanel(
+          snapshot: snapshot,
+          rssiChannel: channel,
+          rssiPoints: points,
+          noisePoints: history["\(snapshot.id)/wifi_noise", default: []]
+        )
+      } else if channelID == "cpu_hotspot",
         let gpuChannel = snapshot.channels.first(where: { $0.id == "gpu_hotspot" })
       {
         PairedSeriesPanel(
@@ -1019,6 +1032,82 @@ private struct ExperimentsView: View {
       .accessibilityElement(children: .ignore)
       .accessibilityLabel(L10n.text("Four uncalibrated ambient spectral channels"))
     }
+  }
+}
+
+private struct WiFiSignalPanel: View {
+  let snapshot: SensorSnapshot
+  let rssiChannel: SensorChannel
+  let rssiPoints: [SensorHistoryPoint]
+  let noisePoints: [SensorHistoryPoint]
+
+  private let metricIDs = [
+    "wifi_snr",
+    "wifi_channel",
+    "wifi_channel_width",
+    "wifi_band",
+    "wifi_phy_mode",
+    "wifi_transmit_rate",
+    "wifi_transmit_power",
+    "wifi_security",
+  ]
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      LazyVGrid(columns: [GridItem(.adaptive(minimum: 105), spacing: 8)], spacing: 8) {
+        ForEach(metricIDs, id: \.self) { id in
+          if let channel = snapshot.channels.first(where: { $0.id == id }) {
+            ExperimentMetric(
+              label: L10n.sensorText(channel.label),
+              value: displayValue(channel)
+            )
+          }
+        }
+      }
+
+      if let noiseChannel = snapshot.channels.first(where: { $0.id == "wifi_noise" }) {
+        PairedSeriesPanel(
+          primaryChannel: rssiChannel,
+          primaryPoints: rssiPoints,
+          secondaryChannel: noiseChannel,
+          secondaryPoints: noisePoints,
+          caution:
+            "Signal and noise are current radio-link readings; transmit rate is the negotiated PHY rate, not application throughput.",
+          formatAverage: {
+            "\(SensorFormatting.decimal($0, fractionDigits: 1)) dBm"
+          }
+        )
+      } else if rssiPoints.count >= 2 {
+        Chart(rssiPoints) { point in
+          LineMark(
+            x: .value("Time", point.timestamp),
+            y: .value(rssiChannel.label, point.value)
+          )
+          .interpolationMethod(.linear)
+          .foregroundStyle(Color.accentColor)
+        }
+        .chartXAxis(.hidden)
+        .chartYAxis(.hidden)
+        .frame(height: 44)
+        .accessibilityLabel(
+          L10n.format("%@ experiment trend", L10n.sensorText(rssiChannel.label))
+        )
+      }
+
+      Text(
+        L10n.text(
+          "No network name, access-point address, interface identity, location, or scan results are collected."
+        )
+      )
+      .font(.caption2)
+      .foregroundStyle(.secondary)
+    }
+    .padding(.top, 4)
+  }
+
+  private func displayValue(_ channel: SensorChannel) -> String {
+    guard let unit = channel.unit else { return L10n.sensorText(channel.formattedValue) }
+    return "\(L10n.sensorText(channel.formattedValue)) \(L10n.sensorText(unit))"
   }
 }
 

@@ -26,6 +26,7 @@ let package = Package(
         .linkedFramework("AppKit"),
         .linkedFramework("IOKit"),
         .linkedFramework("CoreGraphics"),
+        .linkedFramework("CoreWLAN"),
         .linkedFramework("DiskArbitration"),
         .linkedFramework("LocalAuthentication"),
         .linkedFramework("Metal"),
