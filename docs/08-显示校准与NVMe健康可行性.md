@@ -8,6 +8,7 @@
 - Apple 当前 Xcode SDK 公开了 `IONVMeSMARTInterface` 和 `NVMeSMARTData`。本机的无 `sudo` 、无标识符只读探针成功创建接口并读取 SMART 记录，因此基础 NVMe SMART 日志应优先归类为 **public ordinary**，不再默认假设需要 Helper。
 - “接口是公开的”不等于“每台 Mac 都会返回所有字段”。正式 Provider 仍需无设备、接口创建失败、权限拒绝、离线、损坏值和跨机型 fixture。
 - 不引入 `smartctl`，不解析 `system_profiler` 作为主路径，不为 SMART 新增特权 Helper，不构造单一的“SSD 健康分”。
+- E2c 已按本页第一批边界实现 `storage.nvme_health`，并在同一台 Mac 上通过不含读数/身份的 Diagnostics 真机验证；UInt128 累计计数仍留给 E2d。
 
 ## 1. Display calibration slot
 
@@ -102,9 +103,9 @@ axisPhysicalMillimeters = currentAxisPoints * millimetersPerPoint
 | 详细 Error Information log | 可含 command/LBA 级错误上下文 | **Public transport, deferred** | 当前无足够用户价值，增加解码和隐私面；首版不读 |
 | 上述基础 SMART 字段的 Helper 路径 | 同一批只读事实 | **Privileged helper not justified** | 当前普通权限路径已成功；不安装 Helper，不运行 `sudo` |
 
-## 3. 未来 `storage.nvme_health` Provider 边界
+## 3. `storage.nvme_health` Provider 边界
 
-这是实现设计，不代表当前版本已有该 Provider。
+以下第一批边界已在 E2c 实现；第二批仍是后续设计。
 
 ### 第一批：小而可证明
 
@@ -140,13 +141,13 @@ Apple header 将寿命计数表达为两个 `UInt64` 组成的 128-bit 数。现
 - **smartmontools：不捆绑、不安装、不静默调用。** 它证明 Darwin 路径可行，但引入外部可执行文件会增加 GPL 分发、版本、安装位置和输出过滤负担，而本项目已有更小的公开 API 路径。
 - **GitHub Actions：无需。** E2b 和后续实现优先使用本地 SDK、fixture 与 `scripts/verify-local.sh`。
 
-## 5. E2b 验收与后续切片
+## 5. E2b/E2c 验收与后续切片
 
-E2b 的设计和证据目标至此完成：显示校准不再需要持久身份，NVMe SMART 也不再被粗暴归为私有/特权能力。按既定顺序，下一个工作节点仍是 E3 IOReport 普通权限可行性 Spike，不在本轮同时开工。
+E2b 的设计和证据目标已完成：显示校准不再需要持久身份，NVMe SMART 也不再被粗暴归为私有/特权能力。E3 随后完成 IOReport 普通权限可行性 Spike。E2c 现在已交付首批 SMART 标量、固定失败分类、至少 60 秒缓存、纯 fixture 回归和无身份真机诊断。
 
 E3 之后的显示/存储实现建议拆成独立节点：
 
-1. `storage.nvme_health` 首批标量和 warning bits；
-2. UInt128 无损计数模型与其余 SMART 累计事实；
-3. session-only Display calibration core，暂无 UI；
-4. 最小水平 ruler 界面与失效提示，不进行视觉重构。
+1. [x] `storage.nvme_health` 首批标量和 warning bits；
+2. [ ] UInt128 无损计数模型与其余 SMART 累计事实；
+3. [ ] session-only Display calibration core，暂无 UI；
+4. [ ] 最小水平 ruler 界面与失效提示，不进行视觉重构。

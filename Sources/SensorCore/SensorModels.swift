@@ -439,7 +439,7 @@ private struct SensorSemanticProfile {
       case "power.battery": .battery
       case "thermal.pressure", "thermal.smc": .thermal
       case "display.active": .display
-      case "storage.system_volume", "storage.disk_io": .storage
+      case "storage.system_volume", "storage.disk_io", "storage.nvme_health": .storage
       case "motion.spu_discovery", "motion.spu_live": .motion
       case "motion.lid_angle": .lid
       case "hardware.soc": .soc
@@ -474,13 +474,17 @@ private struct SensorSemanticProfile {
       }
 
     let compatibilityConfidence: SensorCompatibilityConfidence =
-      switch accessLevel {
-      case .publicOrdinary, .publicTCC, .publicEntitlement:
-        .documentedPlatformContract
-      case .undocumentedOrdinary, .privateExperimental:
-        .singleModelObserved
-      case .privilegedHelper, .platformBlocked, .hardwareAbsent:
-        .unknown
+      switch providerID {
+      case "storage.nvme_health": .singleModelObserved
+      default:
+        switch accessLevel {
+        case .publicOrdinary, .publicTCC, .publicEntitlement:
+          .documentedPlatformContract
+        case .undocumentedOrdinary, .privateExperimental:
+          .singleModelObserved
+        case .privilegedHelper, .platformBlocked, .hardwareAbsent:
+          .unknown
+        }
       }
     return SensorSemanticProfile(
       domain: domain,

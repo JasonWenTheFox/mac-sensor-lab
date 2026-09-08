@@ -13,7 +13,15 @@ let package = Package(
   ],
   targets: [
     .target(
+      name: "CNVMeSMART",
+      linkerSettings: [
+        .linkedFramework("DiskArbitration"),
+        .linkedFramework("IOKit"),
+      ]
+    ),
+    .target(
       name: "SensorCore",
+      dependencies: ["CNVMeSMART"],
       linkerSettings: [
         .linkedFramework("AppKit"),
         .linkedFramework("IOKit"),

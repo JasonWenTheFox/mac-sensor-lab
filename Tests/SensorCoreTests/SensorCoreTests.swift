@@ -2011,6 +2011,163 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertTrue(malformedText.channels.isEmpty)
   }
 
+  func testNVMeSMARTDecoderPreservesWarningAndLifetimeSemantics() throws {
+    let metrics = NVMeSMARTScalarDecoder.decode(
+      NVMeSMARTScalarReading(
+        criticalWarning: 0x9F,
+        temperatureKelvin: 300,
+        availableSpare: 97,
+        availableSpareThreshold: 10,
+        percentageUsed: 125
+      )
+    )
+
+    XCTAssertTrue(metrics.availableSpareBelowThreshold)
+    XCTAssertTrue(metrics.temperatureThresholdExceeded)
+    XCTAssertTrue(metrics.reliabilityDegraded)
+    XCTAssertTrue(metrics.mediaReadOnly)
+    XCTAssertTrue(metrics.volatileMemoryBackupFailed)
+    XCTAssertTrue(metrics.unknownWarningPresent)
+    XCTAssertEqual(
+      try XCTUnwrap(metrics.compositeTemperatureCelsius),
+      26.85,
+      accuracy: 0.001
+    )
+    XCTAssertEqual(metrics.availableSpare, 97)
+    XCTAssertEqual(metrics.availableSpareThreshold, 10)
+    XCTAssertEqual(metrics.percentageUsed, 125)
+    XCTAssertEqual(metrics.invalidFieldCount, 0)
+  }
+
+  func testNVMeSMARTDecoderOmitsInvalidScalarsWithoutInventingHealth() throws {
+    let metrics = NVMeSMARTScalarDecoder.decode(
+      NVMeSMARTScalarReading(
+        criticalWarning: 0,
+        temperatureKelvin: 501,
+        availableSpare: 101,
+        availableSpareThreshold: 255,
+        percentageUsed: 255
+      )
+    )
+
+    XCTAssertNil(metrics.compositeTemperatureCelsius)
+    XCTAssertNil(metrics.availableSpare)
+    XCTAssertNil(metrics.availableSpareThreshold)
+    XCTAssertEqual(metrics.percentageUsed, 255)
+    XCTAssertEqual(metrics.invalidFieldCount, 3)
+
+    let zeroTemperature = NVMeSMARTScalarDecoder.decode(
+      NVMeSMARTScalarReading(
+        criticalWarning: 0,
+        temperatureKelvin: 0,
+        availableSpare: 100,
+        availableSpareThreshold: 10,
+        percentageUsed: 7
+      )
+    )
+    XCTAssertNil(zeroTemperature.compositeTemperatureCelsius)
+    XCTAssertEqual(zeroTemperature.invalidFieldCount, 0)
+  }
+
+  func testNVMeSMARTSnapshotUsesStableNonidentifyingScalarContract() throws {
+    let provider = NVMeSMARTProvider(reader: { .readFailed }, uptime: { 0 })
+    let snapshot = provider.snapshot(
+      result: .success(
+        NVMeSMARTScalarReading(
+          criticalWarning: 0x80,
+          temperatureKelvin: 310,
+          availableSpare: 100,
+          availableSpareThreshold: 10,
+          percentageUsed: 109
+        )
+      )
+    )
+    let channels = Dictionary(uniqueKeysWithValues: snapshot.channels.map { ($0.id, $0) })
+
+    XCTAssertEqual(snapshot.status, .available)
+    XCTAssertEqual(snapshot.summary, "SMART warning bits reported")
+    XCTAssertEqual(snapshot.domain, .storage)
+    XCTAssertEqual(snapshot.accessLevel, .publicOrdinary)
+    XCTAssertEqual(snapshot.compatibilityConfidence, .singleModelObserved)
+    XCTAssertEqual(snapshot.readiness.readPath, .ready)
+    XCTAssertEqual(channels["critical_warning_bits"]?.formattedValue, "0x80")
+    XCTAssertEqual(channels["unknown_warning_present"]?.value, 1)
+    XCTAssertEqual(channels["percentage_used"]?.value, 109)
+    XCTAssertEqual(channels["percentage_used"]?.kind, .estimated)
+    XCTAssertFalse(snapshot.summary.localizedCaseInsensitiveContains("healthy"))
+    XCTAssertFalse(
+      snapshot.channels.contains { channel in
+        ["model", "serial", "uuid", "guid", "path", "bsd", "name", "log"]
+          .contains(where: channel.id.contains)
+      }
+    )
+    XCTAssertTrue(SensorContractAudit.issues(for: [snapshot]).isEmpty)
+
+    let partial = provider.snapshot(
+      result: .success(
+        NVMeSMARTScalarReading(
+          criticalWarning: 0,
+          temperatureKelvin: 501,
+          availableSpare: 101,
+          availableSpareThreshold: 10,
+          percentageUsed: 255
+        )
+      )
+    )
+    XCTAssertEqual(partial.status, .degraded)
+    XCTAssertEqual(partial.readiness.feature, .partial)
+    XCTAssertNil(partial.channels.first { $0.id == "composite_temperature" })
+    XCTAssertNil(partial.channels.first { $0.id == "available_spare" })
+    XCTAssertEqual(partial.channels.first { $0.id == "percentage_used" }?.value, 255)
+    XCTAssertTrue(SensorContractAudit.issues(for: [partial]).isEmpty)
+  }
+
+  func testNVMeSMARTFailureStatesStayDistinctAndSanitized() {
+    let provider = NVMeSMARTProvider(reader: { .readFailed }, uptime: { 0 })
+    let fixtures:
+      [(
+        result: NVMeSMARTReadResult, status: SensorStatus,
+        presence: SensorHardwarePresence, readPath: SensorReadPathReadiness,
+        feature: SensorFeatureReadiness
+      )] = [
+        (.systemVolumeUnavailable, .unavailable, .unknown, .unavailable, .unsupported),
+        (.smartUnavailable, .unavailable, .absent, .unavailable, .unsupported),
+        (.interfaceUnavailable, .unavailable, .present, .unavailable, .blocked),
+        (.permissionDenied, .permissionRequired, .present, .permissionRequired, .blocked),
+        (.temporarilyUnavailable, .degraded, .present, .limited, .partial),
+        (.readFailed, .error, .present, .failed, .blocked),
+      ]
+
+    for fixture in fixtures {
+      let snapshot = provider.snapshot(result: fixture.result)
+      XCTAssertEqual(snapshot.status, fixture.status)
+      XCTAssertEqual(snapshot.readiness.hardwarePresence, fixture.presence)
+      XCTAssertEqual(snapshot.readiness.readPath, fixture.readPath)
+      XCTAssertEqual(snapshot.readiness.feature, fixture.feature)
+      XCTAssertTrue(snapshot.channels.isEmpty)
+      XCTAssertFalse(snapshot.notes.joined().contains("/dev/"))
+      XCTAssertTrue(SensorContractAudit.issues(for: [snapshot]).isEmpty)
+    }
+  }
+
+  func testNVMeSMARTProviderCachesReadsForAtLeastSixtySeconds() async {
+    let fixture = NVMeSMARTCacheFixture()
+    let provider = NVMeSMARTProvider(
+      reader: { fixture.read() },
+      uptime: { fixture.uptime }
+    )
+
+    _ = await provider.read()
+    fixture.uptime = 59
+    _ = await provider.read()
+    XCTAssertEqual(fixture.readCount, 1)
+
+    fixture.uptime = 60
+    _ = await provider.read()
+    XCTAssertEqual(fixture.readCount, 2)
+    XCTAssertGreaterThanOrEqual(NVMeSMARTProvider.minimumCacheInterval, 60)
+  }
+
   func testThermalProviderKeepsStateAndOrdinalEncodingSeparate() throws {
     XCTAssertEqual(SystemThermalPressure(systemState: .nominal), .nominal)
     XCTAssertEqual(SystemThermalPressure(systemState: .fair), .fair)
@@ -3015,6 +3172,32 @@ private actor DelayedFirstReadProvider: SensorProvider {
   }
 
   func readCount() -> Int { count }
+}
+
+private final class NVMeSMARTCacheFixture: @unchecked Sendable {
+  private let lock = NSLock()
+  private var storedUptime: TimeInterval = 0
+  private var storedReadCount = 0
+
+  var uptime: TimeInterval {
+    get { lock.withLock { storedUptime } }
+    set { lock.withLock { storedUptime = newValue } }
+  }
+
+  var readCount: Int { lock.withLock { storedReadCount } }
+
+  func read() -> NVMeSMARTReadResult {
+    lock.withLock { storedReadCount += 1 }
+    return .success(
+      NVMeSMARTScalarReading(
+        criticalWarning: 0,
+        temperatureKelvin: 300,
+        availableSpare: 100,
+        availableSpareThreshold: 10,
+        percentageUsed: 7
+      )
+    )
+  }
 }
 
 extension JSONDecoder {

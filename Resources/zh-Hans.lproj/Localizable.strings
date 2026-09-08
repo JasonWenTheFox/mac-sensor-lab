@@ -100,6 +100,8 @@
 	<string>角速度</string>
 	<key>Apple GPU performance statistics were unavailable</key>
 	<string>Apple GPU 性能统计不可用</string>
+	<key>Apple IONVMeSMARTInterface SMARTReadData</key>
+	<string>Apple IONVMeSMARTInterface SMARTReadData</string>
 	<key>Apple SMC</key>
 	<string>Apple SMC</string>
 	<key>Apple SPU Discovery</key>
@@ -140,6 +142,12 @@
 	<string>可用于重要用途</string>
 	<key>Available for opportunistic usage</key>
 	<string>可用于机会性用途</string>
+	<key>Available spare</key>
+	<string>可用备用空间</string>
+	<key>Available spare below threshold</key>
+	<string>可用备用空间低于阈值</string>
+	<key>Available spare threshold</key>
+	<string>可用备用空间阈值</string>
 	<key>Available-space values use the current Foundation volume semantics.</key>
 	<string>可用空间数值采用当前 Foundation 的卷语义。</string>
 	<key>Average</key>
@@ -284,6 +292,12 @@
 	<string>已完成刷新</string>
 	<key>Component Thermals</key>
 	<string>部件温度</string>
+	<key>Composite temperature</key>
+	<string>综合温度</string>
+	<key>Composite temperature above critical threshold</key>
+	<string>综合温度超过临界阈值</string>
+	<key>Composite temperature describes the controller and NVM, not room temperature.</key>
+	<string>综合温度描述控制器与 NVM，并非室温。</string>
 	<key>Continuous recording</key>
 	<string>连续记录</string>
 	<key>Controller estimate; unavailable sentinel values are omitted.</key>
@@ -308,6 +322,8 @@
 	<string>请先创建环境光校准再导出</string>
 	<key>Critical</key>
 	<string>严重</string>
+	<key>Critical warning bits</key>
+	<string>关键警告位</string>
 	<key>Current Capacity ÷ Max Capacity from Apple's public power-source API.</key>
 	<string>Apple 公开电源 API 返回的当前容量 ÷ 最大容量。</string>
 	<key>Cycle count</key>
@@ -606,6 +622,8 @@
 	<string>最大</string>
 	<key>Media block size</key>
 	<string>介质块大小</string>
+	<key>Media read-only warning</key>
+	<string>介质只读警告</string>
 	<key>Memory</key>
 	<string>内存</string>
 	<key>Memory Hardware</key>
@@ -638,6 +656,18 @@
 	<string>运动趋势</string>
 	<key>Multiple driver instances use the maximum utilization and summed memory counters.</key>
 	<string>存在多个驱动实例时，利用率取最大值，内存计数器求和。</string>
+	<key>NVMe SMART</key>
+	<string>NVMe SMART</string>
+	<key>NVMe SMART access was denied</key>
+	<string>NVMe SMART 访问被拒绝</string>
+	<key>NVMe SMART data partially available</key>
+	<string>NVMe SMART 数据部分可用</string>
+	<key>NVMe SMART device was temporarily unavailable</key>
+	<string>NVMe SMART 设备暂时不可用</string>
+	<key>NVMe SMART interface was unavailable</key>
+	<string>NVMe SMART 接口不可用</string>
+	<key>NVMe SMART read failed</key>
+	<string>NVMe SMART 读取失败</string>
 	<key>Network</key>
 	<string>网络</string>
 	<key>Network Throughput</key>
@@ -656,6 +686,8 @@
 	<string>未检测到活动显示器</string>
 	<key>No compatible Apple SPU report devices found</key>
 	<string>未发现兼容的 Apple SPU 报告设备</string>
+	<key>No device identifier or system error text is exported.</key>
+	<string>不导出设备标识符或系统错误文本。</string>
 	<key>No device names, serial numbers, volume names, or file paths are read or exported.</key>
 	<string>不读取或导出设备名称、序列号、卷名称或文件路径。</string>
 	<key>No device names, serial numbers, volume names, or file paths are read.</key>
@@ -678,6 +710,10 @@
 	<string>能力发现期间不读取私有数据字段。</string>
 	<key>No process list or identifying information was requested.</key>
 	<string>未请求进程列表或身份识别信息。</string>
+	<key>No recognized SMART warning bits</key>
+	<string>未报告已识别的 SMART 警告位</string>
+	<key>No recognized warning bit is not a complete health assessment.</key>
+	<string>没有已识别的警告位并不等于完整的健康评估。</string>
 	<key>No serial number, hardware UUID, UDID, host name, user name, location, process list, SSID or audio recording is collected by this build.</key>
 	<string>此构建不采集序列号、硬件 UUID、UDID、主机名、用户名、位置、进程列表、SSID 或录音。</string>
 	<key>No sudo, driver-property writes, or permission bypass was attempted.</key>
@@ -704,6 +740,10 @@
 	<string>已关闭</string>
 	<key>On</key>
 	<string>开</string>
+	<key>One or more scalar fields failed validation and were omitted.</key>
+	<string>一个或多个标量字段未通过校验，已省略。</string>
+	<key>Only SMARTReadData for the current system-volume whole disk is used; identify data, device names, serial numbers, paths, and detailed error logs are not read.</key>
+	<string>仅使用当前系统卷整盘的 SMARTReadData；不读取 identify 数据、设备名称、序列号、路径或详细错误日志。</string>
 	<key>Only a fixed %@ and generation-neutral allowlist of temperature, fan and power keys was read.</key>
 	<string>仅读取固定的 %@ 与代际中立温度、风扇和功率键白名单。</string>
 	<key>Only a fixed allowlist of non-identifying registry keys is read.</key>
@@ -736,6 +776,10 @@
 	<string>已暂停</string>
 	<key>Peak-to-peak</key>
 	<string>峰峰值</string>
+	<key>Percentage used estimate</key>
+	<string>已用寿命估算</string>
+	<key>Percentage used is a controller lifetime-use estimate; 100% does not mean failure and the value can exceed 100%.</key>
+	<string>已用百分比是控制器给出的寿命消耗估算；100% 不表示故障，数值也可能超过 100%。</string>
 	<key>Performance</key>
 	<string>性能</string>
 	<key>Performance and efficiency counts appear only when both bounded counters agree with the physical total.</key>
@@ -870,6 +914,8 @@
 	<string>相对变化由原始上盖角度派生，不会更改传感器。</string>
 	<key>Relative channel balance</key>
 	<string>相对通道比例</string>
+	<key>Reliability degraded warning</key>
+	<string>可靠性下降警告</string>
 	<key>Removable media</key>
 	<string>可移除介质</string>
 	<key>Removed the last ambient-light calibration point</key>
@@ -900,6 +946,8 @@
 	<string>横滚 %@°</string>
 	<key>SMART and NVMe health fields are not inferred from Disk Arbitration metadata.</key>
 	<string>不会根据 Disk Arbitration 元数据推断 SMART 或 NVMe 健康字段。</string>
+	<key>SMART warning bits reported</key>
+	<string>报告了 SMART 警告位</string>
 	<key>SMC Sensors</key>
 	<string>SMC 传感器</string>
 	<key>SMC opened, but common keys returned no readings</key>
@@ -1014,6 +1062,8 @@
 	<string>系统功耗趋势</string>
 	<key>System Storage Hardware</key>
 	<string>系统存储硬件</string>
+	<key>System disk does not expose NVMe SMART</key>
+	<string>系统磁盘未提供 NVMe SMART</string>
 	<key>System low-battery warning</key>
 	<string>系统低电量告警</string>
 	<key>System performance counters were unavailable</key>
@@ -1026,6 +1076,8 @@
 	<string>系统估算剩余时间</string>
 	<key>System uptime</key>
 	<string>系统运行时间</string>
+	<key>System-volume storage mapping was unavailable</key>
+	<string>系统卷的存储映射不可用</string>
 	<key>System-wide IOPowerSources estimate for the active limited power source.</key>
 	<string>IOPowerSources 对当前有限供电来源给出的系统级估算。</string>
 	<key>The App will not request sudo or alter HID driver properties.</key>
@@ -1118,6 +1170,8 @@
 	<string>未文档化的普通用户访问</string>
 	<key>Unknown</key>
 	<string>未知</string>
+	<key>Unknown warning bits present</key>
+	<string>存在未知警告位</string>
 	<key>Unsupported</key>
 	<string>不支持</string>
 	<key>Update Reference</key>
@@ -1144,6 +1198,8 @@
 	<string>查看诊断</string>
 	<key>Virtual or tunneled paths can represent the same traffic more than once.</key>
 	<string>虚拟或隧道路径可能会重复表示同一流量。</string>
+	<key>Volatile-memory backup warning</key>
+	<string>易失性内存备份警告</string>
 	<key>Voltage × current; not wall-plug power.</key>
 	<string>电压 × 电流；并非插座侧功率。</string>
 	<key>Volume names, identifiers, mount paths, and system error text are intentionally omitted.</key>

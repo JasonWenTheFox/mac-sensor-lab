@@ -129,6 +129,28 @@ public enum SensorDemoProviderRegistry {
           text("partition_scheme", "Partition scheme class", "GUID partition map"),
         ]),
       provider(
+        "storage.nvme_health", "NVMe SMART", .storage, .publicAPI,
+        "No recognized SMART warning bits",
+        [
+          text("critical_warning_bits", "Critical warning bits", "0x00", 0),
+          text(
+            "available_spare_below_threshold", "Available spare below threshold", "No", 0, nil,
+            .derived),
+          text(
+            "temperature_threshold_exceeded", "Composite temperature above critical threshold",
+            "No", 0, nil, .derived),
+          text("reliability_degraded", "Reliability degraded warning", "No", 0, nil, .derived),
+          text("media_read_only", "Media read-only warning", "No", 0, nil, .derived),
+          text(
+            "volatile_memory_backup_failed", "Volatile-memory backup warning", "No", 0, nil,
+            .derived),
+          text("unknown_warning_present", "Unknown warning bits present", "No", 0, nil, .derived),
+          number("composite_temperature", "Composite temperature", 36.85, "°C", .derived),
+          percent("available_spare", "Available spare", 100),
+          percent("available_spare_threshold", "Available spare threshold", 10),
+          percent("percentage_used", "Percentage used estimate", 7, .estimated),
+        ]),
+      provider(
         "system.performance", "Performance", .system, .publicAPI, "CPU 38%",
         [
           percent("cpu_utilization", "CPU utilization", 38, .derived),

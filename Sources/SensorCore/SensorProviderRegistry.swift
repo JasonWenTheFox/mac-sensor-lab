@@ -12,6 +12,7 @@ public enum SensorProviderRegistry {
       SecurityHardwareProvider(),
       DisplayHardwareProvider(),
       StorageHardwareProvider(),
+      NVMeSMARTProvider(),
       SystemPerformanceProvider(),
       GPUPerformanceProvider(),
       NetworkThroughputProvider(),
