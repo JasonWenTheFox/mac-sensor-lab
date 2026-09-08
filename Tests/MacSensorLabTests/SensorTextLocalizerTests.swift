@@ -13,6 +13,10 @@ final class SensorTextLocalizerTests: XCTestCase {
     "%@ • %lld active": "%@ • %lld 台活动显示器",
     "%lld active displays": "%lld 台活动显示器",
     "%lld active • %lld EDR capable": "%lld 台活动显示器 • %lld 台支持 EDR",
+    "%lld devices • %lld input • %lld output": "%lld 台设备 • %lld 台支持输入 • %lld 台支持输出",
+    "%lld device • %lld input • %lld output": "%lld 台设备 • %lld 台支持输入 • %lld 台支持输出",
+    "%lld audio device": "%lld 台音频设备",
+    "%lld audio devices": "%lld 台音频设备",
     "%lld experimental sensor types detected": "检测到 %lld 类实验性传感器",
     "%lld of %lld capabilities detected": "已检测到 %lld/%lld 项能力",
     "%lld physical • %lld logical cores": "%lld 个物理核心 • %lld 个逻辑核心",
@@ -75,6 +79,16 @@ final class SensorTextLocalizerTests: XCTestCase {
       "3024 × 1964 px • 1 台活动显示器"
     )
     XCTAssertEqual(localizer.localized("2 active displays"), "2 台活动显示器")
+    XCTAssertEqual(localizer.localized("1 audio device"), "1 台音频设备")
+    XCTAssertEqual(
+      localizer.localized("1 device • 0 input • 0 output"),
+      "1 台设备 • 0 台支持输入 • 0 台支持输出"
+    )
+    XCTAssertEqual(localizer.localized("4 audio devices"), "4 台音频设备")
+    XCTAssertEqual(
+      localizer.localized("3 devices • 2 input • 2 output"),
+      "3 台设备 • 2 台支持输入 • 2 台支持输出"
+    )
     XCTAssertEqual(
       localizer.localized("2 active • 1 EDR capable"),
       "2 台活动显示器 • 1 台支持 EDR"

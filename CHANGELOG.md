@@ -13,6 +13,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - A user-started Force Touch Pressure Lab based only on view-local public AppKit pressure events, with stage-separated normalized-pressure history, stage transition values, and Force Click entry counts.
 - An identity-free public CoreWLAN provider for current Wi-Fi radio state, RSSI, noise, derived SNR, channel, width, band, PHY, negotiated transmit rate, transmit power, and security mode, plus a bounded signal/noise experiment.
 - A confirmation-gated, session-only nearby Wi-Fi channel snapshot that reduces one CoreWLAN scan to non-identifying band, channel, record-count, RSSI, and width summaries, with a 512-record processing limit and deterministic Demo data.
+- A public Core Audio hardware-inventory provider for bounded device/input/output/duplex counts and current default input/output transport, channels, nominal sample rate, and device latency without opening audio IO.
 
 ### Security and privacy
 
@@ -21,6 +22,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - Pressure Lab retains at most 240 samples in memory, clears them when the experiment is left, and does not use input monitors, raw multitouch contacts, device identifiers, persistence, snapshots, or exports. Its 0–1 value is explicitly stage-local and never presented as force or weight.
 - Wi-Fi radio sampling does not read SSID, BSSID, MAC/IP address, interface name, country code, location, or scan results; it does not request Location permission or perform background scans. Negotiated PHY rate is not presented as application throughput.
 - Nearby-channel scans never run at launch, on a timer, or from Provider sampling. The App does not access SSID, BSSID, country code, information elements, or interface identity; results stay in the panel, disappear when it is left, and are never persisted or exported. A 20-second UI watchdog can stop waiting and discard late results, while single-flight state prevents overlap until CoreWLAN's blocking call actually returns.
+- Audio inventory keeps numeric AudioDevice handles within one read and never queries device/model UIDs, names, manufacturers, or free-form driver text. It does not create or start audio IO, capture PCM, record sound, request microphone permission, or add a microphone usage description.
 
 ## 0.3.1 - 2026-09-08
 

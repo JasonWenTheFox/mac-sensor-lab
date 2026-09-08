@@ -73,6 +73,26 @@ struct SensorTextLocalizer {
     {
       return formatted("%lld active • %lld EDR capable", counts.0, counts.1)
     }
+    if let counts = threeIntegers(
+      between: "", firstMiddle: " devices • ", secondMiddle: " input • ",
+      and: " output", in: value)
+    {
+      return formatted(
+        "%lld devices • %lld input • %lld output", counts.0, counts.1, counts.2)
+    }
+    if let counts = threeIntegers(
+      between: "", firstMiddle: " device • ", secondMiddle: " input • ",
+      and: " output", in: value), counts.0 == 1
+    {
+      return formatted(
+        "%lld device • %lld input • %lld output", counts.0, counts.1, counts.2)
+    }
+    if let count = integer(before: " audio device", in: value), count == 1 {
+      return formatted("%lld audio device", count)
+    }
+    if let count = integer(before: " audio devices", in: value) {
+      return formatted("%lld audio devices", count)
+    }
     if let (display, field) = displayOrdinalField(in: value) {
       return formatted("Display %lld %@", display, localized(field))
     }
@@ -217,6 +237,27 @@ struct SensorTextLocalizer {
     guard value.hasSuffix(suffix), let range = value.range(of: separator, options: .backwards)
     else { return nil }
     return Int64(value[range.upperBound..<value.index(value.endIndex, offsetBy: -suffix.count)])
+  }
+
+  private func threeIntegers(
+    between prefix: String,
+    firstMiddle: String,
+    secondMiddle: String,
+    and suffix: String,
+    in value: String
+  ) -> (Int64, Int64, Int64)? {
+    guard value.hasPrefix(prefix), value.hasSuffix(suffix) else { return nil }
+    let body = value.dropFirst(prefix.count).dropLast(suffix.count)
+    guard let firstRange = body.range(of: firstMiddle) else { return nil }
+    let first = body[..<firstRange.lowerBound]
+    let remainder = body[firstRange.upperBound...]
+    guard let secondRange = remainder.range(of: secondMiddle) else { return nil }
+    let second = remainder[..<secondRange.lowerBound]
+    let third = remainder[secondRange.upperBound...]
+    guard let firstValue = Int64(first), let secondValue = Int64(second),
+      let thirdValue = Int64(third)
+    else { return nil }
+    return (firstValue, secondValue, thirdValue)
   }
 
   private func pair(in value: String, separator: String) -> (String, String)? {

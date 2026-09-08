@@ -1,3 +1,4 @@
+import CoreAudio
 import Foundation
 import IOKit
 import XCTest
@@ -2530,6 +2531,283 @@ final class SensorCoreTests: XCTestCase {
     XCTAssertTrue(malformedText.channels.isEmpty)
   }
 
+  func testAudioHardwareSnapshotPublishesOnlyBoundedNonidentifyingFacts() throws {
+    let builtInDuplex = AudioHardwareDeviceReading(
+      isAlive: true,
+      transport: .builtIn,
+      inputChannelCount: 2,
+      outputChannelCount: 2,
+      nominalSampleRate: 48_000,
+      inputLatencyFrames: 15,
+      outputLatencyFrames: 20
+    )
+    let usbOutput = AudioHardwareDeviceReading(
+      isAlive: true,
+      transport: .usb,
+      inputChannelCount: 0,
+      outputChannelCount: 8,
+      nominalSampleRate: 96_000,
+      inputLatencyFrames: 0,
+      outputLatencyFrames: 64
+    )
+    let bluetoothInput = AudioHardwareDeviceReading(
+      isAlive: true,
+      transport: .bluetooth,
+      inputChannelCount: 1,
+      outputChannelCount: 0,
+      nominalSampleRate: 48_000,
+      inputLatencyFrames: 32,
+      outputLatencyFrames: 0
+    )
+    let snapshot = AudioHardwareProvider().snapshot(
+      result: .success(
+        AudioHardwareInventoryReading(
+          devices: [builtInDuplex, usbOutput, bluetoothInput],
+          defaultInput: .reported(builtInDuplex),
+          defaultOutput: .reported(usbOutput)
+        )
+      )
+    )
+    let channels = Dictionary(uniqueKeysWithValues: snapshot.channels.map { ($0.id, $0) })
+
+    XCTAssertEqual(snapshot.status, .available)
+    XCTAssertEqual(snapshot.summary, "3 devices • 2 input • 2 output")
+    XCTAssertEqual(snapshot.domain, .audio)
+    XCTAssertEqual(snapshot.accessLevel, .publicOrdinary)
+    XCTAssertEqual(snapshot.readiness.stream, .notApplicable)
+    XCTAssertEqual(channels["device_count"]?.value, 3)
+    XCTAssertEqual(channels["alive_device_count"]?.value, 3)
+    XCTAssertEqual(channels["input_device_count"]?.value, 2)
+    XCTAssertEqual(channels["output_device_count"]?.value, 2)
+    XCTAssertEqual(channels["duplex_device_count"]?.value, 1)
+    XCTAssertEqual(channels["default_input_transport"]?.formattedValue, "Built-in")
+    XCTAssertEqual(channels["default_input_channels"]?.value, 2)
+    XCTAssertEqual(channels["default_input_sample_rate"]?.value, 48_000)
+    XCTAssertEqual(channels["default_input_latency"]?.value, 15)
+    XCTAssertEqual(channels["default_output_transport"]?.formattedValue, "USB")
+    XCTAssertEqual(channels["default_output_channels"]?.value, 8)
+    XCTAssertEqual(channels["default_output_sample_rate"]?.value, 96_000)
+    XCTAssertEqual(channels["default_output_latency"]?.value, 64)
+    XCTAssertTrue(SensorContractAudit.issues(for: [snapshot]).isEmpty)
+    XCTAssertFalse(
+      snapshot.channels.contains { channel in
+        ["uid", "uuid", "name", "manufacturer", "model", "object", "device_id"]
+          .contains(where: channel.id.contains)
+      }
+    )
+  }
+
+  func testAudioHardwareSnapshotDegradesAndOmitsMalformedOptionalFacts() {
+    let malformed = AudioHardwareDeviceReading(
+      isAlive: nil,
+      transport: nil,
+      inputChannelCount: -1,
+      outputChannelCount: 1_025,
+      nominalSampleRate: .nan,
+      inputLatencyFrames: -1,
+      outputLatencyFrames: 10_000_001
+    )
+    let snapshot = AudioHardwareProvider().snapshot(
+      result: .success(
+        AudioHardwareInventoryReading(
+          devices: [malformed],
+          defaultInput: .reported(malformed),
+          defaultOutput: .unavailable
+        )
+      )
+    )
+    let channelIDs = Set(snapshot.channels.map(\.id))
+
+    XCTAssertEqual(snapshot.status, .degraded)
+    XCTAssertEqual(snapshot.summary, "1 audio device")
+    XCTAssertEqual(channelIDs, ["device_count", "default_input_present"])
+    XCTAssertEqual(snapshot.readiness.readPath, .limited)
+    XCTAssertTrue(snapshot.channels.allSatisfy { $0.value?.isFinite ?? true })
+    XCTAssertTrue(snapshot.notes.contains { $0.contains("were omitted") })
+    XCTAssertNil(AudioHardwareMeasurements.channelCount(-1))
+    XCTAssertNil(AudioHardwareMeasurements.channelCount(1_025))
+    XCTAssertNil(AudioHardwareMeasurements.sampleRate(.infinity))
+    XCTAssertNil(AudioHardwareMeasurements.latencyFrames(-1))
+  }
+
+  func testAudioHardwareAllowsZeroStreamBuffersAndNoDefaultEndpoints() throws {
+    XCTAssertEqual(
+      AudioHardwareMeasurements.bufferListByteCount(bufferCount: 0),
+      AudioHardwareMeasurements.bufferListHeaderBytes
+    )
+    XCTAssertEqual(
+      AudioHardwareMeasurements.bufferListByteCount(bufferCount: 1),
+      MemoryLayout<AudioBufferList>.size
+    )
+    XCTAssertNil(
+      AudioHardwareMeasurements.bufferListByteCount(
+        bufferCount: AudioHardwareMeasurements.maximumBuffersPerDirection + 1
+      )
+    )
+
+    let directionless = AudioHardwareDeviceReading(
+      isAlive: true,
+      transport: .virtual,
+      inputChannelCount: 0,
+      outputChannelCount: 0,
+      nominalSampleRate: 48_000,
+      inputLatencyFrames: 0,
+      outputLatencyFrames: 0
+    )
+    let snapshot = AudioHardwareProvider().snapshot(
+      result: .success(
+        AudioHardwareInventoryReading(
+          devices: [directionless], defaultInput: .none, defaultOutput: .none
+        )
+      )
+    )
+    let channels = Dictionary(uniqueKeysWithValues: snapshot.channels.map { ($0.id, $0) })
+
+    XCTAssertEqual(snapshot.status, .available)
+    XCTAssertEqual(snapshot.summary, "1 device • 0 input • 0 output")
+    XCTAssertEqual(channels["input_device_count"]?.value, 0)
+    XCTAssertEqual(channels["output_device_count"]?.value, 0)
+    XCTAssertEqual(channels["default_input_present"]?.value, 0)
+    XCTAssertEqual(channels["default_output_present"]?.value, 0)
+    XCTAssertTrue(SensorContractAudit.issues(for: [snapshot]).isEmpty)
+  }
+
+  func testAudioHardwareDefaultSwitchRefreshesValuesWithoutChangingStableChannelIDs() {
+    let builtIn = AudioHardwareDeviceReading(
+      isAlive: true,
+      transport: .builtIn,
+      inputChannelCount: 2,
+      outputChannelCount: 2,
+      nominalSampleRate: 48_000,
+      inputLatencyFrames: 15,
+      outputLatencyFrames: 20
+    )
+    let usb = AudioHardwareDeviceReading(
+      isAlive: true,
+      transport: .usb,
+      inputChannelCount: 4,
+      outputChannelCount: 8,
+      nominalSampleRate: 96_000,
+      inputLatencyFrames: 32,
+      outputLatencyFrames: 64
+    )
+    let provider = AudioHardwareProvider()
+    let first = provider.snapshot(
+      result: .success(
+        AudioHardwareInventoryReading(
+          devices: [builtIn, usb],
+          defaultInput: .reported(builtIn),
+          defaultOutput: .reported(builtIn)
+        )
+      )
+    )
+    let second = provider.snapshot(
+      result: .success(
+        AudioHardwareInventoryReading(
+          devices: [builtIn, usb],
+          defaultInput: .reported(usb),
+          defaultOutput: .reported(usb)
+        )
+      )
+    )
+    let firstChannels = Dictionary(uniqueKeysWithValues: first.channels.map { ($0.id, $0) })
+    let secondChannels = Dictionary(uniqueKeysWithValues: second.channels.map { ($0.id, $0) })
+
+    XCTAssertEqual(first.channels.map(\.id), second.channels.map(\.id))
+    XCTAssertEqual(firstChannels["default_input_transport"]?.formattedValue, "Built-in")
+    XCTAssertEqual(secondChannels["default_input_transport"]?.formattedValue, "USB")
+    XCTAssertEqual(firstChannels["default_output_sample_rate"]?.value, 48_000)
+    XCTAssertEqual(secondChannels["default_output_sample_rate"]?.value, 96_000)
+  }
+
+  func testAudioHardwareUnknownDefaultTransportIsOmittedAndDegraded() {
+    let unknownTransport = AudioHardwareDeviceReading(
+      isAlive: true,
+      transport: nil,
+      inputChannelCount: 2,
+      outputChannelCount: 2,
+      nominalSampleRate: 48_000,
+      inputLatencyFrames: 15,
+      outputLatencyFrames: 20
+    )
+    let snapshot = AudioHardwareProvider().snapshot(
+      result: .success(
+        AudioHardwareInventoryReading(
+          devices: [unknownTransport],
+          defaultInput: .reported(unknownTransport),
+          defaultOutput: .reported(unknownTransport)
+        )
+      )
+    )
+
+    XCTAssertEqual(snapshot.status, .degraded)
+    XCTAssertNil(snapshot.channels.first { $0.id == "default_input_transport" })
+    XCTAssertNil(snapshot.channels.first { $0.id == "default_output_transport" })
+    XCTAssertEqual(snapshot.readiness.feature, .partial)
+  }
+
+  func testAudioHardwareEmptyAndFailureStatesStayDistinctAndSanitized() {
+    let provider = AudioHardwareProvider()
+    let empty = provider.snapshot(
+      result: .success(
+        AudioHardwareInventoryReading(
+          devices: [], defaultInput: .none, defaultOutput: .none
+        )
+      )
+    )
+    XCTAssertEqual(empty.status, .unavailable)
+    XCTAssertEqual(empty.readiness.hardwarePresence, .absent)
+    XCTAssertEqual(empty.readiness.readPath, .ready)
+
+    let fixtures:
+      [(
+        AudioHardwareReadResult, SensorStatus, SensorHardwarePresence,
+        SensorReadPathReadiness, SensorFeatureReadiness
+      )] = [
+        (.temporarilyUnavailable, .degraded, .unknown, .limited, .partial),
+        (.permissionDenied, .permissionRequired, .unknown, .permissionRequired, .blocked),
+        (.failed, .error, .unknown, .failed, .unknown),
+      ]
+    for (result, status, presence, readPath, feature) in fixtures {
+      let snapshot = provider.snapshot(result: result)
+      XCTAssertEqual(snapshot.status, status)
+      XCTAssertEqual(snapshot.readiness.hardwarePresence, presence)
+      XCTAssertEqual(snapshot.readiness.readPath, readPath)
+      XCTAssertEqual(snapshot.readiness.feature, feature)
+      XCTAssertTrue(snapshot.channels.isEmpty)
+      XCTAssertFalse(snapshot.notes.joined().contains("/"))
+      XCTAssertTrue(SensorContractAudit.issues(for: [snapshot]).isEmpty)
+    }
+  }
+
+  func testAudioHardwareTransportAllowlistAndSourceExcludeIdentityAndCapturePaths() throws {
+    XCTAssertEqual(
+      AudioHardwareTransport(rawValue: kAudioDeviceTransportTypeBuiltIn)?.displayName,
+      "Built-in"
+    )
+    XCTAssertEqual(
+      AudioHardwareTransport(rawValue: kAudioDeviceTransportTypeUSB)?.displayName,
+      "USB"
+    )
+    XCTAssertNil(AudioHardwareTransport(rawValue: 0xFFFF_FFFF))
+
+    let projectRoot = URL(fileURLWithPath: #filePath)
+      .deletingLastPathComponent()
+      .deletingLastPathComponent()
+      .deletingLastPathComponent()
+    let sourceURL = projectRoot.appendingPathComponent(
+      "Sources/SensorCore/AudioHardwareProvider.swift"
+    )
+    let source = try String(contentsOf: sourceURL, encoding: .utf8)
+    for forbidden in [
+      "kAudioDevicePropertyDeviceUID", "kAudioDevicePropertyModelUID",
+      "kAudioObjectPropertyName", "kAudioObjectPropertyManufacturer", "AudioDeviceStart",
+      "AudioDeviceCreateIOProcID", "AVAudioEngine", "AVCapture", "requestRecordPermission",
+    ] {
+      XCTAssertFalse(source.contains(forbidden), "Forbidden audio access path: \(forbidden)")
+    }
+  }
+
   func testUInt128CounterFormatsComparesAndMultipliesWithoutPrecisionLoss() throws {
     let one = UInt128Counter(low: 1, high: 0)
     let uint64Maximum = UInt128Counter(low: .max, high: 0)
@@ -2948,6 +3226,8 @@ final class SensorCoreTests: XCTestCase {
     )
     XCTAssertEqual(byID["hardware.display"]?.summary, "2 active • 1 EDR capable")
     XCTAssertEqual(byID["hardware.storage"]?.channels.first?.id, "protocol")
+    XCTAssertEqual(byID["hardware.audio"]?.summary, "3 devices • 2 input • 2 output")
+    XCTAssertEqual(byID["hardware.audio"]?.domain, .audio)
     XCTAssertNotNil(
       byID["motion.spu_discovery"]?.channels.first(where: { $0.id == "lid_angle" })
     )

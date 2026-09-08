@@ -32,8 +32,16 @@
 	<string>%lld 台活动显示器</string>
 	<key>%lld active • %lld EDR capable</key>
 	<string>%lld 台活动显示器 • %lld 台支持 EDR</string>
+	<key>%lld audio device</key>
+	<string>%lld 台音频设备</string>
+	<key>%lld audio devices</key>
+	<string>%lld 台音频设备</string>
 	<key>%lld changes</key>
 	<string>%lld 次变化</string>
+	<key>%lld device • %lld input • %lld output</key>
+	<string>%lld 台设备 • %lld 台支持输入 • %lld 台支持输出</string>
+	<key>%lld devices • %lld input • %lld output</key>
+	<string>%lld 台设备 • %lld 台支持输入 • %lld 台支持输出</string>
 	<key>%lld experimental sensor types detected</key>
 	<string>检测到 %lld 类实验性传感器</string>
 	<key>%lld malformed records discarded • %lld records omitted by the safety limit</key>
@@ -70,6 +78,8 @@
 	<string>AGX PerformanceStatistics 键未文档化，可能随 macOS 或 GPU 代际而变化。</string>
 	<key>APFS container</key>
 	<string>APFS 容器</string>
+	<key>AVB</key>
+	<string>AVB</string>
 	<key>Absent</key>
 	<string>不存在</string>
 	<key>Acceleration</key>
@@ -96,12 +106,16 @@
 	<string>活动处理器</string>
 	<key>Add Calibration Point</key>
 	<string>添加校准点</string>
+	<key>Aggregate</key>
+	<string>聚合</string>
 	<key>Aggregate network counters were unavailable</key>
 	<string>汇总网络计数器不可用</string>
 	<key>Aggregate non-idle Mach CPU ticks between consecutive samples.</key>
 	<string>连续采样之间的 Mach CPU 非空闲时钟计数汇总。</string>
 	<key>Aggregated block devices</key>
 	<string>汇总块设备</string>
+	<key>AirPlay</key>
+	<string>隔空播放</string>
 	<key>All readings stay on this Mac unless you explicitly export a snapshot, recording, calibration, or diagnostics file.</key>
 	<string>所有读数都保留在这台 Mac 上，除非你主动导出快照、记录、校准或诊断文件。</string>
 	<key>Ambient Light</key>
@@ -146,6 +160,14 @@
 	<string>无线链路关联状态</string>
 	<key>Audio</key>
 	<string>音频</string>
+	<key>Audio Hardware</key>
+	<string>音频硬件</string>
+	<key>Audio devices</key>
+	<string>音频设备</string>
+	<key>Audio hardware list was temporarily unavailable</key>
+	<string>音频硬件列表暂时不可用</string>
+	<key>Audio hardware properties could not be read</key>
+	<string>无法读取音频硬件属性</string>
 	<key>Automatic sampling</key>
 	<string>自动采样</string>
 	<key>Automatic sampling interval</key>
@@ -158,6 +180,8 @@
 	<string>可用</string>
 	<key>Available SMC channels vary by Mac model and macOS version.</key>
 	<string>可用的 SMC 通道会随 Mac 机型和 macOS 版本变化。</string>
+	<key>Available audio devices</key>
+	<string>可用音频设备</string>
 	<key>Available for important usage</key>
 	<string>可用于重要用途</string>
 	<key>Available for opportunistic usage</key>
@@ -212,8 +236,12 @@
 	<string>受平台阻止</string>
 	<key>Bluetooth</key>
 	<string>蓝牙</string>
+	<key>Bluetooth LE</key>
+	<string>低功耗蓝牙</string>
 	<key>Build</key>
 	<string>构建</string>
+	<key>Built-in</key>
+	<string>内建</string>
 	<key>Built-in demo fixtures</key>
 	<string>内置演示样本</string>
 	<key>Built-in deterministic demo fixture</key>
@@ -342,6 +370,10 @@
 	<string>综合温度超过临界阈值</string>
 	<key>Composite temperature describes the controller and NVM, not room temperature.</key>
 	<string>综合温度描述控制器与 NVM，并非室温。</string>
+	<key>Continuity Camera (wired)</key>
+	<string>连续互通相机（有线）</string>
+	<key>Continuity Camera (wireless)</key>
+	<string>连续互通相机（无线）</string>
 	<key>Continuous recording</key>
 	<string>连续记录</string>
 	<key>Controller busy time</key>
@@ -352,6 +384,12 @@
 	<string>控制器报告的容量；它可能随电池校准而变化。</string>
 	<key>Converted from the battery controller's raw deci-kelvin value.</key>
 	<string>由电池控制器的原始十分之一开尔文值换算。</string>
+	<key>Core Audio device handles are used only inside one read and are never stored or exported.</key>
+	<string>Core Audio 设备句柄仅在单次读取内部使用，绝不保存或导出。</string>
+	<key>Core Audio hardware properties</key>
+	<string>Core Audio 硬件属性</string>
+	<key>Core Audio hardware property access was denied</key>
+	<string>Core Audio 硬件属性访问被拒绝</string>
 	<key>CoreGraphics and AppKit display capabilities</key>
 	<string>CoreGraphics 与 AppKit 显示能力</string>
 	<key>CoreGraphics may estimate physical size at 72 DPI when EDID is unavailable, so physical dimensions and PPI remain Estimated.</key>
@@ -400,6 +438,30 @@
 	<string>解码器就绪</string>
 	<key>Decoder unsupported</key>
 	<string>解码器不支持</string>
+	<key>Default input</key>
+	<string>默认输入</string>
+	<key>Default input channels</key>
+	<string>默认输入通道数</string>
+	<key>Default input connection</key>
+	<string>默认输入连接方式</string>
+	<key>Default input device latency</key>
+	<string>默认输入设备延迟</string>
+	<key>Default input nominal sample rate</key>
+	<string>默认输入标称采样率</string>
+	<key>Default input reported</key>
+	<string>已报告默认输入设备</string>
+	<key>Default output</key>
+	<string>默认输出</string>
+	<key>Default output channels</key>
+	<string>默认输出通道数</string>
+	<key>Default output connection</key>
+	<string>默认输出连接方式</string>
+	<key>Default output device latency</key>
+	<string>默认输出设备延迟</string>
+	<key>Default output nominal sample rate</key>
+	<string>默认输出标称采样率</string>
+	<key>Default output reported</key>
+	<string>已报告默认输出设备</string>
 	<key>Demo data — no hardware is being read</key>
 	<string>演示数据 — 未读取硬件</string>
 	<key>Demo data — not live sensor readings</key>
@@ -428,6 +490,8 @@
 	<string>开发版</string>
 	<key>Development executable</key>
 	<string>开发用可执行文件</string>
+	<key>Device UID, model UID, name, manufacturer, icon, clock domain, and free-form driver text are not read.</key>
+	<string>不读取设备 UID、型号 UID、名称、厂商、图标、时钟域或驱动自由文本。</string>
 	<key>Device model, vendor, revision, serial number, GUID, UUID, BSD name, registry path, volume name, and mount path are intentionally omitted.</key>
 	<string>有意省略设备型号、厂商、修订、序列号、GUID、UUID、BSD 名称、registry 路径、卷名和挂载路径。</string>
 	<key>Device names and unique identifiers are intentionally omitted.</key>
@@ -456,10 +520,14 @@
 	<string>显示尺需要使用真实屏幕几何信息，因此在演示模式下不可用。</string>
 	<key>Display slots are session-local order labels, not persistent identifiers.</key>
 	<string>显示器序号仅表示本次会话的顺序，不是持久标识符。</string>
+	<key>DisplayPort</key>
+	<string>DisplayPort</string>
 	<key>Documented platform contract</key>
 	<string>平台文档保证</string>
 	<key>Domain: %@ • Access: %@ • Evidence: %@</key>
 	<string>领域：%@ • 访问：%@ • 证据：%@</string>
+	<key>Duplex audio devices</key>
+	<string>双工音频设备</string>
 	<key>Dynamic WEP</key>
 	<string>动态 WEP</string>
 	<key>EDR capability</key>
@@ -542,6 +610,8 @@
 	<string>功能不支持</string>
 	<key>Final warning</key>
 	<string>最终告警</string>
+	<key>FireWire</key>
+	<string>FireWire</string>
 	<key>Fixed allowlisted AppleSmartBattery field.</key>
 	<string>固定白名单中的 AppleSmartBattery 字段。</string>
 	<key>Fixture validated</key>
@@ -586,6 +656,8 @@
 	<string>由重力派生；坐标轴方向取决于机型。</string>
 	<key>Gyroscope</key>
 	<string>陀螺仪</string>
+	<key>HDMI</key>
+	<string>HDMI</string>
 	<key>HID manager could not be opened</key>
 	<string>无法打开 HID 管理器</string>
 	<key>HID open result: %@.</key>
@@ -622,6 +694,8 @@
 	<string>已包含</string>
 	<key>Includes provider status and stable channel metadata, but no sensor readings or machine identifiers.</key>
 	<string>包含 Provider 状态和稳定的通道元数据，但不包含传感器读数或机器标识。</string>
+	<key>Input-capable audio devices</key>
+	<string>支持输入的音频设备</string>
 	<key>Internal SMC telemetry; not wall-plug power.</key>
 	<string>内部 SMC 遥测；并非插座侧功率。</string>
 	<key>Internal component temperature, not ambient room temperature.</key>
@@ -786,6 +860,8 @@
 	<string>未检测到活动显示器</string>
 	<key>No associated Wi-Fi channel was reported</key>
 	<string>未报告已关联的 Wi-Fi 信道</string>
+	<key>No audio devices were reported</key>
+	<string>系统未报告音频设备</string>
 	<key>No compatible Apple SPU report devices found</key>
 	<string>未发现兼容的 Apple SPU 报告设备</string>
 	<key>No device identifier or system error text is exported.</key>
@@ -834,6 +910,8 @@
 	<string>噪声</string>
 	<key>Nominal</key>
 	<string>正常</string>
+	<key>Nominal sample rate is the device's current configured rate; device latency excludes additional stream and safety-offset latency.</key>
+	<string>标称采样率是设备当前配置的速率；设备延迟不含额外的流延迟与安全偏移延迟。</string>
 	<key>Normalized pressure</key>
 	<string>归一化压力</string>
 	<key>Normalized pressure trend with %lld samples</key>
@@ -860,6 +938,8 @@
 	<string>开</string>
 	<key>On-screen reference line, %@ points</key>
 	<string>屏幕参考线，%@ 点</string>
+	<key>One or more Core Audio properties were unavailable or invalid and were omitted.</key>
+	<string>一个或多个 Core Audio 属性不可用或无效，已省略。</string>
 	<key>One or more counter-byte conversions exceeded UInt128 and were omitted; raw counters remain available.</key>
 	<string>一个或多个计数字节换算超出 UInt128，已省略；原始计数仍可用。</string>
 	<key>One or more scalar fields failed validation and were omitted.</key>
@@ -890,8 +970,12 @@
 	<string>原始采样时间：%@</string>
 	<key>Other sensors will continue updating while this read finishes.</key>
 	<string>这次读取完成前，其他传感器仍会继续更新。</string>
+	<key>Output-capable audio devices</key>
+	<string>支持输出的音频设备</string>
 	<key>Overview</key>
 	<string>概览</string>
+	<key>PCI</key>
+	<string>PCI</string>
 	<key>PHY mode</key>
 	<string>PHY 模式</string>
 	<key>Partition scheme class</key>
@@ -1344,6 +1428,8 @@
 	<string>这个指纹用于比较本机上的光源变化，不是色温测量。</string>
 	<key>This provider only accepts a bounded Apple M-series family name.</key>
 	<string>此 Provider 只接受长度受限的 Apple M 系列名称。</string>
+	<key>This provider only queries hardware properties; it does not open an audio stream, capture samples, record audio, or request microphone permission.</key>
+	<string>此 Provider 只查询硬件属性；不会打开音频流、采集样本、录音或请求麦克风权限。</string>
 	<key>Thunderbolt</key>
 	<string>雷雳</string>
 	<key>Time remaining values are operating-system estimates.</key>
@@ -1438,6 +1524,8 @@
 	<string>版本</string>
 	<key>View Diagnostics</key>
 	<string>查看诊断</string>
+	<key>Virtual</key>
+	<string>虚拟</string>
 	<key>Virtual or tunneled paths can represent the same traffic more than once.</key>
 	<string>虚拟或隧道路径可能会重复表示同一流量。</string>
 	<key>Volatile-memory backup warning</key>

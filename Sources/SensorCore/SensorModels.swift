@@ -448,6 +448,7 @@ private struct SensorSemanticProfile {
       case "hardware.cpu": .cpu
       case "hardware.memory": .memory
       case "hardware.security": .securityHardware
+      case "hardware.audio": .audio
       case "diagnostics.hardware_capabilities": .diagnostics
       default:
         switch category {

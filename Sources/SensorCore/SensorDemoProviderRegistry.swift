@@ -61,6 +61,27 @@ public enum SensorDemoProviderRegistry {
         "Touch ID available",
         [text("touch_id_capability", "Touch ID capability", "Detected", 1)]),
       provider(
+        "hardware.audio", "Audio Hardware", .system, .publicAPI,
+        "3 devices • 2 input • 2 output",
+        [
+          number("device_count", "Audio devices", 3),
+          number("alive_device_count", "Available audio devices", 3),
+          number("input_device_count", "Input-capable audio devices", 2),
+          number("output_device_count", "Output-capable audio devices", 2),
+          number("duplex_device_count", "Duplex audio devices", 1),
+          text("default_input_present", "Default input reported", "Yes", 1),
+          text("default_input_transport", "Default input connection", "Built-in"),
+          number("default_input_channels", "Default input channels", 2),
+          number("default_input_sample_rate", "Default input nominal sample rate", 48_000, "Hz"),
+          number("default_input_latency", "Default input device latency", 15, "frames"),
+          text("default_output_present", "Default output reported", "Yes", 1),
+          text("default_output_transport", "Default output connection", "USB"),
+          number("default_output_channels", "Default output channels", 2),
+          number(
+            "default_output_sample_rate", "Default output nominal sample rate", 48_000, "Hz"),
+          number("default_output_latency", "Default output device latency", 32, "frames"),
+        ]),
+      provider(
         "hardware.display", "Display Hardware", .display, .publicAPI,
         "2 active • 1 EDR capable",
         [
