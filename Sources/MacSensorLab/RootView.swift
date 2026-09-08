@@ -4,6 +4,7 @@ import SwiftUI
 
 struct RootView: View {
   @ObservedObject var model: SensorDashboardModel
+  @StateObject private var displayRulerModel = DisplayRulerModel()
 
   var body: some View {
     NavigationSplitView {
@@ -49,6 +50,7 @@ struct RootView: View {
               isDemoMode: model.isDemoMode,
               ambientLuxCalibration: model.ambientLuxCalibration,
               ambientSpectralReference: model.ambientSpectralReference,
+              displayRulerModel: displayRulerModel,
               onSetAmbientCalibration: model.setAmbientLuxCalibration,
               onUndoAmbientCalibrationPoint: model.undoLastAmbientLuxCalibrationPoint,
               onClearAmbientCalibration: model.clearAmbientLuxCalibration,
@@ -620,6 +622,7 @@ private struct ExperimentsView: View {
   let isDemoMode: Bool
   let ambientLuxCalibration: AmbientLuxCalibration?
   let ambientSpectralReference: AmbientSpectralFingerprint?
+  @ObservedObject var displayRulerModel: DisplayRulerModel
   let onSetAmbientCalibration: (Double, Double) -> Void
   let onUndoAmbientCalibrationPoint: () -> Void
   let onClearAmbientCalibration: () -> Void
@@ -711,6 +714,12 @@ private struct ExperimentsView: View {
           .foregroundStyle(.secondary)
       }
       .frame(maxWidth: .infinity, alignment: .leading)
+
+      DisplayRulerPanel(
+        model: displayRulerModel,
+        isDemoMode: isDemoMode
+      )
+      .padding(.top, 18)
 
       LazyVGrid(columns: [GridItem(.adaptive(minimum: 280), spacing: 16)], spacing: 16) {
         ForEach(experiments, id: \.name) { experiment in

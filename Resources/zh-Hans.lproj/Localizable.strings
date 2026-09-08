@@ -14,6 +14,8 @@
 	<string>%@ 实验趋势</string>
 	<key>%@ h</key>
 	<string>%@ 小时</string>
+	<key>%@ points</key>
+	<string>%@ 点</string>
 	<key>%@ trend with %lld samples</key>
 	<string>%@ 趋势，共 %lld 个样本</string>
 	<key>%@ • %@</key>
@@ -222,10 +224,14 @@
 	<string>CSV 通道</string>
 	<key>Calculated from %lld dashboard samples. The 1–10 second cadence cannot measure vibration frequency.</key>
 	<string>根据 %lld 个仪表盘样本计算。1–10 秒的采样间隔无法测量振动频率。</string>
+	<key>Calibrate This Display</key>
+	<string>校准这块显示器</string>
 	<key>Calibrate at Current Raw</key>
 	<string>以当前原始值校准</string>
 	<key>Calibrated</key>
 	<string>已校准</string>
+	<key>Calibration exists only for this app session and this display mode.</key>
+	<string>校准仅在本次 App 会话和当前显示模式下有效。</string>
 	<key>Calibration export failed: %@</key>
 	<string>校准导出失败：%@</string>
 	<key>Calibration import failed: %@</key>
@@ -256,6 +262,8 @@
 	<string>全部清除</string>
 	<key>Clear Chart History</key>
 	<string>清除图表历史</string>
+	<key>Clear Display Calibration</key>
+	<string>清除显示校准</string>
 	<key>Clear Reference</key>
 	<string>清除参考</string>
 	<key>Cleared ambient-light calibration</key>
@@ -328,6 +336,8 @@
 	<string>关键警告位</string>
 	<key>Current Capacity ÷ Max Capacity from Apple's public power-source API.</key>
 	<string>Apple 公开电源 API 返回的当前容量 ÷ 最大容量。</string>
+	<key>Current display ready for a session-only calibration.</key>
+	<string>当前显示器已可进行仅限本次会话的校准。</string>
 	<key>Cycle count</key>
 	<string>循环计数</string>
 	<key>Data access</key>
@@ -398,8 +408,12 @@
 	<string>显示硬件</string>
 	<key>Display P3 gamut</key>
 	<string>Display P3 色域</string>
+	<key>Display configuration changed. The previous calibration was discarded.</key>
+	<string>显示配置已变化，先前的校准已丢弃。</string>
 	<key>Display hardware capabilities were unavailable</key>
 	<string>显示硬件能力不可用</string>
+	<key>Display ruler is unavailable in Demo mode because it must use the real screen geometry.</key>
+	<string>显示尺需要使用真实屏幕几何信息，因此在演示模式下不可用。</string>
 	<key>Display slots are session-local order labels, not persistent identifiers.</key>
 	<string>显示器序号仅表示本次会话的顺序，不是持久标识符。</string>
 	<key>Documented platform contract</key>
@@ -414,6 +428,8 @@
 	<string>早期告警</string>
 	<key>Ejectable media</key>
 	<string>可推出介质</string>
+	<key>Enter 10–2000 mm and choose a line width that produces a plausible 10–2000 PPI result.</key>
+	<string>请输入 10–2000 mm，并选择能得到合理 10–2000 PPI 结果的线段宽度。</string>
 	<key>Error</key>
 	<string>错误</string>
 	<key>Error information log entries</key>
@@ -608,6 +624,8 @@
 	<string>加载中</string>
 	<key>Localized display names, display IDs, EDID data, ICC profile names, and serial numbers are intentionally omitted.</key>
 	<string>有意省略显示器名称、显示 ID、EDID 数据、ICC 配置名称和序列号。</string>
+	<key>Locating the display containing this window…</key>
+	<string>正在定位当前窗口所在的显示器…</string>
 	<key>Logical processors</key>
 	<string>逻辑处理器</string>
 	<key>Low Power Mode</key>
@@ -630,6 +648,8 @@
 	<string>主显示器像素尺寸</string>
 	<key>Malformed provider output was discarded before display or export.</key>
 	<string>格式异常的 Provider 输出已在显示或导出前丢弃。</string>
+	<key>Match the on-screen line to a real ruler to calibrate only the current horizontal axis.</key>
+	<string>将屏幕线段与真实尺具对齐，只校准当前水平轴。</string>
 	<key>Match to reference</key>
 	<string>与参考的匹配度</string>
 	<key>Max</key>
@@ -656,6 +676,8 @@
 	<string>特意不收集或导出 Metal registry 标识符。</string>
 	<key>Microphone access will be opt-in</key>
 	<string>麦克风访问将始终需要主动选择</string>
+	<key>Millimeters per point</key>
+	<string>每点毫米数</string>
 	<key>Min</key>
 	<string>最小</string>
 	<key>Mixed</key>
@@ -756,6 +778,8 @@
 	<string>已关闭</string>
 	<key>On</key>
 	<string>开</string>
+	<key>On-screen reference line, %@ points</key>
+	<string>屏幕参考线，%@ 点</string>
 	<key>One or more counter-byte conversions exceeded UInt128 and were omitted; raw counters remain available.</key>
 	<string>一个或多个计数字节换算超出 UInt128，已省略；原始计数仍可用。</string>
 	<key>One or more scalar fields failed validation and were omitted.</key>
@@ -806,6 +830,8 @@
 	<string>权限处理</string>
 	<key>Permission required</key>
 	<string>需要权限</string>
+	<key>Physical Display Ruler</key>
+	<string>显示器物理尺</string>
 	<key>Physical memory</key>
 	<string>物理内存</string>
 	<key>Physical memory capacity was unavailable</key>
@@ -922,6 +948,10 @@
 	<string>记录已安全停止：%@</string>
 	<key>Reference</key>
 	<string>参考值</string>
+	<key>Reference length</key>
+	<string>参考长度</string>
+	<key>Reference length in millimeters</key>
+	<string>参考长度（毫米）</string>
 	<key>Reference lux</key>
 	<string>参考 lux</string>
 	<key>Refresh</key>
@@ -942,6 +972,8 @@
 	<string>可移除介质</string>
 	<key>Removed the last ambient-light calibration point</key>
 	<string>已移除最后一个环境光校准点</string>
+	<key>Rendered ruler width</key>
+	<string>屏幕尺宽度</string>
 	<key>Replace Reference</key>
 	<string>替换参考</string>
 	<key>Reported capacity ratio</key>
@@ -1018,6 +1050,8 @@
 	<string>不读取序列号、硬件 UUID、主机名或用户名。</string>
 	<key>Serious</key>
 	<string>较高</string>
+	<key>Session display %lld • %lld × %lld points • %lld × %lld pixels</key>
+	<string>本次会话显示器 %lld • %lld × %lld 点 • %lld × %lld 像素</string>
 	<key>Set Current as Reference</key>
 	<string>将当前值设为参考</string>
 	<key>Show all %lld facts</key>
@@ -1090,6 +1124,10 @@
 	<string>系统存储硬件</string>
 	<key>System disk does not expose NVMe SMART</key>
 	<string>系统磁盘未提供 NVMe SMART</string>
+	<key>System estimated PPI</key>
+	<string>系统估算 PPI</string>
+	<key>System estimated horizontal span</key>
+	<string>系统估算水平跨度</string>
 	<key>System low-battery warning</key>
 	<string>系统低电量告警</string>
 	<key>System performance counters were unavailable</key>
@@ -1112,6 +1150,8 @@
 	<string>此构建不会请求 sudo，也不会尝试特权 Helper。</string>
 	<key>The current spectral sample cannot be used as a reference</key>
 	<string>当前光谱样本无法作为参考</string>
+	<key>The current window could not be bound to an active display.</key>
+	<string>当前窗口无法绑定到活动显示器。</string>
 	<key>The interval is remembered. Pause state is intentionally reset on every launch.</key>
 	<string>采样间隔会被记住；每次启动时会有意重置暂停状态。</string>
 	<key>The lid-angle sensor could not be opened</key>
@@ -1214,6 +1254,14 @@
 	<string>更新于 %@ • 来源：%@ • %@</string>
 	<key>Used</key>
 	<string>已使用</string>
+	<key>User calibrated horizontal PPI</key>
+	<string>用户校准水平 PPI</string>
+	<key>User calibrated horizontal span</key>
+	<string>用户校准水平跨度</string>
+	<key>User-referenced horizontal calibration is active for this display mode.</key>
+	<string>当前显示模式已启用用户参考的水平校准。</string>
+	<key>User-referenced, not certified metrology. Only the horizontal axis is calibrated; vertical size and diagonal are not inferred.</key>
+	<string>结果来自用户参考，不是认证计量。只校准水平轴，不推断垂直尺寸或对角线。</string>
 	<key>Uses Apple's public IOPowerSources API.</key>
 	<string>使用 Apple 公开的 IOPowerSources API。</string>
 	<key>Uses gravity-derived roll and pitch when live acceleration is available</key>

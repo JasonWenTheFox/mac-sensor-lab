@@ -1,6 +1,6 @@
 # 08 显示校准与 NVMe 健康可行性
 
-更新：2026-09-08（E2b 设计 + E2c/E2d/E2e 实现节点）
+更新：2026-09-08（E2b 设计 + E2c/E2d/E2e/E2f 实现节点）
 
 ## 结论先行
 
@@ -9,7 +9,7 @@
 - “接口是公开的”不等于“每台 Mac 都会返回所有字段”。正式 Provider 仍需无设备、接口创建失败、权限拒绝、离线、损坏值和跨机型 fixture。
 - 不引入 `smartctl`，不解析 `system_profiler` 作为主路径，不为 SMART 新增特权 Helper，不构造单一的“SSD 健康分”。
 - E2c/E2d 已按本页边界实现 `storage.nvme_health` 首批标量与十组 UInt128 累计计数，并在同一台 Mac 上通过不含读数/身份的 Diagnostics 真机验证。
-- E2e 已实现不依赖 UI 的 session-only 显示校准 core；公开 state 不含显示 ID，水平几何、输入边界和 topology/mode 失效均有 fixture。E2f 才接入最小 ruler UI。
+- E2e 已实现 session-only 显示校准 core；E2f 已在 Experiments 接入跟随窗口当前屏幕的最小水平 ruler UI。公开 state 不含显示 ID，水平几何、输入边界、窗口切屏和 topology/mode 失效均有 fixture；Demo 模式不读取真实屏幕。
 
 ## 1. Display calibration slot
 
@@ -53,7 +53,7 @@ axisPhysicalMillimeters = currentAxisPoints * millimetersPerPoint
 - `axisPPI`: 10…2000 ppi；
 - 所有输入和派生值必须 finite，超界就拒绝，不夹取成“看起来合理”的数。
 
-E2e core 只计算已校准水平轴的 `millimetersPerPoint`、logical points per inch、horizontal PPI 和物理宽度；不推断垂直边长或对角线。E2f UI 展示这些结果时必须标为 `Calibrated` 并注明“user-referenced, not certified metrology”。原有 System Estimated 通道保留，不被校准值覆盖；E2e 不新增 Snapshot/导出通道。
+E2e core 只计算已校准水平轴的 `millimetersPerPoint`、logical points per inch、horizontal PPI 和物理宽度；不推断垂直边长或对角线。E2f UI 将这些结果标为 User Calibrated 并注明“user-referenced, not certified metrology”。System Estimated 水平跨度/PPI 由同一次 session observation 提供并与校准值并列，不被覆盖；E2e/E2f 均不新增 Snapshot/导出通道。
 
 ### 1.4 明确不做
 
@@ -143,13 +143,15 @@ Apple header 将寿命计数表达为两个 `UInt64` 组成的 128-bit 数。现
 - **smartmontools：不捆绑、不安装、不静默调用。** 它证明 Darwin 路径可行，但引入外部可执行文件会增加 GPL 分发、版本、安装位置和输出过滤负担，而本项目已有更小的公开 API 路径。
 - **GitHub Actions：无需。** E2b 和后续实现优先使用本地 SDK、fixture 与 `scripts/verify-local.sh`。
 
-## 5. E2b/E2c/E2d/E2e 验收与后续切片
+## 5. E2b/E2c/E2d/E2e/E2f 验收与后续切片
 
-E2b 的设计和证据目标已完成：显示校准不再需要持久身份，NVMe SMART 也不再被粗暴归为私有/特权能力。E3 随后完成 IOReport 普通权限可行性 Spike。E2c 已交付首批 SMART 标量、固定失败分类、至少 60 秒缓存和无身份真机诊断；E2d 已交付十组无损 UInt128 累计计数、Data Units 检查式换算和极值/溢出 fixture；E2e 已交付 session-only 显示校准 core、水平几何边界和精确失效 fixture。
+E2b 的设计和证据目标已完成：显示校准不再需要持久身份，NVMe SMART 也不再被粗暴归为私有/特权能力。E3 随后完成 IOReport 普通权限可行性 Spike。E2c 已交付首批 SMART 标量、固定失败分类、至少 60 秒缓存和无身份真机诊断；E2d 已交付十组无损 UInt128 累计计数、Data Units 检查式换算和极值/溢出 fixture；E2e 已交付 session-only 显示校准 core、水平几何边界和精确失效 fixture；E2f 已交付当前窗口屏幕绑定、最小水平尺、系统/用户结果对照和固定失效提示。
 
 E3 之后的显示/存储实现建议拆成独立节点：
 
 1. [x] `storage.nvme_health` 首批标量和 warning bits；
 2. [x] UInt128 无损计数模型与其余 SMART 累计事实；
-3. [x] session-only Display calibration core，暂无 UI；
-4. [ ] 最小水平 ruler 界面与失效提示，不进行视觉重构。
+3. [x] session-only Display calibration core；
+4. [x] 最小水平 ruler 界面与失效提示，不进行视觉重构。
+
+后续显示实验应另立 Epic：全屏纯色/灰阶/渐变/坏点测试与可立即退出的安全交互；垂直轴、对角线或跨会话校准在有明确需求和身份/误配方案前不扩展。

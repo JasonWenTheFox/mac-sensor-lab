@@ -1,8 +1,8 @@
 import Foundation
-import SensorCore
 import XCTest
 
 @testable import MacSensorLab
+@testable import SensorCore
 
 final class SensorTextLocalizerTests: XCTestCase {
   private let translations = [
@@ -369,6 +369,164 @@ final class SensorDashboardModelTests: XCTestCase {
     XCTAssertEqual(model.samplingHealth.completedCycleCount, 1)
     XCTAssertEqual(model.snapshots.first(where: { $0.id == "test.slow" })?.status, .degraded)
     XCTAssertEqual(model.snapshots.first(where: { $0.id == "test.fast" })?.status, .available)
+  }
+
+  func testDisplayRulerModelCalibratesAndPreservesAValidResultAfterBadInput() throws {
+    let mode = try XCTUnwrap(
+      DisplayCalibrationModeSignature(
+        pixelWidth: 3_024,
+        pixelHeight: 1_964,
+        pointWidth: 1_512,
+        pointHeight: 982,
+        rotationDegrees: 0
+      )
+    )
+    let session = DisplayCalibrationSession()
+    XCTAssertEqual(
+      session.synchronize(
+        observations: [
+          DisplayCalibrationObservation(
+            identity: DisplayCalibrationDisplayIdentity(rawValue: 101),
+            mode: mode
+          )
+        ]
+      ),
+      .topologyChanged
+    )
+    let model = DisplayRulerModel(session: session)
+    model.updateCurrentContext(try XCTUnwrap(session.context(forSlotIndex: 1)))
+    XCTAssertEqual(model.status, .ready)
+
+    model.referenceMillimeters = 100
+    model.calibrate(renderedPoints: 500)
+    let validMeasurement = try XCTUnwrap(model.measurement)
+    XCTAssertEqual(model.status, .calibrated)
+    XCTAssertEqual(validMeasurement.horizontalPixelsPerInch, 254, accuracy: 0.000_001)
+
+    model.referenceMillimeters = 5
+    model.calibrate(renderedPoints: 500)
+    XCTAssertEqual(model.status, .invalidInput)
+    XCTAssertEqual(model.measurement, validMeasurement)
+
+    model.clearCalibration()
+    XCTAssertEqual(model.status, .ready)
+    XCTAssertNil(model.measurement)
+  }
+
+  func testDisplayRulerModelSwitchesScreensWithoutInvalidatingTheirSessionCalibration() throws {
+    let modeA = try XCTUnwrap(
+      DisplayCalibrationModeSignature(
+        pixelWidth: 3_024,
+        pixelHeight: 1_964,
+        pointWidth: 1_512,
+        pointHeight: 982,
+        rotationDegrees: 0
+      )
+    )
+    let modeB = try XCTUnwrap(
+      DisplayCalibrationModeSignature(
+        pixelWidth: 2_560,
+        pixelHeight: 1_600,
+        pointWidth: 1_280,
+        pointHeight: 800,
+        rotationDegrees: 0
+      )
+    )
+    let displayA = DisplayCalibrationDisplayIdentity(rawValue: 101)
+    let displayB = DisplayCalibrationDisplayIdentity(rawValue: 202)
+    let session = DisplayCalibrationSession()
+    _ = session.synchronize(
+      observations: [
+        DisplayCalibrationObservation(identity: displayA, mode: modeA),
+        DisplayCalibrationObservation(identity: displayB, mode: modeB),
+      ]
+    )
+    let contextA = try XCTUnwrap(session.context(forSlotIndex: 1))
+    let contextB = try XCTUnwrap(session.context(forSlotIndex: 2))
+    let model = DisplayRulerModel(session: session)
+
+    model.updateCurrentContext(contextA)
+    model.referenceMillimeters = 100
+    model.calibrate(renderedPoints: 500)
+    let measurementA = try XCTUnwrap(model.measurement)
+
+    model.updateCurrentContext(contextB)
+    XCTAssertEqual(model.status, .ready)
+    XCTAssertNil(model.measurement)
+    XCTAssertEqual(session.calibration(for: contextA), measurementA)
+
+    model.updateCurrentContext(contextA)
+    XCTAssertEqual(model.status, .calibrated)
+    XCTAssertEqual(model.measurement, measurementA)
+
+    XCTAssertEqual(
+      session.synchronize(
+        observations: [
+          DisplayCalibrationObservation(identity: displayA, mode: modeB),
+          DisplayCalibrationObservation(identity: displayB, mode: modeB),
+        ]
+      ),
+      .modeChanged(slotIndices: [1])
+    )
+    model.updateCurrentContext(try XCTUnwrap(session.context(forSlotIndex: 1)))
+    XCTAssertEqual(model.status, .invalidated)
+    XCTAssertNil(model.measurement)
+  }
+
+  func testDisplayRulerLayoutAndSystemEstimateRespectVisibleAndRotatedAxes() throws {
+    XCTAssertEqual(
+      DisplayRulerLayout.maximumRenderedPoints(availableWidth: 1_000),
+      600,
+      accuracy: 0.000_001
+    )
+    XCTAssertEqual(
+      DisplayRulerLayout.renderedPoints(requested: 500, availableWidth: 300),
+      284,
+      accuracy: 0.000_001
+    )
+    XCTAssertEqual(
+      DisplayRulerLayout.renderedPoints(requested: .nan, availableWidth: 300),
+      20,
+      accuracy: 0.000_001
+    )
+
+    let rotatedMode = try XCTUnwrap(
+      DisplayCalibrationModeSignature.currentAxes(
+        pixelWidth: 3_024,
+        pixelHeight: 1_964,
+        pointWidth: 1_512,
+        pointHeight: 982,
+        rotationDegrees: 90
+      )
+    )
+    let systemEstimate = try XCTUnwrap(
+      DisplayCalibrationSystemEstimate.currentHorizontalAxis(
+        physicalWidthMillimeters: 286,
+        physicalHeightMillimeters: 186,
+        mode: rotatedMode
+      )
+    )
+    XCTAssertEqual(systemEstimate.horizontalSpanMillimeters, 186, accuracy: 0.000_001)
+    XCTAssertEqual(
+      systemEstimate.horizontalPixelsPerInch,
+      Double(rotatedMode.pixelWidth) * 25.4 / 186,
+      accuracy: 0.000_001
+    )
+
+    let session = DisplayCalibrationSession()
+    _ = session.synchronize(
+      observations: [
+        DisplayCalibrationObservation(
+          identity: DisplayCalibrationDisplayIdentity(rawValue: 303),
+          mode: rotatedMode,
+          systemEstimate: systemEstimate
+        )
+      ]
+    )
+    let context = try XCTUnwrap(session.context(forSlotIndex: 1))
+    let model = DisplayRulerModel(session: session)
+    model.updateCurrentContext(context)
+    XCTAssertEqual(model.systemEstimate, systemEstimate)
   }
 }
 

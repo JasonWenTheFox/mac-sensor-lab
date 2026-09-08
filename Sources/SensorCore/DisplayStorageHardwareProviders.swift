@@ -129,12 +129,16 @@ private enum DisplayHardwareReader {
 
     let mainDisplayID = CGMainDisplayID()
     displayIDs.sort { lhs, rhs in
-      if lhs == mainDisplayID { return true }
+      if lhs == mainDisplayID { return rhs != mainDisplayID }
       if rhs == mainDisplayID { return false }
       let left = CGDisplayBounds(lhs)
       let right = CGDisplayBounds(rhs)
-      return (left.minX, left.minY, left.width, left.height)
-        < (right.minX, right.minY, right.width, right.height)
+      let leftPosition = (left.minX, left.minY, left.width, left.height)
+      let rightPosition = (right.minX, right.minY, right.width, right.height)
+      if leftPosition != rightPosition {
+        return leftPosition < rightPosition
+      }
+      return lhs < rhs
     }
 
     let appKitScreensByID: [CGDirectDisplayID: NSScreen]

@@ -1852,6 +1852,18 @@ final class SensorCoreTests: XCTestCase {
         mode: lowScaleMode
       )
     )
+    XCTAssertNil(
+      DisplayCalibrationSystemEstimate(
+        horizontalSpanMillimeters: 0,
+        horizontalPixelWidth: 3_024
+      )
+    )
+    XCTAssertNil(
+      DisplayCalibrationSystemEstimate(
+        horizontalSpanMillimeters: 10_001,
+        horizontalPixelWidth: 3_024
+      )
+    )
   }
 
   @MainActor

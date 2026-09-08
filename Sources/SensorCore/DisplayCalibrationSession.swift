@@ -129,6 +129,45 @@ public struct DisplayCalibrationMeasurement: Equatable, Sendable {
   }
 }
 
+public struct DisplayCalibrationSystemEstimate: Equatable, Sendable {
+  public let horizontalSpanMillimeters: Double
+  public let horizontalPixelsPerInch: Double
+
+  init?(horizontalSpanMillimeters: Double, horizontalPixelWidth: Int) {
+    guard horizontalSpanMillimeters.isFinite,
+      (10...10_000).contains(horizontalSpanMillimeters),
+      (1...100_000).contains(horizontalPixelWidth)
+    else {
+      return nil
+    }
+
+    let horizontalPixelsPerInch =
+      Double(horizontalPixelWidth) * 25.4 / horizontalSpanMillimeters
+    guard horizontalPixelsPerInch.isFinite,
+      (10...2_000).contains(horizontalPixelsPerInch)
+    else {
+      return nil
+    }
+
+    self.horizontalSpanMillimeters = horizontalSpanMillimeters
+    self.horizontalPixelsPerInch = horizontalPixelsPerInch
+  }
+
+  static func currentHorizontalAxis(
+    physicalWidthMillimeters: Double,
+    physicalHeightMillimeters: Double,
+    mode: DisplayCalibrationModeSignature
+  ) -> DisplayCalibrationSystemEstimate? {
+    let horizontalSpan =
+      mode.rotationDegrees == 90 || mode.rotationDegrees == 270
+      ? physicalHeightMillimeters : physicalWidthMillimeters
+    return DisplayCalibrationSystemEstimate(
+      horizontalSpanMillimeters: horizontalSpan,
+      horizontalPixelWidth: mode.pixelWidth
+    )
+  }
+}
+
 public struct DisplayCalibrationSlotState: Equatable, Sendable {
   public let context: DisplayCalibrationContext
   public let horizontalCalibration: DisplayCalibrationMeasurement?
@@ -141,6 +180,17 @@ struct DisplayCalibrationDisplayIdentity: Equatable, Hashable, Sendable {
 struct DisplayCalibrationObservation: Equatable, Sendable {
   let identity: DisplayCalibrationDisplayIdentity
   let mode: DisplayCalibrationModeSignature
+  let systemEstimate: DisplayCalibrationSystemEstimate?
+
+  init(
+    identity: DisplayCalibrationDisplayIdentity,
+    mode: DisplayCalibrationModeSignature,
+    systemEstimate: DisplayCalibrationSystemEstimate? = nil
+  ) {
+    self.identity = identity
+    self.mode = mode
+    self.systemEstimate = systemEstimate
+  }
 }
 
 enum DisplayCalibrationSynchronizationResult: Equatable {
@@ -156,6 +206,7 @@ public final class DisplayCalibrationSession {
     let identity: DisplayCalibrationDisplayIdentity
     var mode: DisplayCalibrationModeSignature
     var modeRevision: UInt64
+    var systemEstimate: DisplayCalibrationSystemEstimate?
     var horizontalCalibration: DisplayCalibrationMeasurement?
   }
 
@@ -232,6 +283,16 @@ public final class DisplayCalibrationSession {
     return records[index].horizontalCalibration
   }
 
+  public func systemEstimate(
+    for context: DisplayCalibrationContext
+  ) -> DisplayCalibrationSystemEstimate? {
+    guard let index = validatedIndex(for: context) else {
+      return nil
+    }
+
+    return records[index].systemEstimate
+  }
+
   @discardableResult
   public func clearCalibration(for context: DisplayCalibrationContext) -> Bool {
     guard let index = validatedIndex(for: context) else {
@@ -269,6 +330,7 @@ public final class DisplayCalibrationSession {
           identity: observation.identity,
           mode: observation.mode,
           modeRevision: 0,
+          systemEstimate: observation.systemEstimate,
           horizontalCalibration: nil
         )
       }
@@ -276,11 +338,14 @@ public final class DisplayCalibrationSession {
     }
 
     var changedSlots: [Int] = []
-    for index in records.indices where records[index].mode != observations[index].mode {
-      records[index].mode = observations[index].mode
-      records[index].modeRevision = nextRevision(after: records[index].modeRevision)
-      records[index].horizontalCalibration = nil
-      changedSlots.append(index + 1)
+    for index in records.indices {
+      records[index].systemEstimate = observations[index].systemEstimate
+      if records[index].mode != observations[index].mode {
+        records[index].mode = observations[index].mode
+        records[index].modeRevision = nextRevision(after: records[index].modeRevision)
+        records[index].horizontalCalibration = nil
+        changedSlots.append(index + 1)
+      }
     }
 
     if changedSlots.isEmpty {
@@ -389,12 +454,25 @@ private enum SystemDisplayCalibrationReader {
       observations.append(
         DisplayCalibrationObservation(
           identity: DisplayCalibrationDisplayIdentity(rawValue: displayID),
-          mode: signature
+          mode: signature,
+          systemEstimate: systemEstimate(displayID: displayID, mode: signature)
         )
       )
     }
 
     return observations
+  }
+
+  private static func systemEstimate(
+    displayID: CGDirectDisplayID,
+    mode: DisplayCalibrationModeSignature
+  ) -> DisplayCalibrationSystemEstimate? {
+    let size = CGDisplayScreenSize(displayID)
+    return DisplayCalibrationSystemEstimate.currentHorizontalAxis(
+      physicalWidthMillimeters: Double(size.width),
+      physicalHeightMillimeters: Double(size.height),
+      mode: mode
+    )
   }
 
   private static func normalizedRotation(_ value: Double) -> Int? {
