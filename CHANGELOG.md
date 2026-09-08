@@ -8,10 +8,12 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 
 - A public-API NVMe SMART provider for the current system-volume whole disk, with warning bits, validated scalar fields, fixed failure states, and a minimum 60-second cache.
 - Lossless two-limb UInt128 handling for all ten cumulative fields exposed by Apple's `NVMeSMARTData`, including exact decimal formatting and checked Data Units × 512,000 byte-counter conversion.
+- A session-only display-calibration core that computes bounded horizontal geometry from a user reference and invalidates stale calibration contexts when display topology or mode geometry changes.
 
 ### Security and privacy
 
 - NVMe SMART reads remain limited to `SMARTReadData`. Identify data, detailed log pages, device identity, paths, self-tests, helpers, and write commands are excluded.
+- Display calibration keeps `CGDirectDisplayID` only inside an in-memory binding. Public state contains only a session slot, mode geometry, revision counters, and user-referenced results; it is not persisted, hashed, exported, or added to snapshots.
 
 ## 0.3.1 - 2026-09-08
 

@@ -1,6 +1,6 @@
 # 08 显示校准与 NVMe 健康可行性
 
-更新：2026-09-08（E2b 设计 + E2c/E2d 实现节点）
+更新：2026-09-08（E2b 设计 + E2c/E2d/E2e 实现节点）
 
 ## 结论先行
 
@@ -9,6 +9,7 @@
 - “接口是公开的”不等于“每台 Mac 都会返回所有字段”。正式 Provider 仍需无设备、接口创建失败、权限拒绝、离线、损坏值和跨机型 fixture。
 - 不引入 `smartctl`，不解析 `system_profiler` 作为主路径，不为 SMART 新增特权 Helper，不构造单一的“SSD 健康分”。
 - E2c/E2d 已按本页边界实现 `storage.nvme_health` 首批标量与十组 UInt128 累计计数，并在同一台 Mac 上通过不含读数/身份的 Diagnostics 真机验证。
+- E2e 已实现不依赖 UI 的 session-only 显示校准 core；公开 state 不含显示 ID，水平几何、输入边界和 topology/mode 失效均有 fixture。E2f 才接入最小 ruler UI。
 
 ## 1. Display calibration slot
 
@@ -18,7 +19,7 @@ CoreGraphics 的 reported physical size 可能是 72-DPI 推算，所以现有�
 
 ### 1.2 会话绑定模型
 
-`DisplayCalibrationSlot` 的实现应使用以下边界：
+`DisplayCalibrationSession` 的实现采用以下边界：
 
 | 字段 | 用途 | 持久/导出 |
 |---|---|---|
@@ -26,10 +27,11 @@ CoreGraphics 的 reported physical size 可能是 72-DPI 推算，所以现有�
 | `slotIndex` | 与当前 `display_1…display_16` 界面顺序对应 | 仅内存，不当作身份 |
 | mode signature | pixels/points 宽高、rotation 和对应轴的 backing scale | 仅内存 |
 | `topologyGeneration` | 显示器增删、重排或重建 slot 时使旧校准失效 | 仅内存 |
+| `modeRevision` | 对应 slot 的 mode geometry 曾变化后使旧 ruler context 永久失效 | 仅内存 |
 | axis | 首版只校准 horizontal；后续可独立加 vertical | 可进入不含身份的用户显式导出，但首版不导出 |
 | reference length + rendered points | 用户用真实尺具对齐的输入 | 首版仅内存 |
 
-当显示对象消失、`CGDirectDisplayID` 改变、对应显示模式的 pixels/points/rotation/backing scale 改变，或 slot 拓扑无法可靠重建时，必须立即丢弃相关校准。刷新率或 HDR/EDR 状态单独变化不改变物理长度映射，不必自动失效。
+当显示对象消失、`CGDirectDisplayID` 改变、对应显示模式的 pixels/points/rotation/backing scale 改变，或 slot 拓扑无法可靠重建时，core 会立即丢弃相关校准。拓扑增删/重排会重建全部 slot；单个 mode geometry 变化只清空该 slot。generation/revision 还会拒绝变化前取得的 context，即使之后恢复到相同 mode。刷新率或 HDR/EDR 状态单独变化不改变物理长度映射，不触发失效。
 
 ### 1.3 校准数学与输出语义
 
@@ -51,7 +53,7 @@ axisPhysicalMillimeters = currentAxisPoints * millimetersPerPoint
 - `axisPPI`: 10…2000 ppi；
 - 所有输入和派生值必须 finite，超界就拒绝，不夹取成“看起来合理”的数。
 
-首版只输出已校准轴的 `millimetersPerPoint`、PPI 和物理边长，均标为 `Calibrated` 并注明“user-referenced, not certified metrology”。只做水平校准时不推断垂直边长或对角线；两轴分别校准后才能计算完整几何。原有 System Estimated 通道保留，不被校准值覆盖。
+E2e core 只计算已校准水平轴的 `millimetersPerPoint`、logical points per inch、horizontal PPI 和物理宽度；不推断垂直边长或对角线。E2f UI 展示这些结果时必须标为 `Calibrated` 并注明“user-referenced, not certified metrology”。原有 System Estimated 通道保留，不被校准值覆盖；E2e 不新增 Snapshot/导出通道。
 
 ### 1.4 明确不做
 
@@ -141,13 +143,13 @@ Apple header 将寿命计数表达为两个 `UInt64` 组成的 128-bit 数。现
 - **smartmontools：不捆绑、不安装、不静默调用。** 它证明 Darwin 路径可行，但引入外部可执行文件会增加 GPL 分发、版本、安装位置和输出过滤负担，而本项目已有更小的公开 API 路径。
 - **GitHub Actions：无需。** E2b 和后续实现优先使用本地 SDK、fixture 与 `scripts/verify-local.sh`。
 
-## 5. E2b/E2c/E2d 验收与后续切片
+## 5. E2b/E2c/E2d/E2e 验收与后续切片
 
-E2b 的设计和证据目标已完成：显示校准不再需要持久身份，NVMe SMART 也不再被粗暴归为私有/特权能力。E3 随后完成 IOReport 普通权限可行性 Spike。E2c 已交付首批 SMART 标量、固定失败分类、至少 60 秒缓存和无身份真机诊断；E2d 已交付十组无损 UInt128 累计计数、Data Units 检查式换算和极值/溢出 fixture。
+E2b 的设计和证据目标已完成：显示校准不再需要持久身份，NVMe SMART 也不再被粗暴归为私有/特权能力。E3 随后完成 IOReport 普通权限可行性 Spike。E2c 已交付首批 SMART 标量、固定失败分类、至少 60 秒缓存和无身份真机诊断；E2d 已交付十组无损 UInt128 累计计数、Data Units 检查式换算和极值/溢出 fixture；E2e 已交付 session-only 显示校准 core、水平几何边界和精确失效 fixture。
 
 E3 之后的显示/存储实现建议拆成独立节点：
 
 1. [x] `storage.nvme_health` 首批标量和 warning bits；
 2. [x] UInt128 无损计数模型与其余 SMART 累计事实；
-3. [ ] session-only Display calibration core，暂无 UI；
+3. [x] session-only Display calibration core，暂无 UI；
 4. [ ] 最小水平 ruler 界面与失效提示，不进行视觉重构。

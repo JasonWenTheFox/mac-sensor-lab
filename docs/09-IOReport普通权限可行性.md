@@ -104,7 +104,7 @@ E3 的 decision gate 结论是“普通权限可读，但 API 和字段版本敏
 1. **E3a Experimental Energy Model adapter**：独立 target/product，不成为 Standard App 的依赖；动态/链接失败安全降级，只输出固定 CPU/GPU/ANE/DRAM 候选，PCI 在聚合证据足够前继续省略。任何真机启用都必须显式、可见、可关闭。
 2. **E3b Experimental CPU Residency**：至少取得第二种 SoC/macOS 的无值 schema fixture 后，先做 aggregate active/idle residency；真实 MHz 仍需独立、可复核的频率来源，不能从 index 猜测。
 
-两个 Epic 都必须再次检查标准 App 二进制不含私有 IOReport import、没有任意 metadata 输出，并维持 `privateExperimental` 与 `singleModelObserved`。它们不是当前紧邻实现项；`storage.nvme_health` 的首批标量与 UInt128 累计计数已于 E2c/E2d 完成，既定队列下一项是 session-only 显示校准 core。
+两个 Epic 都必须再次检查标准 App 二进制不含私有 IOReport import、没有任意 metadata 输出，并维持 `privateExperimental` 与 `singleModelObserved`。它们不是当前紧邻实现项；`storage.nvme_health` 的首批标量与 UInt128 累计计数已于 E2c/E2d 完成，session-only 显示校准 core 已于 E2e 完成，既定队列下一项是 E2f 最小水平 ruler UI。
 
 ## 7. E3 验收
 

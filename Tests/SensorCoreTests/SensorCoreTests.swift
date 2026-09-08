@@ -1754,6 +1754,260 @@ final class SensorCoreTests: XCTestCase {
     )
   }
 
+  func testDisplayCalibrationMeasurementValidatesAndComputesHorizontalGeometry() throws {
+    let mode = try XCTUnwrap(
+      DisplayCalibrationModeSignature(
+        pixelWidth: 3_024,
+        pixelHeight: 1_964,
+        pointWidth: 1_512,
+        pointHeight: 982,
+        rotationDegrees: 0
+      )
+    )
+    let measurement = try XCTUnwrap(
+      DisplayCalibrationMeasurement(
+        referenceMillimeters: 100,
+        renderedPoints: 500,
+        mode: mode
+      )
+    )
+
+    XCTAssertEqual(mode.horizontalBackingPixelsPerPoint, 2, accuracy: 0.000_001)
+    XCTAssertEqual(measurement.millimetersPerPoint, 0.2, accuracy: 0.000_001)
+    XCTAssertEqual(measurement.logicalPointsPerInch, 127, accuracy: 0.000_001)
+    XCTAssertEqual(measurement.horizontalPixelsPerInch, 254, accuracy: 0.000_001)
+    XCTAssertEqual(measurement.physicalWidthMillimeters, 302.4, accuracy: 0.000_001)
+
+    let rotated = try XCTUnwrap(
+      DisplayCalibrationModeSignature.currentAxes(
+        pixelWidth: 3_024,
+        pixelHeight: 1_964,
+        pointWidth: 1_512,
+        pointHeight: 982,
+        rotationDegrees: 90
+      )
+    )
+    XCTAssertEqual(rotated.pixelWidth, 1_964)
+    XCTAssertEqual(rotated.pixelHeight, 3_024)
+    XCTAssertEqual(rotated.pointWidth, 982)
+    XCTAssertEqual(rotated.pointHeight, 1_512)
+    XCTAssertEqual(rotated.horizontalBackingPixelsPerPoint, 2, accuracy: 0.000_001)
+
+    XCTAssertNil(
+      DisplayCalibrationModeSignature(
+        pixelWidth: 0,
+        pixelHeight: 1_964,
+        pointWidth: 1_512,
+        pointHeight: 982,
+        rotationDegrees: 0
+      )
+    )
+    XCTAssertNil(
+      DisplayCalibrationModeSignature(
+        pixelWidth: 3_024,
+        pixelHeight: 1_964,
+        pointWidth: 1_512,
+        pointHeight: 982,
+        rotationDegrees: 45
+      )
+    )
+    XCTAssertNil(
+      DisplayCalibrationMeasurement(
+        referenceMillimeters: .nan,
+        renderedPoints: 500,
+        mode: mode
+      )
+    )
+
+    let highScaleMode = try XCTUnwrap(
+      DisplayCalibrationModeSignature(
+        pixelWidth: 800,
+        pixelHeight: 800,
+        pointWidth: 100,
+        pointHeight: 100,
+        rotationDegrees: 90
+      )
+    )
+    XCTAssertNil(
+      DisplayCalibrationMeasurement(
+        referenceMillimeters: 10,
+        renderedPoints: 1_000,
+        mode: highScaleMode
+      )
+    )
+
+    let lowScaleMode = try XCTUnwrap(
+      DisplayCalibrationModeSignature(
+        pixelWidth: 25,
+        pixelHeight: 25,
+        pointWidth: 100,
+        pointHeight: 100,
+        rotationDegrees: 270
+      )
+    )
+    XCTAssertNil(
+      DisplayCalibrationMeasurement(
+        referenceMillimeters: 200,
+        renderedPoints: 20,
+        mode: lowScaleMode
+      )
+    )
+  }
+
+  @MainActor
+  func testDisplayCalibrationSessionInvalidatesOnlyTheChangedBinding() throws {
+    let modeA = try XCTUnwrap(
+      DisplayCalibrationModeSignature(
+        pixelWidth: 3_024,
+        pixelHeight: 1_964,
+        pointWidth: 1_512,
+        pointHeight: 982,
+        rotationDegrees: 0
+      )
+    )
+    let modeB = try XCTUnwrap(
+      DisplayCalibrationModeSignature(
+        pixelWidth: 2_560,
+        pixelHeight: 1_600,
+        pointWidth: 1_280,
+        pointHeight: 800,
+        rotationDegrees: 0
+      )
+    )
+    let displayA = DisplayCalibrationDisplayIdentity(rawValue: 101)
+    let displayB = DisplayCalibrationDisplayIdentity(rawValue: 202)
+    let session = DisplayCalibrationSession()
+
+    XCTAssertEqual(
+      session.synchronize(
+        observations: [
+          DisplayCalibrationObservation(identity: displayA, mode: modeA),
+          DisplayCalibrationObservation(identity: displayB, mode: modeB),
+        ]
+      ),
+      .topologyChanged
+    )
+    let originalA = try XCTUnwrap(session.context(forSlotIndex: 1))
+    let originalB = try XCTUnwrap(session.context(forSlotIndex: 2))
+    XCTAssertNotNil(
+      session.calibrateHorizontal(
+        context: originalA,
+        referenceMillimeters: 100,
+        renderedPoints: 500
+      )
+    )
+    XCTAssertNotNil(
+      session.calibrateHorizontal(
+        context: originalB,
+        referenceMillimeters: 120,
+        renderedPoints: 600
+      )
+    )
+
+    XCTAssertEqual(
+      session.synchronize(
+        observations: [
+          DisplayCalibrationObservation(identity: displayA, mode: modeA),
+          DisplayCalibrationObservation(identity: displayB, mode: modeB),
+        ]
+      ),
+      .unchanged
+    )
+    XCTAssertNotNil(session.calibration(for: originalA))
+    XCTAssertNotNil(session.calibration(for: originalB))
+
+    XCTAssertEqual(
+      session.synchronize(
+        observations: [
+          DisplayCalibrationObservation(identity: displayA, mode: modeB),
+          DisplayCalibrationObservation(identity: displayB, mode: modeB),
+        ]
+      ),
+      .modeChanged(slotIndices: [1])
+    )
+    XCTAssertNil(session.calibration(for: originalA))
+    XCTAssertNotNil(session.calibration(for: originalB))
+
+    XCTAssertEqual(
+      session.synchronize(
+        observations: [
+          DisplayCalibrationObservation(identity: displayA, mode: modeA),
+          DisplayCalibrationObservation(identity: displayB, mode: modeB),
+        ]
+      ),
+      .modeChanged(slotIndices: [1])
+    )
+    XCTAssertNil(session.calibration(for: originalA))
+
+    XCTAssertEqual(
+      session.synchronize(
+        observations: [
+          DisplayCalibrationObservation(identity: displayB, mode: modeB),
+          DisplayCalibrationObservation(identity: displayA, mode: modeA),
+        ]
+      ),
+      .topologyChanged
+    )
+    XCTAssertEqual(session.topologyGeneration, 2)
+    XCTAssertTrue(session.slots.allSatisfy { $0.horizontalCalibration == nil })
+    XCTAssertNil(session.calibration(for: originalB))
+  }
+
+  @MainActor
+  func testDisplayCalibrationSessionFailsClosedAndPreservesAValidCalibration() throws {
+    let mode = try XCTUnwrap(
+      DisplayCalibrationModeSignature(
+        pixelWidth: 3_024,
+        pixelHeight: 1_964,
+        pointWidth: 1_512,
+        pointHeight: 982,
+        rotationDegrees: 0
+      )
+    )
+    let identity = DisplayCalibrationDisplayIdentity(rawValue: 303)
+    let observation = DisplayCalibrationObservation(identity: identity, mode: mode)
+    let session = DisplayCalibrationSession()
+    XCTAssertEqual(session.synchronize(observations: [observation]), .topologyChanged)
+    let context = try XCTUnwrap(session.context(forSlotIndex: 1))
+    let original = try XCTUnwrap(
+      session.calibrateHorizontal(
+        context: context,
+        referenceMillimeters: 100,
+        renderedPoints: 500
+      )
+    )
+
+    XCTAssertNil(
+      session.calibrateHorizontal(
+        context: context,
+        referenceMillimeters: 5,
+        renderedPoints: 500
+      )
+    )
+    XCTAssertEqual(session.calibration(for: context), original)
+    XCTAssertNil(session.context(forSlotIndex: 0))
+    XCTAssertNil(session.context(forSlotIndex: .min))
+
+    XCTAssertEqual(
+      session.synchronize(observations: [observation, observation]),
+      .invalidated
+    )
+    XCTAssertTrue(session.slots.isEmpty)
+    XCTAssertNil(session.calibration(for: context))
+
+    let excessiveTopology = (1...17).map { rawValue in
+      DisplayCalibrationObservation(
+        identity: DisplayCalibrationDisplayIdentity(rawValue: CGDirectDisplayID(rawValue)),
+        mode: mode
+      )
+    }
+    XCTAssertEqual(
+      session.synchronize(observations: excessiveTopology),
+      .invalidated
+    )
+    XCTAssertTrue(session.slots.isEmpty)
+  }
+
   func testDisplayHardwareSnapshotSeparatesCapabilitiesAndEstimatedGeometry() throws {
     let snapshot = DisplayHardwareProvider().snapshot(
       readings: [
