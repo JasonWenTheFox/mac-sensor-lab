@@ -45,6 +45,7 @@ chmod +x "$contents_path/MacOS/MacSensorLab"
 
 /usr/bin/plutil -lint "$contents_path/Resources/PrivacyInfo.xcprivacy"
 /usr/bin/plutil -lint "$contents_path/Resources/zh-Hans.lproj/Localizable.strings"
+/usr/bin/plutil -lint "$contents_path/Resources/zh-Hans.lproj/InfoPlist.strings"
 absolute_user_path_pattern="/""Users""/"
 if [[ "$configuration" == "release" ]] \
     && /usr/bin/strings "$contents_path/MacOS/MacSensorLab" \
@@ -52,13 +53,23 @@ if [[ "$configuration" == "release" ]] \
     echo "release build contains an absolute user path" >&2
     exit 1
 fi
-codesign_options=(--force --sign - --timestamp=none)
+codesign_options=(
+    --force
+    --sign -
+    --timestamp=none
+    --entitlements "$project_root/Resources/MacSensorLab.entitlements"
+)
 if [[ "$configuration" == "release" ]]; then
     codesign_options+=(--options runtime)
 fi
 /usr/bin/codesign "${codesign_options[@]}" "$staged_app_path"
 /usr/bin/plutil -lint "$contents_path/Info.plist"
 /usr/bin/codesign --verify --deep --strict "$staged_app_path"
+if [[ "$(/usr/bin/codesign --display --entitlements :- "$staged_app_path" 2>/dev/null \
+    | /usr/bin/plutil -extract 'com\.apple\.security\.device\.audio-input' raw -o - -)" != "true" ]]; then
+    echo "app signature is missing the Audio Input entitlement" >&2
+    exit 1
+fi
 if [[ "$configuration" == "release" ]]; then
     if /usr/bin/codesign --display --verbose=4 "$staged_app_path" 2>&1 \
         | /usr/bin/grep -E 'flags=.*runtime' >/dev/null; then

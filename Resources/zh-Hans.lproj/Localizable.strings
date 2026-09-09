@@ -118,6 +118,8 @@
 	<string>隔空播放</string>
 	<key>All readings stay on this Mac unless you explicitly export a snapshot, recording, calibration, or diagnostics file.</key>
 	<string>所有读数都保留在这台 Mac 上，除非你主动导出快照、记录、校准或诊断文件。</string>
+	<key>Allow microphone input for Sound Input Check?</key>
+	<string>允许“声音输入检查”使用麦克风输入吗？</string>
 	<key>Ambient Light</key>
 	<string>环境光</string>
 	<key>Ambient intensity</key>
@@ -162,6 +164,8 @@
 	<string>音频</string>
 	<key>Audio Hardware</key>
 	<string>音频硬件</string>
+	<key>Audio buffers are discarded immediately after counting frames. No samples, recordings, device identity, persistence, snapshot, diagnostics values, or export.</key>
+	<string>音频缓冲区在统计帧数后立即丢弃。不保留样本、录音或设备身份，不持久化，也不进入快照、诊断值或导出。</string>
 	<key>Audio devices</key>
 	<string>音频设备</string>
 	<key>Audio hardware list was temporarily unavailable</key>
@@ -312,6 +316,8 @@
 	<string>正在充电</string>
 	<key>Chart history stays in memory only and can be cleared from the toolbar.</key>
 	<string>图表历史仅保留在内存中，可从工具栏清除。</string>
+	<key>Check Permission Again</key>
+	<string>重新检查权限</string>
 	<key>Checking data source</key>
 	<string>正在检查数据源</string>
 	<key>Choose a tool to interpret, compare, or calibrate recent sensor data.</key>
@@ -370,6 +376,8 @@
 	<string>综合温度超过临界阈值</string>
 	<key>Composite temperature describes the controller and NVM, not room temperature.</key>
 	<string>综合温度描述控制器与 NVM，并非室温。</string>
+	<key>Continue to macOS Permission</key>
+	<string>继续前往 macOS 权限确认</string>
 	<key>Continuity Camera (wired)</key>
 	<string>连续互通相机（有线）</string>
 	<key>Continuity Camera (wireless)</key>
@@ -678,6 +686,10 @@
 	<string>主机读取命令</string>
 	<key>Host write commands</key>
 	<string>主机写入命令</string>
+	<key>Idle — demo mode will not access the microphone.</key>
+	<string>空闲——演示模式不会访问麦克风。</string>
+	<key>Idle — microphone input has not started.</key>
+	<string>空闲——麦克风输入尚未开始。</string>
 	<key>Idle — no nearby scan has run this session.</key>
 	<string>空闲 — 本次会话尚未运行附近信道扫描。</string>
 	<key>Import Ambient-Light Calibration</key>
@@ -806,6 +818,10 @@
 	<string>Metal GPU 能力不可用</string>
 	<key>Metal registry identifiers are intentionally not collected or exported.</key>
 	<string>特意不收集或导出 Metal registry 标识符。</string>
+	<key>Microphone access is denied. Change it in System Settings if desired, then check again.</key>
+	<string>麦克风访问已被拒绝。如需可在“系统设置”中更改，然后重新检查。</string>
+	<key>Microphone access is restricted by the current system policy.</key>
+	<string>当前系统策略限制了麦克风访问。</string>
 	<key>Microphone access will be opt-in</key>
 	<string>麦克风访问将始终需要主动选择</string>
 	<key>Millimeters per point</key>
@@ -878,6 +894,8 @@
 	<string>未更改驱动属性，也未尝试特权访问。</string>
 	<key>No driver state was changed and no privileged access was attempted.</key>
 	<string>未更改驱动状态，也未尝试特权访问。</string>
+	<key>No enabled microphone input format was available.</key>
+	<string>没有可用的已启用麦克风输入格式。</string>
 	<key>No global input monitoring, raw contacts, device identifiers, persistence, or export.</key>
 	<string>不进行全局输入监控，不读取原始触点或设备标识，也不持久化或导出。</string>
 	<key>No interface names or network addresses were exported.</key>
@@ -926,6 +944,10 @@
 	<string>尚未实现 • 等待 Provider</string>
 	<key>OWE transition</key>
 	<string>OWE 过渡</string>
+	<key>Observed PCM frames</key>
+	<string>已观察 PCM 帧</string>
+	<key>Observed buffers</key>
+	<string>已观察缓冲区</string>
 	<key>Observed drain</key>
 	<string>观察到的耗电速率</string>
 	<key>Observed on multiple models</key>
@@ -976,6 +998,10 @@
 	<string>概览</string>
 	<key>PCI</key>
 	<string>PCI</string>
+	<key>PCM channels</key>
+	<string>PCM 通道数</string>
+	<key>PCM sample rate</key>
+	<string>PCM 采样率</string>
 	<key>PHY mode</key>
 	<string>PHY 模式</string>
 	<key>Partition scheme class</key>
@@ -1116,6 +1142,8 @@
 	<string>只在下方交互区域内读取公开的 AppKit 压力事件。</string>
 	<key>Receive packet rate</key>
 	<string>接收包速率</string>
+	<key>Receiving PCM buffers in memory.</key>
+	<string>正在内存中接收 PCM 缓冲区。</string>
 	<key>Receiving view-local AppKit pressure events.</key>
 	<string>正在接收仅限当前视图的 AppKit 压力事件。</string>
 	<key>Recent data • source limited</key>
@@ -1188,10 +1216,14 @@
 	<string>保留样本数</string>
 	<key>Review Raw Sensors</key>
 	<string>查看原始传感器</string>
+	<key>Review the privacy explanation before continuing.</key>
+	<string>继续前请查看隐私说明。</string>
 	<key>Roll %@°</key>
 	<string>横滚 %@°</string>
 	<key>Run Demo Scan</key>
 	<string>运行演示扫描</string>
+	<key>Run Demo Sound Input</key>
+	<string>运行演示声音输入</string>
 	<key>Run one demo scan?</key>
 	<string>运行一次演示扫描？</string>
 	<key>Run one nearby-channel scan?</key>
@@ -1278,8 +1310,24 @@
 	<string>SoC</string>
 	<key>SoC family</key>
 	<string>SoC 系列</string>
+	<key>Sound Input Check</key>
+	<string>声音输入检查</string>
 	<key>Sound Lab</key>
 	<string>声音实验室</string>
+	<key>Sound input stopped after an invalid PCM buffer.</key>
+	<string>检测到无效 PCM 缓冲区后已停止声音输入。</string>
+	<key>Sound input stopped at the five-minute safety limit.</key>
+	<string>声音输入已在五分钟安全上限处停止。</string>
+	<key>Sound input stopped because a counter exceeded its safety limit.</key>
+	<string>某项计数超过安全上限，声音输入已停止。</string>
+	<key>Sound input stopped because the app is closing.</key>
+	<string>App 正在关闭，声音输入已停止。</string>
+	<key>Sound input stopped because the audio-device configuration changed.</key>
+	<string>音频设备配置已变化，声音输入已停止。</string>
+	<key>Sound input stopped before the Mac went to sleep.</key>
+	<string>Mac 进入睡眠前已停止声音输入。</string>
+	<key>Sound input stopped; only counters remain until this page is left.</key>
+	<string>声音输入已停止；离开本页前只保留计数。</string>
 	<key>Source: %@</key>
 	<string>来源：%@</string>
 	<key>Spectral channel %lld</key>
@@ -1300,10 +1348,16 @@
 	<string>开始一次扫描</string>
 	<key>Start Pressure Capture</key>
 	<string>开始压力采集</string>
+	<key>Start Sound Input Check</key>
+	<string>开始声音输入检查</string>
 	<key>Start a local capture to check the current input device.</key>
 	<string>开始本地采集以检查当前输入设备。</string>
 	<key>Started recording %@</key>
 	<string>已开始记录 %@</string>
+	<key>Starting the bounded audio input session…</key>
+	<string>正在启动有界的音频输入会话…</string>
+	<key>Starts a bounded microphone session only after an explicit action and reports PCM delivery metadata.</key>
+	<string>仅在明确操作后启动有界的麦克风会话，并报告 PCM 传递元数据。</string>
 	<key>State changes</key>
 	<string>状态变化</string>
 	<key>Status changes this launch</key>
@@ -1314,6 +1368,8 @@
 	<string>停止压力采集</string>
 	<key>Stop Recording</key>
 	<string>停止记录</string>
+	<key>Stop Sound Input</key>
+	<string>停止声音输入</string>
 	<key>Stop Waiting</key>
 	<string>停止等待</string>
 	<key>Stop continuous CSV recording</key>
@@ -1380,6 +1436,8 @@
 	<string>Wi-Fi 网络服务未启用或不可用。</string>
 	<key>The Wi-Fi scan failed without exposing system error details.</key>
 	<string>Wi-Fi 扫描失败；未暴露系统错误详情。</string>
+	<key>The audio input session could not start.</key>
+	<string>无法启动音频输入会话。</string>
 	<key>The current spectral sample cannot be used as a reference</key>
 	<string>当前光谱样本无法作为参考</string>
 	<key>The current window could not be bound to an active display.</key>
@@ -1396,6 +1454,8 @@
 	<string>这台 Mac 不提供上盖角度传感器</string>
 	<key>The lid-angle sensor is temporarily busy</key>
 	<string>上盖角度传感器暂时繁忙</string>
+	<key>The microphone permission request did not produce a decision.</key>
+	<string>麦克风权限请求未产生明确结果。</string>
 	<key>The safe reader did not wake or reconfigure the SPU.</key>
 	<string>安全读取器没有唤醒或重新配置 SPU。</string>
 	<key>The scan completed without usable channel records.</key>
@@ -1430,6 +1490,8 @@
 	<string>此 Provider 只接受长度受限的 Apple M 系列名称。</string>
 	<key>This provider only queries hardware properties; it does not open an audio stream, capture samples, record audio, or request microphone permission.</key>
 	<string>此 Provider 只查询硬件属性；不会打开音频流、采集样本、录音或请求麦克风权限。</string>
+	<key>This step does not calculate waveform, loudness, dBFS, dBA, spectrum, or dominant frequency.</key>
+	<string>此阶段不计算波形、响度、dBFS、dBA、频谱或主频。</string>
 	<key>Thunderbolt</key>
 	<string>雷雳</string>
 	<key>Time remaining values are operating-system estimates.</key>
@@ -1556,6 +1618,8 @@
 	<string>正在等待至少五分钟和可测量的电量下降。</string>
 	<key>Waiting for pressure events inside the interaction area.</key>
 	<string>正在等待交互区域内的压力事件。</string>
+	<key>Waiting for the macOS microphone decision…</key>
+	<string>正在等待 macOS 的麦克风权限决定…</string>
 	<key>Waiting for the system Wi-Fi scan…</key>
 	<string>正在等待系统 Wi-Fi 扫描…</string>
 	<key>Wi-Fi</key>
@@ -1638,6 +1702,8 @@
 	<string>macOS 拒绝了 %lld 个 Provider 的普通只读访问。“原始传感器”会显示各 Provider 的具体原因。</string>
 	<key>macOS did not permit this Wi-Fi scan.</key>
 	<string>macOS 未允许此次 Wi-Fi 扫描。</string>
+	<key>macOS will ask for microphone access. Capture begins only if you allow it; buffers stay in memory and are never saved or exported.</key>
+	<string>macOS 将请求麦克风访问权限。只有在你允许后才会开始采集；缓冲区仅留在内存中，绝不保存或导出。</string>
 	<key>maximum EDR headroom</key>
 	<string>最大 EDR 余量</string>
 	<key>maximum frame rate</key>

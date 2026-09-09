@@ -16,7 +16,7 @@ Mac Sensor Lab separates sensor work into three layers and preserves provenance 
 
 1. **Raw facts:** 26 independent providers covering non-unique Mac model class, SoC, CPU topology, unified memory, Metal GPU and Touch ID capabilities; a public Core Audio device inventory; per-display modes, gamut, EDR, and estimated geometry; system-disk media properties and NVMe SMART scalars/lossless cumulative counters; the current Wi-Fi radio link; plus system performance, aggregate network/disk activity, battery/power, thermal pressure, read-only SMC, best-effort SPU ambient-light/motion reports, and lid angle.
 2. **Human-readable views:** a dedicated Hardware Inventory screen with expandable fact cards, plus status, units, source, hardware domain, access level, compatibility evidence, five-stage readiness, Raw/Derived/Estimated/Calibrated labels, bounded history, search, and versioned JSON/CSV exports.
-3. **Experiments:** a session-only physical display ruler, a Force Touch normalized-pressure/stage visualizer, Wi-Fi signal/noise trends, a user-started nearby Wi-Fi channel snapshot, level/motion trends, lid protractor, referenced light calibration, a four-channel ambient spectral fingerprint, battery and thermal trends, component thermals, internal power, and network/disk activity.
+3. **Experiments:** a session-only physical display ruler, a Force Touch normalized-pressure/stage visualizer, Wi-Fi signal/noise trends, a user-started nearby Wi-Fi channel snapshot and Sound Input Check, level/motion trends, lid protractor, referenced light calibration, a four-channel ambient spectral fingerprint, battery and thermal trends, component thermals, internal power, and network/disk activity.
 
 The spectral fingerprint compares only the relative proportions of four channels with undocumented response curves. It can save a local reference and report similarity, but it is not color temperature, wavelength-resolved spectroscopy, or lux. Ambient lux appears only after an external reference and remains `Estimated`. Internal temperatures are not room temperature, internal power is not wall-plug power, and the 1–10 second dashboard cadence is not vibration-frequency analysis.
 
@@ -28,6 +28,8 @@ The Wi-Fi Radio provider uses public CoreWLAN getters for power/service/associat
 
 The Audio Hardware provider queries only public Core Audio HAL properties. It reports current visible/available and input/output/duplex device counts plus the default input/output connection class, channel count, nominal sample rate, and device-level latency. Numeric AudioDevice handles exist only within one read; device/model UIDs, names, manufacturers, and free-form driver text are not queried. The provider does not open an audio stream, capture PCM, record audio, or request microphone permission. Nominal sample rate is configuration rather than recorded data, and device latency excludes additional stream latency and safety offset.
 
+Sound Input Check is a separate `publicTCC` experiment. It never runs at launch or during automatic provider sampling: the first button shows a purpose explanation, and only a second user confirmation can ask macOS for microphone access. An authorized session is limited to five minutes and releases its input stream on stop, page exit, audio-configuration change, or system sleep. Each PCM buffer is immediately reduced to sample rate, channel count, buffer count, and frame count; sample data is never accessed, retained, played, written, or exported. This milestone verifies permission and PCM lifecycle only; it does not yet calculate a waveform, RMS, peak, dBFS, dBA, or a spectrum.
+
 Each slow provider has an independent two-second coordination boundary. A timeout degrades only that provider, does not freeze the whole refresh, and does not start duplicate reads while a synchronous call is still occupied.
 
 The legacy `capability` field remains available, while the new model distinguishes TCC, entitlement, undocumented ordinary access, and private experimental access. Hardware presence, decoder, read path, stream, and user-facing feature readiness are also represented independently; see [docs/07-硬件清单与能力语义.md](docs/07-硬件清单与能力语义.md).
@@ -36,8 +38,8 @@ The legacy `capability` field remains available, while the new model distinguish
 
 - Offline by default: no tracking, uploads, or automatic recording.
 - No root app, `sudo`, SMC/SPU writes, fan control, or system-setting changes.
-- This version does not request microphone, location, camera, Accessibility, Input Monitoring, or Full Disk Access.
-- No collection of serial numbers, hardware UUIDs, user/host names, network identifiers, precise location, process lists, or audio.
+- Microphone permission can be requested only after a second confirmation inside Sound Input Check. This version does not request Location, Camera, Accessibility, Input Monitoring, or Full Disk Access.
+- No collection of serial numbers, hardware UUIDs, user/host names, network identifiers, precise location, process lists, or recordings. Sound Input Check retains or exports no PCM samples.
 - Missing, denied, busy, timed-out, and malformed sources remain explicit states instead of simulated readings.
 
 Undocumented HID, SMC, and AGX behavior can change across models and macOS releases. This is not a medical, legal-metrology, industrial-safety, or certified measurement instrument.

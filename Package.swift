@@ -38,6 +38,8 @@ let package = Package(
       dependencies: ["SensorCore"],
       linkerSettings: [
         .linkedFramework("AppKit"),
+        .linkedFramework("AVFAudio"),
+        .linkedFramework("AVFoundation"),
         .linkedFramework("SwiftUI"),
         .linkedFramework("Charts"),
       ]

@@ -731,6 +731,222 @@ final class SensorDashboardModelTests: XCTestCase {
     XCTAssertEqual(model.forceClickTransitionCount, 0)
   }
 
+  func testMicrophoneInputRequiresConfirmationBeforePermissionAndCapture() async throws {
+    let authorization = MicrophoneAuthorizationFixture(state: .notDetermined)
+    authorization.requestResult = .authorized
+    let capture = FixtureMicrophoneCaptureSession()
+    let model = MicrophoneInputModel(
+      authorizationClient: authorization.client,
+      captureSession: capture,
+      maximumSessionDuration: .seconds(1)
+    )
+
+    model.beginStart()
+    XCTAssertEqual(model.status, .awaitingPermissionConfirmation)
+    XCTAssertEqual(authorization.requestCount, 0)
+    XCTAssertEqual(capture.startCount, 0)
+
+    model.confirmPermissionAndStart()
+    await waitUntil { model.status == .capturing }
+    XCTAssertEqual(authorization.requestCount, 1)
+    XCTAssertEqual(capture.startCount, 1)
+    XCTAssertEqual(model.authorizationState, .authorized)
+
+    capture.emit(frameCount: 1_024, sampleRate: 48_000, channelCount: 2)
+    await waitUntil { model.observationCount == 1 }
+    XCTAssertEqual(model.totalFrameCount, 1_024)
+    XCTAssertEqual(model.format, MicrophonePCMFormatMetadata(sampleRate: 48_000, channelCount: 2))
+
+    model.stop()
+    XCTAssertEqual(model.status, .stopped)
+    XCTAssertEqual(capture.stopCount, 1)
+    XCTAssertEqual(model.totalFrameCount, 1_024)
+
+    model.leaveExperiment()
+    XCTAssertEqual(model.status, .idle)
+    XCTAssertNil(model.format)
+    XCTAssertEqual(model.observationCount, 0)
+    XCTAssertEqual(model.totalFrameCount, 0)
+  }
+
+  func testMicrophoneInputDeniedAndRestrictedStatesNeverStartCapture() {
+    for permission in [MicrophoneAuthorizationState.denied, .restricted] {
+      let authorization = MicrophoneAuthorizationFixture(state: permission)
+      let capture = FixtureMicrophoneCaptureSession()
+      let model = MicrophoneInputModel(
+        authorizationClient: authorization.client,
+        captureSession: capture
+      )
+
+      model.beginStart()
+
+      XCTAssertEqual(
+        model.status,
+        permission == .denied ? .permissionDenied : .permissionRestricted
+      )
+      XCTAssertEqual(authorization.requestCount, 0)
+      XCTAssertEqual(capture.startCount, 0)
+      XCTAssertFalse(model.canStart)
+    }
+  }
+
+  func testMicrophoneInputIncompletePermissionRequestFailsWithoutInventingDenial() async {
+    let authorization = MicrophoneAuthorizationFixture(state: .notDetermined)
+    authorization.requestResult = .notDetermined
+    let capture = FixtureMicrophoneCaptureSession()
+    let model = MicrophoneInputModel(
+      authorizationClient: authorization.client,
+      captureSession: capture
+    )
+
+    model.beginStart()
+    model.confirmPermissionAndStart()
+    await waitUntil { model.status == .failed(.permissionRequestIncomplete) }
+
+    XCTAssertEqual(model.authorizationState, .notDetermined)
+    XCTAssertEqual(capture.startCount, 0)
+  }
+
+  func testMicrophoneInputLeavingDuringPermissionRequestCannotStartLateCapture() async {
+    let authorization = MicrophoneAuthorizationFixture(state: .notDetermined)
+    authorization.requestResult = .authorized
+    authorization.requestDelay = .milliseconds(30)
+    let capture = FixtureMicrophoneCaptureSession()
+    let model = MicrophoneInputModel(
+      authorizationClient: authorization.client,
+      captureSession: capture
+    )
+
+    model.beginStart()
+    model.confirmPermissionAndStart()
+    XCTAssertEqual(model.status, .requestingPermission)
+    model.leaveExperiment()
+    XCTAssertEqual(model.status, .idle)
+
+    try? await Task.sleep(for: .milliseconds(60))
+    XCTAssertEqual(capture.startCount, 0)
+    XCTAssertEqual(model.status, .idle)
+  }
+
+  func testMicrophoneInputStopsForFormatChangeAndIgnoresLateBuffers() async {
+    let authorization = MicrophoneAuthorizationFixture(state: .authorized)
+    let capture = FixtureMicrophoneCaptureSession()
+    let model = MicrophoneInputModel(
+      authorizationClient: authorization.client,
+      captureSession: capture
+    )
+
+    model.beginStart()
+    XCTAssertEqual(model.status, .capturing)
+    capture.emit(frameCount: 512, sampleRate: 48_000, channelCount: 2)
+    await waitUntil { model.observationCount == 1 }
+    capture.emit(frameCount: 512, sampleRate: 44_100, channelCount: 2)
+    await waitUntil { model.status == .interrupted(.configurationChanged) }
+
+    XCTAssertEqual(capture.stopCount, 1)
+    XCTAssertEqual(model.totalFrameCount, 512)
+    capture.emitLate(frameCount: 512, sampleRate: 48_000, channelCount: 2)
+    await Task.yield()
+    XCTAssertEqual(model.totalFrameCount, 512)
+  }
+
+  func testMicrophoneInputStopsAtDurationAndLifecycleTermination() async {
+    let authorization = MicrophoneAuthorizationFixture(state: .authorized)
+    let timedCapture = FixtureMicrophoneCaptureSession()
+    let timedModel = MicrophoneInputModel(
+      authorizationClient: authorization.client,
+      captureSession: timedCapture,
+      maximumSessionDuration: .milliseconds(10)
+    )
+
+    timedModel.beginStart()
+    await waitUntil { timedModel.status == .sessionLimitReached }
+    XCTAssertEqual(timedCapture.stopCount, 1)
+
+    let interruptedCapture = FixtureMicrophoneCaptureSession()
+    let interruptedModel = MicrophoneInputModel(
+      authorizationClient: authorization.client,
+      captureSession: interruptedCapture
+    )
+    interruptedModel.beginStart()
+    interruptedCapture.terminate(.systemSleep)
+    await waitUntil { interruptedModel.status == .interrupted(.systemSleep) }
+    XCTAssertEqual(interruptedCapture.stopCount, 1)
+  }
+
+  func testMicrophoneInputValidationAndStartFailuresFailClosed() {
+    XCTAssertNil(MicrophonePCMFormatMetadata(sampleRate: 0, channelCount: 2))
+    XCTAssertNil(MicrophonePCMFormatMetadata(sampleRate: .nan, channelCount: 2))
+    XCTAssertNil(MicrophonePCMFormatMetadata(sampleRate: 48_000, channelCount: 0))
+    XCTAssertNil(
+      MicrophonePCMObservation(frameCount: 0, sampleRate: 48_000, channelCount: 2)
+    )
+    XCTAssertNil(
+      MicrophonePCMObservation(
+        frameCount: MicrophonePCMObservation.maximumFrameCount + 1,
+        sampleRate: 48_000,
+        channelCount: 2
+      )
+    )
+
+    let authorization = MicrophoneAuthorizationFixture(state: .authorized)
+    let unavailableCapture = FixtureMicrophoneCaptureSession()
+    unavailableCapture.startError = .inputUnavailable
+    let unavailableModel = MicrophoneInputModel(
+      authorizationClient: authorization.client,
+      captureSession: unavailableCapture
+    )
+    unavailableModel.beginStart()
+    XCTAssertEqual(unavailableModel.status, .failed(.inputUnavailable))
+
+    let failedCapture = FixtureMicrophoneCaptureSession()
+    failedCapture.startError = .startFailed
+    let failedModel = MicrophoneInputModel(
+      authorizationClient: authorization.client,
+      captureSession: failedCapture
+    )
+    failedModel.beginStart()
+    XCTAssertEqual(failedModel.status, .failed(.startFailed))
+    XCTAssertGreaterThanOrEqual(failedCapture.stopCount, 1)
+  }
+
+  func testDemoMicrophoneInputProducesOnlyBoundedMetadataAndClearsOnLeave() async {
+    let model = MicrophoneInputModel(isDemoMode: true)
+    XCTAssertEqual(model.authorizationState, .authorized)
+
+    model.beginStart()
+    XCTAssertEqual(model.status, .capturing)
+    await waitUntil(timeout: .seconds(1)) { model.observationCount > 0 }
+    XCTAssertGreaterThan(model.totalFrameCount, 0)
+    XCTAssertEqual(model.format?.sampleRate, 48_000)
+    XCTAssertEqual(model.format?.channelCount, 2)
+
+    model.leaveExperiment()
+    XCTAssertEqual(model.status, .idle)
+    XCTAssertNil(model.format)
+    XCTAssertEqual(model.totalFrameCount, 0)
+  }
+
+  func testMicrophoneInputSourceExcludesRawSampleRetentionAndSystemMutation() throws {
+    let projectRoot = URL(fileURLWithPath: #filePath)
+      .deletingLastPathComponent()
+      .deletingLastPathComponent()
+      .deletingLastPathComponent()
+    let sourceURL = projectRoot.appendingPathComponent(
+      "Sources/MacSensorLab/MicrophoneInputView.swift"
+    )
+    let source = try String(contentsOf: sourceURL, encoding: .utf8)
+
+    XCTAssertTrue(source.contains("confirmPermissionAndStart"))
+    XCTAssertEqual(source.components(separatedBy: "AVCaptureDevice.requestAccess").count - 1, 1)
+    for forbidden in [
+      "floatChannelData", "int16ChannelData", "audioBufferList", "AVAudioRecorder",
+      "AVAudioFile", "FileHandle", "tccutil", "NSWorkspace.open",
+    ] {
+      XCTAssertFalse(source.contains(forbidden), "Forbidden microphone path: \(forbidden)")
+    }
+  }
+
   func testWiFiChannelScanModelPublishesACompletedFixtureAndCooldown() async throws {
     let result = wifiScanFixture()
     let model = WiFiChannelScanModel(
@@ -830,6 +1046,88 @@ final class SensorDashboardModelTests: XCTestCase {
         )
       ]
     )
+  }
+}
+
+@MainActor
+private final class MicrophoneAuthorizationFixture {
+  var state: MicrophoneAuthorizationState
+  var requestResult: MicrophoneAuthorizationState
+  var requestDelay: Duration = .zero
+  private(set) var requestCount = 0
+
+  init(state: MicrophoneAuthorizationState) {
+    self.state = state
+    self.requestResult = state
+  }
+
+  var client: MicrophoneAuthorizationClient {
+    MicrophoneAuthorizationClient(
+      current: { [weak self] in self?.state ?? .restricted },
+      request: { [weak self] in
+        guard let self else { return .restricted }
+        self.requestCount += 1
+        if self.requestDelay > .zero {
+          try? await Task.sleep(for: self.requestDelay)
+        }
+        self.state = self.requestResult
+        return self.state
+      }
+    )
+  }
+}
+
+@MainActor
+private final class FixtureMicrophoneCaptureSession: MicrophoneCaptureSession {
+  var startError: MicrophoneCaptureSessionError?
+  private(set) var startCount = 0
+  private(set) var stopCount = 0
+  private var observationHandler: (@Sendable (MicrophonePCMObservation) -> Void)?
+  private var lastObservationHandler: (@Sendable (MicrophonePCMObservation) -> Void)?
+  private var terminationHandler: (@Sendable (MicrophoneCaptureTermination) -> Void)?
+
+  func start(
+    onObservation: @escaping @Sendable (MicrophonePCMObservation) -> Void,
+    onTermination: @escaping @Sendable (MicrophoneCaptureTermination) -> Void
+  ) throws -> MicrophonePCMFormatMetadata {
+    startCount += 1
+    if let startError { throw startError }
+    observationHandler = onObservation
+    lastObservationHandler = onObservation
+    terminationHandler = onTermination
+    return MicrophonePCMFormatMetadata(sampleRate: 48_000, channelCount: 2)!
+  }
+
+  func stop() {
+    stopCount += 1
+    observationHandler = nil
+    terminationHandler = nil
+  }
+
+  func emit(frameCount: Int, sampleRate: Double, channelCount: Int) {
+    guard
+      let observation = MicrophonePCMObservation(
+        frameCount: frameCount,
+        sampleRate: sampleRate,
+        channelCount: channelCount
+      )
+    else { return }
+    observationHandler?(observation)
+  }
+
+  func emitLate(frameCount: Int, sampleRate: Double, channelCount: Int) {
+    guard
+      let observation = MicrophonePCMObservation(
+        frameCount: frameCount,
+        sampleRate: sampleRate,
+        channelCount: channelCount
+      )
+    else { return }
+    lastObservationHandler?(observation)
+  }
+
+  func terminate(_ reason: MicrophoneCaptureTermination) {
+    terminationHandler?(reason)
   }
 }
 

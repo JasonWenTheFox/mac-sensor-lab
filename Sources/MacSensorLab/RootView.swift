@@ -7,11 +7,15 @@ struct RootView: View {
   @StateObject private var displayRulerModel = DisplayRulerModel()
   @StateObject private var pressureLabModel = PressureLabModel()
   @StateObject private var wifiChannelScanModel: WiFiChannelScanModel
+  @StateObject private var microphoneInputModel: MicrophoneInputModel
 
   init(model: SensorDashboardModel) {
     self.model = model
     _wifiChannelScanModel = StateObject(
       wrappedValue: WiFiChannelScanModel(isDemoMode: model.isDemoMode)
+    )
+    _microphoneInputModel = StateObject(
+      wrappedValue: MicrophoneInputModel(isDemoMode: model.isDemoMode)
     )
   }
 
@@ -62,6 +66,7 @@ struct RootView: View {
               displayRulerModel: displayRulerModel,
               pressureLabModel: pressureLabModel,
               wifiChannelScanModel: wifiChannelScanModel,
+              microphoneInputModel: microphoneInputModel,
               onSetAmbientCalibration: model.setAmbientLuxCalibration,
               onUndoAmbientCalibrationPoint: model.undoLastAmbientLuxCalibrationPoint,
               onClearAmbientCalibration: model.clearAmbientLuxCalibration,
@@ -636,6 +641,7 @@ private struct ExperimentsView: View {
   @ObservedObject var displayRulerModel: DisplayRulerModel
   @ObservedObject var pressureLabModel: PressureLabModel
   @ObservedObject var wifiChannelScanModel: WiFiChannelScanModel
+  @ObservedObject var microphoneInputModel: MicrophoneInputModel
   let onSetAmbientCalibration: (Double, Double) -> Void
   let onUndoAmbientCalibrationPoint: () -> Void
   let onClearAmbientCalibration: () -> Void
@@ -752,6 +758,9 @@ private struct ExperimentsView: View {
         isDemoMode: isDemoMode
       )
       .padding(.top, 16)
+
+      MicrophoneInputPanel(model: microphoneInputModel)
+        .padding(.top, 16)
 
       LazyVGrid(columns: [GridItem(.adaptive(minimum: 280), spacing: 16)], spacing: 16) {
         ForEach(experiments, id: \.name) { experiment in

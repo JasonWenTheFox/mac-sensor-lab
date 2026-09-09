@@ -28,18 +28,33 @@ if [[ -n "$(git grep -Il -E "$secret_pattern" -- . ':(exclude)scripts/release-au
   fail "a tracked text file matches a private-key or access-key signature"
 fi
 
-dangerous_source_pattern='IORegistryEntrySetCFPropert|AuthorizationExecuteWithPrivileges|SMCCommand[^\n]*write|/usr/bin/sudo'
+dangerous_source_pattern='IORegistryEntrySetCFPropert|AuthorizationExecuteWithPrivileges|SMCCommand[^\n]*write|/usr/bin/sudo|/usr/bin/tccutil'
 if [[ -n "$(git grep -Il -E "$dangerous_source_pattern" -- Sources scripts ':(exclude)scripts/release-audit.sh' || true)" ]]; then
   fail "source contains a forbidden privilege, registry-write, or SMC-write API"
 fi
 
-permission_key_pattern='NSMicrophoneUsageDescription|NSLocationUsageDescription|NSCameraUsageDescription|NSAppleEventsUsageDescription'
+permission_key_pattern='NSLocation[A-Za-z]*UsageDescription|NSCameraUsageDescription|NSAppleEventsUsageDescription'
 if /usr/bin/plutil -p Resources/Info.plist | /usr/bin/grep -Eq "$permission_key_pattern"; then
-  fail "Info.plist declares a protected permission that this release does not implement"
+  fail "Info.plist declares an unsupported protected permission"
 fi
 
+microphone_purpose='Mac Sensor Lab uses microphone input only while you run Sound Input Check. Audio samples stay in memory and are never saved or exported.'
+[[ "$(/usr/bin/plutil -extract NSMicrophoneUsageDescription raw -o - Resources/Info.plist)" == "$microphone_purpose" ]] \
+  || fail "Info.plist must contain the reviewed microphone purpose string"
+
+[[ "$(/usr/bin/plutil -extract 'com\.apple\.security\.device\.audio-input' raw -o - Resources/MacSensorLab.entitlements)" == "true" ]] \
+  || fail "the Audio Input entitlement must be enabled"
+[[ "$(/usr/bin/plutil -p Resources/MacSensorLab.entitlements | /usr/bin/grep -c '=>')" == "1" ]] \
+  || fail "the app entitlement file must contain only Audio Input"
+
+localized_microphone_purpose='Mac Sensor Lab 仅在你主动运行声音输入检查时使用麦克风。音频样本只在内存中即时处理，不会保存或导出。'
+[[ "$(/usr/bin/plutil -extract NSMicrophoneUsageDescription raw -o - Resources/zh-Hans.lproj/InfoPlist.strings)" == "$localized_microphone_purpose" ]] \
+  || fail "the Simplified Chinese microphone purpose string is missing or changed"
+
 /usr/bin/plutil -lint Resources/Info.plist >/dev/null
+/usr/bin/plutil -lint Resources/MacSensorLab.entitlements >/dev/null
 /usr/bin/plutil -lint Resources/PrivacyInfo.xcprivacy >/dev/null
+/usr/bin/plutil -lint Resources/zh-Hans.lproj/InfoPlist.strings >/dev/null
 ./scripts/check-localizations.sh >/dev/null
 
 [[ "$(/usr/bin/plutil -extract NSPrivacyTracking raw -o - Resources/PrivacyInfo.xcprivacy)" == "false" ]] \
@@ -51,6 +66,8 @@ done
 
 /usr/bin/grep -Fq 'PrivacyInfo.xcprivacy' scripts/build-app.sh \
   || fail "build-app.sh does not package the privacy manifest"
+/usr/bin/grep -Fq 'MacSensorLab.entitlements' scripts/build-app.sh \
+  || fail "build-app.sh does not sign with the reviewed entitlements"
 
 for required in \
   LICENSE \
