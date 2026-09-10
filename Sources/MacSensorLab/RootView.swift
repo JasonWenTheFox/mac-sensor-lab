@@ -9,6 +9,7 @@ struct RootView: View {
   @StateObject private var wifiChannelScanModel: WiFiChannelScanModel
   @StateObject private var microphoneInputModel: MicrophoneInputModel
   @StateObject private var usbInventoryModel: USBInventoryModel
+  @StateObject private var cameraInventoryModel: CameraInventoryModel
 
   init(model: SensorDashboardModel) {
     self.model = model
@@ -20,6 +21,9 @@ struct RootView: View {
     )
     _usbInventoryModel = StateObject(
       wrappedValue: USBInventoryModel(isDemoMode: model.isDemoMode)
+    )
+    _cameraInventoryModel = StateObject(
+      wrappedValue: CameraInventoryModel(isDemoMode: model.isDemoMode)
     )
   }
 
@@ -58,7 +62,8 @@ struct RootView: View {
               snapshots: model.snapshots.filter { $0.id.hasPrefix("hardware.") },
               history: model.history,
               isDemoMode: model.isDemoMode,
-              usbInventoryModel: usbInventoryModel
+              usbInventoryModel: usbInventoryModel,
+              cameraInventoryModel: cameraInventoryModel
             )
           case .rawSensors:
             RawSensorsView(snapshots: model.snapshots)
@@ -209,6 +214,7 @@ private struct HardwareInventoryView: View {
   let history: [String: [SensorHistoryPoint]]
   let isDemoMode: Bool
   @ObservedObject var usbInventoryModel: USBInventoryModel
+  @ObservedObject var cameraInventoryModel: CameraInventoryModel
   private let columns = [GridItem(.adaptive(minimum: 300), spacing: 16)]
 
   var body: some View {
@@ -236,6 +242,9 @@ private struct HardwareInventoryView: View {
       USBInventoryPanel(model: usbInventoryModel, isDemoMode: isDemoMode)
         .padding(.bottom, 16)
 
+      CameraInventoryPanel(model: cameraInventoryModel, isDemoMode: isDemoMode)
+        .padding(.bottom, 16)
+
       LazyVGrid(columns: columns, spacing: 16) {
         ForEach(snapshots) { snapshot in
           SensorCard(snapshot: snapshot, history: history, allowsExpansion: true)
@@ -244,7 +253,10 @@ private struct HardwareInventoryView: View {
     }
     .padding(24)
     .navigationTitle(L10n.text("Hardware Inventory"))
-    .onDisappear { usbInventoryModel.leaveInventory() }
+    .onDisappear {
+      usbInventoryModel.leaveInventory()
+      cameraInventoryModel.leaveInventory()
+    }
   }
 }
 

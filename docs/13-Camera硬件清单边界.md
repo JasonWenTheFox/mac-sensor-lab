@@ -1,6 +1,6 @@
 # 13 Camera 硬件清单与采集权限边界
 
-更新：2026-09-11（E9a 设计完成；清单 UI 尚未实现）
+更新：2026-09-11（E9a 设计 + E9b 最小实现完成）
 
 ## 结论
 
@@ -8,9 +8,9 @@ macOS 14+ 可以通过 Apple 公开的 [`AVCaptureDevice.DiscoverySession`](http
 
 E9a 在一台测试 Mac 上用无 Camera entitlement、无 `NSCameraUsageDescription` 的 ad-hoc Hardened Runtime 探针完成了普通权限无值验证：固定类型 discovery 返回非空结果，所有受检格式通过有界结构校验，运行前后的 Camera TCC 状态相同。探针没有调用授权请求、创建输入或 capture session，也没有读取或打印设备身份和格式实际值。这是当前机器的可行性证据，不是所有机型、外接驱动和发行签名组合的保证。
 
-E9b 可以据此实现一个 **identity-minimized、用户主动、仅在当前 Hardware Inventory 页面保留** 的 Camera Capabilities 面板。它不应注册为自动刷新的 Provider，也不应进入 Snapshot、Diagnostics、JSON/CSV、连续记录或持久化：摄像头列表会动态变化，格式矩阵本身也会增强设备指纹。
+E9b 已据此实现一个 **identity-minimized、用户主动、仅在当前 Hardware Inventory 页面保留** 的 Camera Capabilities 面板。它没有注册为自动刷新的 Provider，也不进入 Snapshot、Diagnostics、JSON/CSV、连续记录或持久化：摄像头列表会动态变化，格式矩阵本身也会增强设备指纹。
 
-E9a 只固定设计，不加入 Camera 用途文案、entitlement、产品源码或 UI。真正预览/图像统计属于后续独立 TCC 节点，不能借“硬件清单”提前获得画面访问能力。
+E9a 只固定设计；E9b 加入纯值 reducer、只读 source 和最小 UI，但仍未加入 Camera 用途文案或 entitlement。真正预览/图像统计属于后续独立 TCC 节点，不能借“硬件清单”提前获得画面访问能力。
 
 ## 公开 API 与四条分界线
 
@@ -61,7 +61,7 @@ E9b 必须同时满足：
 
 1. 在 Info.plist 加入 `NSCameraUseContinuityCameraDeviceType = true`，仅用于让系统报告独立类型；这不是 Camera TCC 用途文案；
 2. discovery allowlist 不包含 `.continuityCamera` 或 `.deskViewCamera`；
-3. 读取固定 transport enum 作为第二道防线，遇到 Continuity Capture wired/wireless 类别时丢弃该设备，不显示、不计数；
+3. 读取固定 transport enum 作为第二道防线，遇到 Continuity Capture wired/wireless 或旧版 legacy 类别时丢弃该设备，不显示、不计数；
 4. 不读取 Continuity 设备、关联设备、设备名称或连接通知，不尝试唤醒/配对附近设备。
 
 如果未来要支持 Continuity Camera，应作为单独的用户主动功能重新评审；不能悄悄扩大 E9b。
@@ -79,7 +79,7 @@ E9b 必须同时满足：
 | 连接类别 | `transportType` | 只映射 SDK 固定类别；未知显示 Unknown，不回显 FourCC | Raw enum；同时用于拒绝 Continuity transport |
 | 原生格式数量 | `formats.count` | 0…256 / device | Raw count；多个 pixel-format 变体可能具有相同分辨率/帧率 |
 | 格式分辨率 | `formatDescription` dimensions | 每轴 1…32,768 encoded pixels | Raw；不是裁切后视场、照片尺寸或画面质量 |
-| 帧率范围 | `videoSupportedFrameRateRanges` | 1…1,000 finite fps；最多 32 ranges / format | Raw capability；不是当前或实测 fps |
+| 帧率范围 | `videoSupportedFrameRateRanges` | finite 且 `0 < fps <= 1,000`；最多 32 ranges / format | Raw capability；不是当前或实测 fps |
 | 自动对焦系统 | `autoFocusSystem` | None / Contrast detection / Phase detection / Unknown | Raw enum；不是当前焦点、对焦成功率或镜头状态 |
 | 色彩空间 | `supportedColorSpaces` | macOS 固定 sRGB / P3 D65 / Unknown；最多 8 项 | Raw capability；不等于当前输出色彩空间、HDR 或显示器色域 |
 
@@ -102,18 +102,18 @@ E9b 必须同时满足：
 
 ## 会话模型与失败语义
 
-E9b 应复用 USB tree 已验证的 session-only 交互形态，但使用独立模型和 source：
+E9b 已复用 USB tree 验证过的 session-only 交互形态，并使用独立模型和 source：
 
 - 初始只显示数据边界与“读取摄像头能力”按钮；不会在 App 启动、自动采样或页面出现时枚举；
 - 后台执行一次同步 discovery/reduction；同一 source 单飞，约两秒的 UI 等待边界只停止等待，不能取消的底层工作返回前不得叠加新任务；
 - operation ID 使停止等待、离页或新一轮读取后的迟到结果无法重新出现；
 - 页面离开时清空设备、格式、计数、状态和错误；不注册长期通知、timer 或 KVO；
-- Demo 只使用 built-in / external / malformed / overflow 合成 fixture，不访问 AVFoundation；
+- 界面 Demo 只使用 built-in / external 合成 fixture，malformed / overflow 由 reducer fixture 覆盖；Demo 不访问 AVFoundation；
 - 固定状态至少区分：ready、no supported local camera、timed out waiting、malformed/over-limit data、ordinary discovery unavailable。不得把空结果写成“Mac 没有任何摄像头”，因为 Continuity Camera 被有意排除。
 
 ## E9b 验收门
 
-实现节点必须同时具备：
+实现节点必须同时具备，E9b 当前均已满足：
 
 1. pure reducer fixture：0/1/多设备、重复格式、未知 enum、0/越界 dimensions、非有限/倒置 fps、32/256/32/8/8,192 上限和累加溢出；
 2. source audit：只允许 discovery、固定 properties 和 CoreMedia dimensions；拒绝所有 identity/free-text、authorization、input/session/output/preview、active/configuration、frame/pixel-buffer API；
@@ -122,9 +122,11 @@ E9b 应复用 USB tree 已验证的 session-only 交互形态，但使用独立�
 5. 普通权限无值 smoke：只报告结构数量/边界与 Camera TCC 状态未变化，不记录设备类型分布、分辨率、fps、名称、ID 或其他真实值；
 6. 完整 `scripts/verify-local.sh` 和后台 Demo 启动/交互；不运行 GitHub Actions。
 
+当前新增 10 项 reducer/source/lifecycle 测试，覆盖空结果、重复能力合并、未知/异常字段、Continuity/Desk View 双重排除、全部数量上限、单飞、重读替换、固定失败态、两秒等待边界、迟到丢弃与离页清空。无 Camera entitlement/用途文案的 ad-hoc Hardened Runtime 无值 smoke 直接调用产品 `CameraInventoryReader`，只报告结构计数并确认 Camera authorization state 前后不变；后台中文 Demo 已验证按钮读取、折叠明细和离页清空。157 项 XCTest、26 Provider portable contract、Release/Hardened Runtime 与发布边界审计全部通过，未运行 GitHub Actions。
+
 ## 遗留事项
 
-- E9b：按本文件实现 session-only Camera Capabilities；只做功能需要的最小 Hardware Inventory 面板，不做 UI 美化。
+- E9b：已按本文件实现 session-only Camera Capabilities；只做了功能需要的最小 Hardware Inventory 面板，没有进行 UI 美化。
 - E9c 候选：用户主动 Camera Check/preview；必须先设计 Camera TCC、purpose string、entitlement、最长时限、帧数据归约与销毁，并等待用户在场完成首次授权/拒绝真机验收。
 - exposure、实际 fps、亮度/清晰度等画面层指标只有 E9c 获得实时帧后才有意义；不得由静态格式能力伪造。
 - Camera 型号名称、unique/model ID、Continuity Camera、Desk View、录制、照片、音频、深度、人脸/生物识别和后台捕获继续不在当前范围。

@@ -1358,6 +1358,101 @@ final class SensorDashboardModelTests: XCTestCase {
     XCTAssertNil(model.result)
   }
 
+  func testCameraInventoryModelPublishesOneCompletedFixture() async {
+    let result = cameraInventoryFixture()
+    let operation = CameraInventoryOperationFixture(
+      delay: .milliseconds(10), outcome: .success(result))
+    let model = CameraInventoryModel(
+      timeout: .seconds(1),
+      operation: { await operation.read() }
+    )
+
+    model.start()
+    model.start()
+    await waitUntil { model.status == .ready }
+
+    XCTAssertEqual(model.result, result)
+    let completedReadCount = await operation.readCount
+    XCTAssertEqual(completedReadCount, 1)
+    XCTAssertFalse(model.isAwaitingResult)
+    XCTAssertFalse(model.isOperationInFlight)
+    XCTAssertTrue(model.canStart)
+  }
+
+  func testCameraInventoryModelTimesOutAndDiscardsTheLateResult() async {
+    let result = cameraInventoryFixture()
+    let operation = CameraInventoryOperationFixture(
+      delay: .milliseconds(60), outcome: .success(result))
+    let model = CameraInventoryModel(
+      timeout: .milliseconds(10),
+      operation: { await operation.read() }
+    )
+
+    model.start()
+    await waitUntil { model.status == .timedOutWaiting }
+    XCTAssertNil(model.result)
+    XCTAssertTrue(model.isOperationInFlight)
+    XCTAssertFalse(model.canStart)
+
+    await waitUntil { !model.isOperationInFlight }
+    XCTAssertEqual(model.status, .timedOutWaiting)
+    XCTAssertNil(model.result)
+    let completedReadCount = await operation.readCount
+    XCTAssertEqual(completedReadCount, 1)
+  }
+
+  func testCameraInventoryModelClearsOnLeaveAndIgnoresAnInFlightResult() async {
+    let result = cameraInventoryFixture()
+    let operation = CameraInventoryOperationFixture(
+      delay: .milliseconds(40), outcome: .success(result))
+    let model = CameraInventoryModel(
+      timeout: .seconds(1),
+      operation: { await operation.read() }
+    )
+
+    model.start()
+    model.leaveInventory()
+    XCTAssertEqual(model.status, .idle)
+    XCTAssertNil(model.result)
+    XCTAssertTrue(model.isOperationInFlight)
+
+    await waitUntil { !model.isOperationInFlight }
+    XCTAssertEqual(model.status, .idle)
+    XCTAssertNil(model.result)
+  }
+
+  func testCameraInventoryModelReplacesResultsAndKeepsEmptyAndFailureDistinct() async {
+    let limited = cameraInventoryFixture(positionRawValue: 99)
+    guard case .success(let empty) = CameraInventoryReducer.reduce(devices: []) else {
+      return XCTFail("Expected an empty camera fixture")
+    }
+    let sequence = CameraInventoryOutcomeSequence(
+      outcomes: [
+        .success(limited),
+        .success(empty),
+        .failure(.discoveryUnavailable),
+      ]
+    )
+    let model = CameraInventoryModel(
+      timeout: .seconds(1),
+      operation: { await sequence.read() }
+    )
+
+    model.start()
+    await waitUntil { model.status == .limited }
+    XCTAssertEqual(model.result, limited)
+
+    model.start()
+    await waitUntil { model.status == .empty }
+    XCTAssertEqual(model.result, empty)
+
+    model.start()
+    await waitUntil { model.status == .failed(.discoveryUnavailable) }
+    XCTAssertNil(model.result)
+    let completedReadCount = await sequence.readCount
+    XCTAssertEqual(completedReadCount, 3)
+  }
+
   private func waitUntil(
     timeout: Duration = .seconds(1),
     condition: @MainActor () -> Bool
@@ -1401,6 +1496,36 @@ final class SensorDashboardModelTests: XCTestCase {
     }
     return snapshot
   }
+
+  private func cameraInventoryFixture(positionRawValue: Int = 0) -> CameraInventorySnapshot {
+    guard
+      case .success(let snapshot) = CameraInventoryReducer.reduce(
+        devices: [
+          CameraInventoryRawDevice(
+            sourceIndex: 1,
+            deviceType: .builtInWideAngle,
+            positionRawValue: positionRawValue,
+            formats: [
+              CameraInventoryRawFormat(
+                sourceIndex: 0,
+                width: 1_280,
+                height: 720,
+                frameRateRanges: [
+                  CameraInventoryRawFrameRateRange(minimum: 30, maximum: 30)
+                ],
+                autofocusSystemRawValue: 0,
+                colorSpaceRawValues: [0]
+              )
+            ]
+          )
+        ],
+        completedAt: Date(timeIntervalSince1970: 30)
+      )
+    else {
+      preconditionFailure("Static Camera Capabilities fixture must reduce")
+    }
+    return snapshot
+  }
 }
 
 private actor USBInventoryOperationFixture {
@@ -1419,6 +1544,42 @@ private actor USBInventoryOperationFixture {
     count += 1
     try? await Task.sleep(for: delay)
     return outcome
+  }
+}
+
+private actor CameraInventoryOperationFixture {
+  let delay: Duration
+  let outcome: CameraInventoryOutcome
+  private var count = 0
+
+  init(delay: Duration, outcome: CameraInventoryOutcome) {
+    self.delay = delay
+    self.outcome = outcome
+  }
+
+  var readCount: Int { count }
+
+  func read() async -> CameraInventoryOutcome {
+    count += 1
+    try? await Task.sleep(for: delay)
+    return outcome
+  }
+}
+
+private actor CameraInventoryOutcomeSequence {
+  private var outcomes: [CameraInventoryOutcome]
+  private var count = 0
+
+  init(outcomes: [CameraInventoryOutcome]) {
+    self.outcomes = outcomes
+  }
+
+  var readCount: Int { count }
+
+  func read() -> CameraInventoryOutcome {
+    count += 1
+    guard !outcomes.isEmpty else { return .failure(.failed) }
+    return outcomes.removeFirst()
   }
 }
 

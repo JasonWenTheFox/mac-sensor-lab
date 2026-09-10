@@ -12,6 +12,8 @@
 	<string>可用空间 %@</string>
 	<key>%@ experiment trend</key>
 	<string>%@ 实验趋势</string>
+	<key>%@ fps</key>
+	<string>%@ fps</string>
 	<key>%@ h</key>
 	<string>%@ 小时</string>
 	<key>%@ points</key>
@@ -26,6 +28,8 @@
 	<string>%@ • %lld 台活动显示器</string>
 	<key>%@ • recent samples</key>
 	<string>%@ • 最近样本</string>
+	<key>%@–%@ fps</key>
+	<string>%@–%@ fps</string>
 	<key>%lld accepted records across %lld channels</key>
 	<string>已接受 %lld 条记录，分布于 %lld 个信道</string>
 	<key>%lld active displays</key>
@@ -36,6 +40,8 @@
 	<string>%lld 台音频设备</string>
 	<key>%lld audio devices</key>
 	<string>%lld 台音频设备</string>
+	<key>%lld capability rows</key>
+	<string>%lld 行能力</string>
 	<key>%lld changes</key>
 	<string>%lld 次变化</string>
 	<key>%lld detached interfaces • %lld malformed fields omitted</key>
@@ -46,6 +52,10 @@
 	<string>%lld 台设备 • %lld 台支持输入 • %lld 台支持输出</string>
 	<key>%lld devices • %lld interfaces in this snapshot</key>
 	<string>本次快照包含 %lld 个设备 • %lld 个接口</string>
+	<key>%lld equivalent formats</key>
+	<string>%lld 个等价格式</string>
+	<key>%lld excluded devices • %lld malformed or unknown fields omitted</key>
+	<string>已排除 %lld 台设备 • 已省略 %lld 个异常或未知字段</string>
 	<key>%lld experimental sensor types detected</key>
 	<string>检测到 %lld 类实验性传感器</string>
 	<key>%lld malformed records discarded • %lld records omitted by the safety limit</key>
@@ -64,6 +74,10 @@
 	<string>保留 %lld 个样本。序数间距没有物理意义，也不推断温度。</string>
 	<key>%lld status changes this launch</key>
 	<string>本次启动发生 %lld 次状态切换</string>
+	<key>%lld supported local cameras • %lld capability rows</key>
+	<string>%lld 台受支持的本地相机 • %lld 行能力</string>
+	<key>%lld × %lld</key>
+	<string>%lld × %lld</string>
 	<key>, </key>
 	<string>、</string>
 	<key>50 MB safety limit</key>
@@ -180,6 +194,8 @@
 	<string>音频硬件列表暂时不可用</string>
 	<key>Audio hardware properties could not be read</key>
 	<string>无法读取音频硬件属性</string>
+	<key>Autofocus system</key>
+	<string>自动对焦系统</string>
 	<key>Automatic sampling</key>
 	<string>自动采样</string>
 	<key>Automatic sampling interval</key>
@@ -212,6 +228,8 @@
 	<string>平均 %@</string>
 	<key>Average number of processes in the system run queue; not CPU percent.</key>
 	<string>系统运行队列中的平均进程数；不是 CPU 百分比。</string>
+	<key>Back</key>
+	<string>后置</string>
 	<key>Backing scale</key>
 	<string>缩放倍率</string>
 	<key>Band</key>
@@ -262,6 +280,8 @@
 	<string>内置演示样本</string>
 	<key>Built-in deterministic demo fixture</key>
 	<string>内置确定性演示夹具</string>
+	<key>Built-in wide-angle camera</key>
+	<string>内置广角相机</string>
 	<key>CDC data</key>
 	<string>CDC 数据</string>
 	<key>CPU</key>
@@ -306,6 +326,24 @@
 	<string>校准点无效、不单调，或超过了 8 点上限</string>
 	<key>Camera</key>
 	<string>摄像头</string>
+	<key>Camera %lld</key>
+	<string>相机 %lld</string>
+	<key>Camera Capabilities</key>
+	<string>相机能力</string>
+	<key>Camera capabilities are available on this page for this session.</key>
+	<string>相机能力仅在本次会话的此页面可用。</string>
+	<key>Camera capabilities are available with unsupported metadata omitted.</key>
+	<string>相机能力可用；已省略不受支持的元数据。</string>
+	<key>Camera capability discovery failed without exposing system error text.</key>
+	<string>相机能力发现失败，未回显系统错误文本。</string>
+	<key>Camera capability discovery is temporarily unavailable.</key>
+	<string>相机能力发现暂时不可用。</string>
+	<key>Camera discovery may still be finishing.</key>
+	<string>相机发现可能仍在结束。</string>
+	<key>Camera metadata changed shape or was malformed.</key>
+	<string>相机元数据结构发生变化或格式异常。</string>
+	<key>Camera metadata exceeded its safety limit and was not shown.</key>
+	<string>相机元数据超过安全上限，因此未显示。</string>
 	<key>Cancel</key>
 	<string>取消</string>
 	<key>Capability only; no authentication prompt or enrollment state is requested.</key>
@@ -366,6 +404,8 @@
 	<string>正在建立活动基线 • %lld 个块设备</string>
 	<key>Collecting network baseline • %lld active interfaces</key>
 	<string>正在建立网络基线 • %lld 个活动接口</string>
+	<key>Color spaces</key>
+	<string>色彩空间</string>
 	<key>Communications</key>
 	<string>通信</string>
 	<key>Compares aggregate read and write rates without exposing device identity</key>
@@ -406,8 +446,12 @@
 	<string>连续互通相机（有线）</string>
 	<key>Continuity Camera (wireless)</key>
 	<string>连续互通相机（无线）</string>
+	<key>Continuity Camera and Desk View are excluded by device type and transport classification.</key>
+	<string>Continuity Camera 与桌面视角会按设备类型和传输分类排除。</string>
 	<key>Continuous recording</key>
 	<string>连续记录</string>
+	<key>Contrast detection</key>
+	<string>对比度检测</string>
 	<key>Controller busy time</key>
 	<string>控制器忙碌时间</string>
 	<key>Controller estimate; unavailable sentinel values are omitted.</key>
@@ -536,12 +580,16 @@
 	<string>有意省略设备名称和唯一标识符。</string>
 	<key>Device release number (bcdDevice)</key>
 	<string>设备发布编号（bcdDevice）</string>
+	<key>Device type</key>
+	<string>设备类型</string>
 	<key>Diagnostic</key>
 	<string>诊断</string>
 	<key>Diagnostics</key>
 	<string>诊断</string>
 	<key>Diagnostics export failed: %@</key>
 	<string>诊断导出失败：%@</string>
+	<key>Discovers one bounded set of local camera formats only after you ask. No camera permission is requested and no device is opened.</key>
+	<string>仅在你主动操作后发现一次有界的本地相机格式集合。不请求相机权限，也不打开设备。</string>
 	<key>Disk Activity</key>
 	<string>磁盘活动</string>
 	<key>Disk Arbitration whole-disk description</key>
@@ -638,6 +686,8 @@
 	<string>已导出隐私安全诊断 %@</string>
 	<key>External Sensors</key>
 	<string>外部传感器</string>
+	<key>External camera</key>
+	<string>外接相机</string>
 	<key>Fair</key>
 	<string>轻度</string>
 	<key>Fan %lld</key>
@@ -678,10 +728,14 @@
 	<string>Foundation 估算值，可能包含可为重要用途清理的空间。</string>
 	<key>Four uncalibrated ambient spectral channels</key>
 	<string>4 个未校准的环境光谱通道</string>
+	<key>Frame rate range</key>
+	<string>帧率范围</string>
 	<key>Frequency Hz</key>
 	<string>频率 Hz</string>
 	<key>Frequency resolution</key>
 	<string>频率分辨率</string>
+	<key>Front</key>
+	<string>前置</string>
 	<key>Full Speed — 12 Mb/s</key>
 	<string>全速 — 12 Mb/s</string>
 	<key>Fully charged</key>
@@ -734,6 +788,8 @@
 	<string>集线器</string>
 	<key>Human interface device</key>
 	<string>人机接口设备</string>
+	<key>Idle — camera capabilities have not been read this session.</key>
+	<string>空闲——本次会话尚未读取相机能力。</string>
 	<key>Idle — demo mode will not access the microphone.</key>
 	<string>空闲——演示模式不会访问麦克风。</string>
 	<key>Idle — microphone input has not started.</key>
@@ -824,6 +880,8 @@
 	<string>实时本地读数，始终显示数据源和可信度。</string>
 	<key>Live sampling attempts ordinary read-only access. If macOS denies an interface, its provider reports Permission required; this app does not request administrator access or bypass privacy controls.</key>
 	<string>实时采样只尝试普通的只读访问。如果 macOS 拒绝某个接口，对应 Provider 会报告“需要权限”；本 App 不请求管理员权限，也不绕过隐私控制。</string>
+	<key>Load Demo Camera Capabilities</key>
+	<string>载入演示相机能力</string>
 	<key>Load Demo USB Tree</key>
 	<string>载入演示 USB 树</string>
 	<key>Load average (%lld min)</key>
@@ -952,6 +1010,8 @@
 	<string>未报告已关联的 Wi-Fi 信道</string>
 	<key>No audio devices were reported</key>
 	<string>系统未报告音频设备</string>
+	<key>No camera frames, audio, permission request, device identity, free text, persistence, history, diagnostics values, or export.</key>
+	<string>不读取相机画面或音频，不请求权限，不读取设备身份或自由文本，不持久化，也不进入历史、诊断值或导出。</string>
 	<key>No compatible Apple SPU report devices found</key>
 	<string>未发现兼容的 Apple SPU 报告设备</string>
 	<key>No device identifier or system error text is exported.</key>
@@ -998,6 +1058,10 @@
 	<string>不读取序列号、名称、位置、注册表路径或描述符，不打开设备，不持久化，不进入历史、诊断值或导出。</string>
 	<key>No sudo, driver-property writes, or permission bypass was attempted.</key>
 	<string>未尝试 sudo、写入驱动属性或绕过权限。</string>
+	<key>No supported local camera was discovered.</key>
+	<string>未发现受支持的本地相机。</string>
+	<key>No valid capability rows were reported.</key>
+	<string>未报告有效的能力行。</string>
 	<key>No volume path or system error text is exported.</key>
 	<string>不导出卷路径或系统错误文本。</string>
 	<key>No warning</key>
@@ -1008,6 +1072,10 @@
 	<string>正常</string>
 	<key>Nominal sample rate is the device's current configured rate; device latency excludes additional stream and safety-offset latency.</key>
 	<string>标称采样率是设备当前配置的速率；设备延迟不含额外的流延迟与安全偏移延迟。</string>
+	<key>None</key>
+	<string>无</string>
+	<key>None reported</key>
+	<string>未报告</string>
 	<key>Normalized pressure</key>
 	<string>归一化压力</string>
 	<key>Normalized pressure trend with %lld samples</key>
@@ -1080,6 +1148,8 @@
 	<string>支持输出的音频设备</string>
 	<key>Overview</key>
 	<string>概览</string>
+	<key>P3 D65</key>
+	<string>P3 D65</string>
 	<key>PCI</key>
 	<string>PCI</string>
 	<key>PCM channels</key>
@@ -1120,6 +1190,8 @@
 	<string>个人医疗保健</string>
 	<key>Personal security</key>
 	<string>个人级安全</string>
+	<key>Phase detection</key>
+	<string>相位检测</string>
 	<key>Physical</key>
 	<string>物理接口</string>
 	<key>Physical Display Ruler</key>
@@ -1134,6 +1206,8 @@
 	<string>像素与点尺寸来自当前显示模式，缩放倍率为派生值；有意省略持久显示器标识符。</string>
 	<key>Pixel and point dimensions describe the current display mode; scale is derived.</key>
 	<string>像素与点尺寸描述当前显示模式；缩放倍率为派生值。</string>
+	<key>Position</key>
+	<string>方位</string>
 	<key>Position in observed raw range</key>
 	<string>在已观测原始范围中的位置</string>
 	<key>Power</key>
@@ -1226,6 +1300,8 @@
 	<string>读取 %@ • 写入 %@</string>
 	<key>Read 18 MB/s • write 4 MB/s</key>
 	<string>读取 18 MB/s • 写入 4 MB/s</string>
+	<key>Read Camera Capabilities</key>
+	<string>读取相机能力</string>
 	<key>Read Current USB Tree</key>
 	<string>读取当前 USB 树</string>
 	<key>Read errors</key>
@@ -1242,6 +1318,8 @@
 	<string>读取路径就绪</string>
 	<key>Read path unavailable</key>
 	<string>读取路径不可用</string>
+	<key>Reading bounded local camera capabilities…</key>
+	<string>正在读取有界的本地相机能力…</string>
 	<key>Reading in the background…</key>
 	<string>正在后台读取…</string>
 	<key>Reading the current bounded USB tree…</key>
@@ -1300,6 +1378,8 @@
 	<string>替换参考</string>
 	<key>Reported capacity ratio</key>
 	<string>报告容量比</string>
+	<key>Reported formats</key>
+	<string>系统报告的格式数</string>
 	<key>Reported full-charge capacity</key>
 	<string>报告满充容量</string>
 	<key>Reported full-charge capacity ÷ design capacity; not Apple's Battery Health status.</key>
@@ -1568,6 +1648,8 @@
 	<string>Wi-Fi 网络服务未启用或不可用。</string>
 	<key>The Wi-Fi scan failed without exposing system error details.</key>
 	<string>Wi-Fi 扫描失败；未暴露系统错误详情。</string>
+	<key>The app bundle is missing its Continuity Camera classification boundary.</key>
+	<string>应用包缺少审定的 Continuity Camera 分类边界。</string>
 	<key>The audio input session could not start.</key>
 	<string>无法启动音频输入会话。</string>
 	<key>The current spectral sample cannot be used as a reference</key>
@@ -1660,6 +1742,8 @@
 	<string>传输速率</string>
 	<key>Transmit rate is the current negotiated PHY rate, not application throughput.</key>
 	<string>传输速率是当前协商后的 PHY 速率，不是应用吞吐量。</string>
+	<key>Transport</key>
+	<string>传输类型</string>
 	<key>Trend estimate pauses while connected to power or charging.</key>
 	<string>连接电源或充电时暂停趋势估算。</string>
 	<key>Try a provider, channel, domain, access, status, or stable ID.</key>
@@ -1706,6 +1790,8 @@
 	<string>非正常关机累计次数</string>
 	<key>Unsafe shutdowns and media errors are controller-reported cumulative facts, not attribution or failure predictions.</key>
 	<string>非正常关机与介质错误是控制器报告的累计事实，不用于归因或预测故障。</string>
+	<key>Unspecified</key>
+	<string>未指定</string>
 	<key>Unsupported</key>
 	<string>不支持</string>
 	<key>Up to 128 min/max bins from the latest buffer after averaging channels per frame.</key>
@@ -1892,6 +1978,8 @@
 	<string>报告的物理高度</string>
 	<key>reported physical width</key>
 	<string>报告的物理宽度</string>
+	<key>sRGB</key>
+	<string>sRGB</string>
 	<key>variable refresh</key>
 	<string>可变刷新率</string>
 	<key>×</key>

@@ -23,7 +23,7 @@
 
 ### Hardware Inventory
 
-以独立 Provider 展示非唯一机型类别、SoC 系列、CPU 拓扑、内存容量/统一内存布局、Metal GPU 能力、Touch ID 能力、显示/存储能力和公开 Core Audio 设备清单。音频清单只显示有界设备/方向数量与当前默认输入/输出的固定连接类别、通道、标称采样率和设备延迟；不启动音频流。每张卡保留硬件领域和访问级别；不展示序列号、Hardware UUID、Metal registry ID、生物识别录入状态、Audio UID、设备名称或厂商。
+以独立 Provider 展示非唯一机型类别、SoC 系列、CPU 拓扑、内存容量/统一内存布局、Metal GPU 能力、Touch ID 能力、显示/存储能力和公开 Core Audio 设备清单。另提供用户主动、仅限当前页面的 USB Device Tree 与 Camera Capabilities：前者读取受限的公开 IOKit 数字事实，后者只发现 built-in/external 本机相机宣告的有界格式能力；两者离页清空且不进入 Provider 或导出。音频清单只显示有界设备/方向数量与当前默认输入/输出的固定连接类别、通道、标称采样率和设备延迟；不启动音频流。每张卡保留硬件领域和访问级别；不展示序列号、Hardware UUID、Metal registry ID、生物识别录入状态、Audio UID、Camera unique/model ID、设备名称或厂商。
 
 ### Raw Sensors
 

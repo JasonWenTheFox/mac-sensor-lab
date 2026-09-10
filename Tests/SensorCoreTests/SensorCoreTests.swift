@@ -3998,6 +3998,394 @@ final class SensorCoreTests: XCTestCase {
     )
   }
 
+  func testCameraInventoryReducerBuildsIdentityFreeCapabilityRows() throws {
+    let outcome = CameraInventoryReducer.reduce(
+      devices: [
+        CameraInventoryRawDevice(
+          sourceIndex: 20,
+          deviceType: .external,
+          positionRawValue: 0,
+          transportRawValue: kAudioDeviceTransportTypeUSB,
+          formats: [
+            cameraFormat(
+              sourceIndex: 1,
+              width: 1_920,
+              height: 1_080,
+              minimumFrameRate: 30,
+              maximumFrameRate: 60,
+              autofocusSystemRawValue: 1,
+              colorSpaceRawValues: [1, 0, 1]
+            ),
+            cameraFormat(
+              sourceIndex: 2,
+              width: 1_920,
+              height: 1_080,
+              minimumFrameRate: 30,
+              maximumFrameRate: 60,
+              autofocusSystemRawValue: 1,
+              colorSpaceRawValues: [0, 1]
+            ),
+          ]
+        ),
+        CameraInventoryRawDevice(
+          sourceIndex: 10,
+          deviceType: .builtInWideAngle,
+          positionRawValue: 2,
+          transportRawValue: kAudioDeviceTransportTypeBuiltIn,
+          formats: [
+            cameraFormat(
+              sourceIndex: 0,
+              width: 1_280,
+              height: 720,
+              minimumFrameRate: 24,
+              maximumFrameRate: 30,
+              autofocusSystemRawValue: 0,
+              colorSpaceRawValues: [0]
+            )
+          ]
+        ),
+      ],
+      completedAt: Date(timeIntervalSince1970: 42)
+    )
+    guard case .success(let snapshot) = outcome else {
+      return XCTFail("Expected a reduced Camera Capabilities snapshot")
+    }
+
+    XCTAssertEqual(snapshot.completedAt, Date(timeIntervalSince1970: 42))
+    XCTAssertEqual(snapshot.reportedDeviceCount, 2)
+    XCTAssertEqual(snapshot.devices.map(\.id), [1, 2])
+    XCTAssertEqual(snapshot.devices.map(\.ordinal), [1, 2])
+    XCTAssertEqual(snapshot.devices.map(\.deviceType), [.builtInWideAngle, .external])
+    XCTAssertEqual(snapshot.devices[0].position, .front)
+    XCTAssertEqual(snapshot.devices[0].transport, .builtIn)
+    XCTAssertEqual(snapshot.devices[1].transport, .usb)
+    XCTAssertEqual(snapshot.devices[1].reportedFormatCount, 2)
+    XCTAssertEqual(snapshot.devices[1].capabilities.count, 1)
+    XCTAssertEqual(snapshot.devices[1].capabilities[0].id, 1)
+    XCTAssertEqual(snapshot.devices[1].capabilities[0].variantCount, 2)
+    XCTAssertEqual(snapshot.devices[1].capabilities[0].width, 1_920)
+    XCTAssertEqual(snapshot.devices[1].capabilities[0].height, 1_080)
+    XCTAssertEqual(snapshot.devices[1].capabilities[0].minimumFrameRate, 30)
+    XCTAssertEqual(snapshot.devices[1].capabilities[0].maximumFrameRate, 60)
+    XCTAssertEqual(snapshot.devices[1].capabilities[0].autofocusSystem, .contrastDetection)
+    XCTAssertEqual(snapshot.devices[1].capabilities[0].colorSpaces, [.sRGB, .p3D65])
+    XCTAssertEqual(snapshot.capabilityRowCount, 2)
+    XCTAssertFalse(snapshot.isLimited)
+  }
+
+  func testCameraInventoryReducerDoubleFiltersContinuityAndDeskViewDevices() {
+    let acceptedFormat = cameraFormat(
+      sourceIndex: 0,
+      width: 640,
+      height: 480,
+      minimumFrameRate: 30,
+      maximumFrameRate: 30
+    )
+    let outcome = CameraInventoryReducer.reduce(
+      devices: [
+        CameraInventoryRawDevice(
+          sourceIndex: 0, deviceType: .continuityCamera, formats: [acceptedFormat]),
+        CameraInventoryRawDevice(
+          sourceIndex: 1, deviceType: .deskViewCamera, formats: [acceptedFormat]),
+        CameraInventoryRawDevice(
+          sourceIndex: 2,
+          deviceType: .builtInWideAngle,
+          transportRawValue: kAudioDeviceTransportTypeContinuityCaptureWired,
+          formats: [acceptedFormat]
+        ),
+        CameraInventoryRawDevice(
+          sourceIndex: 3,
+          deviceType: .external,
+          transportRawValue: kAudioDeviceTransportTypeContinuityCaptureWireless,
+          formats: [acceptedFormat]
+        ),
+        CameraInventoryRawDevice(
+          sourceIndex: 4,
+          deviceType: .builtInWideAngle,
+          transportRawValue: 0x6363_6170,
+          formats: [acceptedFormat]
+        ),
+        CameraInventoryRawDevice(
+          sourceIndex: 5,
+          deviceType: .external,
+          transportRawValue: kAudioDeviceTransportTypeUSB,
+          formats: [acceptedFormat]
+        ),
+      ]
+    )
+    guard case .success(let snapshot) = outcome else {
+      return XCTFail("Expected excluded devices to be omitted")
+    }
+
+    XCTAssertEqual(snapshot.reportedDeviceCount, 6)
+    XCTAssertEqual(snapshot.discardedDeviceCount, 5)
+    XCTAssertEqual(snapshot.devices.count, 1)
+    XCTAssertEqual(snapshot.devices[0].deviceType, .external)
+    XCTAssertEqual(snapshot.devices[0].transport, .usb)
+    XCTAssertTrue(snapshot.isLimited)
+  }
+
+  func testCameraInventoryReducerPreservesEmptyAndExcludedOnlyStates() {
+    guard case .success(let empty) = CameraInventoryReducer.reduce(devices: []) else {
+      return XCTFail("Expected an empty snapshot")
+    }
+    XCTAssertEqual(empty.reportedDeviceCount, 0)
+    XCTAssertTrue(empty.devices.isEmpty)
+    XCTAssertFalse(empty.isLimited)
+
+    guard
+      case .success(let excludedOnly) = CameraInventoryReducer.reduce(
+        devices: [
+          CameraInventoryRawDevice(sourceIndex: 0, deviceType: .continuityCamera)
+        ]
+      )
+    else {
+      return XCTFail("Expected excluded devices to remain an explicit empty result")
+    }
+    XCTAssertEqual(excludedOnly.reportedDeviceCount, 1)
+    XCTAssertEqual(excludedOnly.discardedDeviceCount, 1)
+    XCTAssertTrue(excludedOnly.devices.isEmpty)
+    XCTAssertTrue(excludedOnly.isLimited)
+  }
+
+  func testCameraInventoryReducerBoundsAndSanitizesMalformedMetadata() {
+    let outcome = CameraInventoryReducer.reduce(
+      devices: [
+        CameraInventoryRawDevice(
+          sourceIndex: 0,
+          deviceType: .external,
+          positionRawValue: 99,
+          transportRawValue: 0x1234_5678,
+          formats: [
+            CameraInventoryRawFormat(
+              sourceIndex: 0,
+              width: 1_920,
+              height: 1_080,
+              frameRateRanges: [
+                CameraInventoryRawFrameRateRange(minimum: .nan, maximum: 30),
+                CameraInventoryRawFrameRateRange(minimum: 30, maximum: 60),
+              ],
+              autofocusSystemRawValue: 99,
+              colorSpaceRawValues: [0, 99, 99]
+            ),
+            cameraFormat(
+              sourceIndex: 1,
+              width: 0,
+              height: 480,
+              minimumFrameRate: 30,
+              maximumFrameRate: 30
+            ),
+            CameraInventoryRawFormat(
+              sourceIndex: 2,
+              width: 640,
+              height: 480,
+              frameRateRanges: [],
+              autofocusSystemRawValue: 0,
+              colorSpaceRawValues: []
+            ),
+          ]
+        )
+      ]
+    )
+    guard case .success(let snapshot) = outcome else {
+      return XCTFail("Expected malformed optional metadata to be omitted or classified")
+    }
+
+    XCTAssertEqual(snapshot.devices[0].position, .unknown)
+    XCTAssertEqual(snapshot.devices[0].transport, .unknown)
+    XCTAssertEqual(snapshot.devices[0].capabilities.count, 1)
+    XCTAssertEqual(snapshot.devices[0].capabilities[0].autofocusSystem, .unknown)
+    XCTAssertEqual(snapshot.devices[0].capabilities[0].colorSpaces, [.sRGB, .unknown])
+    XCTAssertEqual(snapshot.malformedFieldCount, 8)
+    XCTAssertTrue(snapshot.isLimited)
+  }
+
+  func testCameraInventoryReducerRejectsMalformedShapeAndCardinalityViolations() {
+    XCTAssertEqual(
+      CameraInventoryReducer.reduce(
+        devices: (0...CameraInventoryReducer.maximumDeviceCount).map {
+          CameraInventoryRawDevice(sourceIndex: $0, deviceType: .external)
+        }
+      ),
+      .failure(.safetyLimitReached)
+    )
+    XCTAssertEqual(
+      CameraInventoryReducer.reduce(
+        devices: [
+          CameraInventoryRawDevice(sourceIndex: 0, deviceType: .external),
+          CameraInventoryRawDevice(sourceIndex: 0, deviceType: .external),
+        ]
+      ),
+      .failure(.malformedData)
+    )
+    XCTAssertEqual(
+      CameraInventoryReducer.reduce(
+        devices: [
+          CameraInventoryRawDevice(
+            sourceIndex: 0,
+            deviceType: .external,
+            formats: (0...CameraInventoryReducer.maximumFormatCountPerDevice).map {
+              cameraFormat(
+                sourceIndex: $0,
+                width: 640,
+                height: 480,
+                minimumFrameRate: 30,
+                maximumFrameRate: 30
+              )
+            }
+          )
+        ]
+      ),
+      .failure(.safetyLimitReached)
+    )
+    let tooManyRanges = (0...CameraInventoryReducer.maximumFrameRateRangeCountPerFormat)
+      .map { index in
+        CameraInventoryRawFrameRateRange(
+          minimum: Double(index + 1),
+          maximum: Double(index + 1)
+        )
+      }
+    XCTAssertEqual(
+      CameraInventoryReducer.reduce(
+        devices: [
+          CameraInventoryRawDevice(
+            sourceIndex: 0,
+            deviceType: .external,
+            formats: [
+              CameraInventoryRawFormat(
+                sourceIndex: 0,
+                width: 640,
+                height: 480,
+                frameRateRanges: tooManyRanges,
+                autofocusSystemRawValue: 0,
+                colorSpaceRawValues: []
+              )
+            ]
+          )
+        ]
+      ),
+      .failure(.safetyLimitReached)
+    )
+    let tooManyColors = Array(
+      repeating: 0,
+      count: CameraInventoryReducer.maximumColorSpaceCountPerFormat + 1
+    )
+    XCTAssertEqual(
+      CameraInventoryReducer.reduce(
+        devices: [
+          CameraInventoryRawDevice(
+            sourceIndex: 0,
+            deviceType: .external,
+            formats: [
+              CameraInventoryRawFormat(
+                sourceIndex: 0,
+                width: 640,
+                height: 480,
+                frameRateRanges: [
+                  CameraInventoryRawFrameRateRange(minimum: 30, maximum: 30)
+                ],
+                autofocusSystemRawValue: 0,
+                colorSpaceRawValues: tooManyColors
+              )
+            ]
+          )
+        ]
+      ),
+      .failure(.safetyLimitReached)
+    )
+
+    let rowOverflowDevices = (0..<17).map { deviceIndex in
+      CameraInventoryRawDevice(
+        sourceIndex: deviceIndex,
+        deviceType: .external,
+        formats: (0..<CameraInventoryReducer.maximumFormatCountPerDevice).map { formatIndex in
+          CameraInventoryRawFormat(
+            sourceIndex: formatIndex,
+            width: Int64(formatIndex + 1),
+            height: 480,
+            frameRateRanges: [
+              CameraInventoryRawFrameRateRange(minimum: 24, maximum: 24),
+              CameraInventoryRawFrameRateRange(minimum: 30, maximum: 30),
+            ],
+            autofocusSystemRawValue: 0,
+            colorSpaceRawValues: []
+          )
+        }
+      )
+    }
+    XCTAssertEqual(
+      CameraInventoryReducer.reduce(devices: rowOverflowDevices),
+      .failure(.safetyLimitReached)
+    )
+  }
+
+  func testCameraInventorySourceAndBundleUseOnlyTheReviewedMetadataPath() throws {
+    let projectRoot = URL(fileURLWithPath: #filePath)
+      .deletingLastPathComponent()
+      .deletingLastPathComponent()
+      .deletingLastPathComponent()
+    let sourceURL = projectRoot.appendingPathComponent(
+      "Sources/SensorCore/CameraInventoryAVFoundationSource.swift"
+    )
+    let source = try String(contentsOf: sourceURL, encoding: .utf8)
+
+    for required in [
+      "AVCaptureDevice.DiscoverySession", ".builtInWideAngleCamera", ".external",
+      "mediaType: .video", "position: .unspecified", "device.deviceType",
+      "device.position.rawValue", "device.transportType", "device.formats",
+      "format.formatDescription", "format.videoSupportedFrameRateRanges",
+      "format.autoFocusSystem.rawValue", "format.supportedColorSpaces",
+    ] {
+      XCTAssertTrue(source.contains(required), "Missing reviewed camera path: \(required)")
+    }
+    for forbidden in [
+      "uniqueID", "modelID", "localizedName", "manufacturer", "linkedDevices",
+      "constituentDevices", "userPreferredCamera", "systemPreferredCamera", "defaultDevice",
+      "authorizationStatus", "requestAccess", "AVCaptureDeviceInput", "AVCaptureSession",
+      "DataOutput", "PhotoOutput", "MovieFileOutput", "VideoPreview", "MetadataOutput",
+      "lockForConfiguration", "activeFormat", "isInUseByAnotherApplication", "isSuspended",
+      "isConnected", "CMSampleBuffer", "CVPixelBuffer",
+    ] {
+      XCTAssertFalse(source.contains(forbidden), "Forbidden camera path: \(forbidden)")
+    }
+
+    let info = try XCTUnwrap(
+      NSDictionary(contentsOf: projectRoot.appendingPathComponent("Resources/Info.plist"))
+    )
+    XCTAssertEqual(info["NSCameraUseContinuityCameraDeviceType"] as? Bool, true)
+    XCTAssertNil(info["NSCameraUsageDescription"])
+    let entitlements = try XCTUnwrap(
+      NSDictionary(
+        contentsOf: projectRoot.appendingPathComponent("Resources/MacSensorLab.entitlements")
+      )
+    )
+    XCTAssertNil(entitlements["com.apple.security.device.camera"])
+  }
+
+  private func cameraFormat(
+    sourceIndex: Int,
+    width: Int64,
+    height: Int64,
+    minimumFrameRate: Double,
+    maximumFrameRate: Double,
+    autofocusSystemRawValue: Int = 0,
+    colorSpaceRawValues: [Int] = []
+  ) -> CameraInventoryRawFormat {
+    CameraInventoryRawFormat(
+      sourceIndex: sourceIndex,
+      width: width,
+      height: height,
+      frameRateRanges: [
+        CameraInventoryRawFrameRateRange(
+          minimum: minimumFrameRate,
+          maximum: maximumFrameRate
+        )
+      ],
+      autofocusSystemRawValue: autofocusSystemRawValue,
+      colorSpaceRawValues: colorSpaceRawValues
+    )
+  }
+
   func testUSBInventoryReducerBuildsDeterministicPreorderAndCompositeInterfaces() throws {
     let outcome = USBInventoryReducer.reduce(
       devices: [

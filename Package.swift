@@ -24,6 +24,7 @@ let package = Package(
       dependencies: ["CNVMeSMART"],
       linkerSettings: [
         .linkedFramework("AppKit"),
+        .linkedFramework("AVFoundation"),
         .linkedFramework("IOKit"),
         .linkedFramework("IOUSBHost"),
         .linkedFramework("CoreGraphics"),

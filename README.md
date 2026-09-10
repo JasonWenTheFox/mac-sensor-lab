@@ -15,7 +15,7 @@
 Mac Sensor Lab 把能力分成三层，并在界面和导出中保留数据来源：
 
 1. **原始事实**：26 个独立 Provider，包括非唯一机型类别、SoC、CPU 拓扑、统一内存、Metal GPU 与 Touch ID 能力，公开 Core Audio 音频设备清单，每显示器模式/色域/EDR/估算尺寸，系统盘介质属性与 NVMe SMART 标量/无损累计计数，当前 Wi-Fi 无线电链路，以及系统性能、网络/磁盘汇总、电池/电源、热压力、只读 SMC、SPU 环境光/运动和上盖角度。
-2. **可理解展示**：独立硬件清单页，卡片可按需展开全部事实，并提供用户主动、仅限当前页面的 USB 设备树；同时展示状态、单位、来源、硬件领域、访问级别、兼容性证据、五段就绪状态、Raw/Derived/Estimated/Calibrated 类型、历史曲线、搜索和版本化 JSON/CSV 导出。
+2. **可理解展示**：独立硬件清单页，卡片可按需展开全部事实，并提供用户主动、仅限当前页面的 USB 设备树与本机相机能力；同时展示状态、单位、来源、硬件领域、访问级别、兼容性证据、五段就绪状态、Raw/Derived/Estimated/Calibrated 类型、历史曲线、搜索和版本化 JSON/CSV 导出。
 3. **实验解释**：会话内显示器物理尺、Force Touch 归一化压力/stage 可视化、Wi-Fi 信号/噪声趋势、用户主动的附近 Wi-Fi 信道快照和声音输入检查、水平/运动趋势、上盖量角器、光照校准、四通道环境光谱相对指纹、电池趋势、热压力、部件温度、系统功耗、网络和磁盘活动。
 
 环境光谱指纹只比较四个未知响应通道的相对比例，可保存当前光型作为本地参考并显示相似度；它不会冒充色温、光谱波长或 lux。环境照度只有在用户提供外部 lux 参考并校准后才标为 `Estimated`。内部温度不是室温，内部功耗不是插座功率，1–10 秒采样也不宣称能分析振动频率。
@@ -29,6 +29,8 @@ Wi-Fi Radio Provider 使用公开 CoreWLAN getter 展示开关/服务/关联状�
 Audio Hardware Provider 只查询公开 Core Audio HAL 属性，展示当前可见/可用、输入/输出/双工设备数量，以及默认输入/输出的连接类别、通道数、标称采样率和设备级延迟。AudioDevice 数字句柄只在单次读取内临时使用；设备 UID、model UID、名称、厂商和驱动自由文本均不读取。它不会打开音频流、采集 PCM、录音或请求麦克风权限；标称采样率不是录音数据，设备延迟也不包含额外的 stream latency 与 safety offset。
 
 USB Device Tree 与 Provider 和导出隔离，只有用户在 Hardware Inventory 点击后才通过公开 IOKit 读取一次当前树。它只保留有界 VID/PID、`bcdDevice`、设备/接口类别三元组、当前配置、连接速度类别、备用设置和当次父子关系；最多处理 128 个设备、512 个接口和 32 层父链。页面只显示本次快照序号，离页即清空；不读取 serial/container/location/path/name/descriptor/power，不打开 USB user client，不发请求、传输、配置或重置设备。连接速度不是设备最大能力或实测吞吐量。
+
+Camera Capabilities 同样与 Provider 和导出隔离，只有用户在 Hardware Inventory 点击后才通过公开 AVFoundation discovery 读取一次本机 built-in/external 摄像头宣告的格式能力。它只显示当次序号、固定类型/位置/transport、格式数，以及有界的 encoded-pixel 分辨率、fps 范围、自动对焦和色彩空间；最多处理 32 个设备、每设备 256 个格式和 8,192 行合并能力。`NSCameraUseContinuityCameraDeviceType` 与 transport 双重过滤 Continuity Camera，Desk View 也不纳入。该路径不请求 Camera TCC、不打开设备、不创建 input/session/output，也不读取画面、unique/model ID、名称、厂商或当前配置；结果离页即清空。
 
 Sound Input Check 是与设备清单隔离的 `publicTCC` 实验。它不在启动或自动采样时运行：首次按钮只显示用途说明，用户再次确认后才可能触发 macOS 麦克风授权。授权后的会话最长五分钟，停止、离页、音频配置变化或系统休眠都会释放输入流。每个 Float32 PCM buffer 只在音频回调内被即时归约为最多 128 个通道平均 min/max 波形分箱、全通道 RMS/峰值幅度和相对数字满刻度 1.0 的 dBFS；历史最多 300 点。频谱只对最近 256/512/1024/2048 帧中不超过当前 buffer 的最大固定窗口做去均值 Hann-window DFT，正频率归约为最多 128 个相对分箱，以当前非 DC 峰值为 0 dB、显示下限 −80 dB，且每秒最多更新 10 次。原始样本不离开回调，不保留、播放、写盘或导出，派生值也不进入 Snapshot/Diagnostics，离页清空。dBFS 不是 dBA、dB SPL 或校准响度；“最强非 DC 分箱中心”只是有限分辨率频点，不是声源、音高、语音或环境识别。
 

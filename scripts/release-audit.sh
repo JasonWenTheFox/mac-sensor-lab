@@ -39,6 +39,22 @@ if /usr/bin/grep -Eq "$usb_forbidden_pattern" "$usb_source"; then
   fail "USB inventory source contains an identity, bulk-property, open, or control path"
 fi
 
+camera_source='Sources/SensorCore/CameraInventoryAVFoundationSource.swift'
+camera_forbidden_pattern='uniqueID|modelID|localizedName|manufacturer|linkedDevices|constituentDevices|userPreferredCamera|systemPreferredCamera|defaultDevice|authorizationStatus|requestAccess|AVCaptureDeviceInput|AVCaptureSession|DataOutput|PhotoOutput|MovieFileOutput|VideoPreview|MetadataOutput|lockForConfiguration|activeFormat|isInUseByAnotherApplication|isSuspended|isConnected|CMSampleBuffer|CVPixelBuffer'
+if /usr/bin/grep -Eq "$camera_forbidden_pattern" "$camera_source"; then
+  fail "Camera inventory source contains an identity, authorization, capture, or configuration path"
+fi
+for required_camera_path in \
+  'AVCaptureDevice.DiscoverySession' \
+  '.builtInWideAngleCamera' \
+  '.external' \
+  'mediaType: .video' \
+  'position: .unspecified' \
+  'NSCameraUseContinuityCameraDeviceType'; do
+  /usr/bin/grep -Fq "$required_camera_path" "$camera_source" \
+    || fail "Camera inventory source is missing reviewed path: $required_camera_path"
+done
+
 permission_key_pattern='NSLocation[A-Za-z]*UsageDescription|NSCameraUsageDescription|NSAppleEventsUsageDescription'
 if /usr/bin/plutil -p Resources/Info.plist | /usr/bin/grep -Eq "$permission_key_pattern"; then
   fail "Info.plist declares an unsupported protected permission"
@@ -47,11 +63,17 @@ fi
 microphone_purpose='Mac Sensor Lab uses microphone input only while you run Sound Input Check. Audio samples stay in memory and are never saved or exported.'
 [[ "$(/usr/bin/plutil -extract NSMicrophoneUsageDescription raw -o - Resources/Info.plist)" == "$microphone_purpose" ]] \
   || fail "Info.plist must contain the reviewed microphone purpose string"
+[[ "$(/usr/bin/plutil -extract NSCameraUseContinuityCameraDeviceType raw -o - Resources/Info.plist)" == "true" ]] \
+  || fail "Info.plist must retain the Continuity Camera classification boundary"
 
 [[ "$(/usr/bin/plutil -extract 'com\.apple\.security\.device\.audio-input' raw -o - Resources/MacSensorLab.entitlements)" == "true" ]] \
   || fail "the Audio Input entitlement must be enabled"
 [[ "$(/usr/bin/plutil -p Resources/MacSensorLab.entitlements | /usr/bin/grep -c '=>')" == "1" ]] \
   || fail "the app entitlement file must contain only Audio Input"
+if /usr/bin/plutil -p Resources/MacSensorLab.entitlements \
+  | /usr/bin/grep -Fq 'com.apple.security.device.camera'; then
+  fail "Camera Capabilities must not add a Camera entitlement"
+fi
 
 localized_microphone_purpose='Mac Sensor Lab 仅在你主动运行声音输入检查时使用麦克风。音频样本只在内存中即时处理，不会保存或导出。'
 [[ "$(/usr/bin/plutil -extract NSMicrophoneUsageDescription raw -o - Resources/zh-Hans.lproj/InfoPlist.strings)" == "$localized_microphone_purpose" ]] \
