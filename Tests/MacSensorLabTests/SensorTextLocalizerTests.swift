@@ -1295,6 +1295,69 @@ final class SensorDashboardModelTests: XCTestCase {
     XCTAssertNil(model.result)
   }
 
+  func testUSBInventoryModelPublishesOneCompletedFixture() async {
+    let result = usbInventoryFixture()
+    let operation = USBInventoryOperationFixture(
+      delay: .milliseconds(10), outcome: .success(result))
+    let model = USBInventoryModel(
+      timeout: .seconds(1),
+      operation: { await operation.read() }
+    )
+
+    model.start()
+    model.start()
+    await waitUntil { model.status == .ready }
+
+    XCTAssertEqual(model.result, result)
+    let completedReadCount = await operation.readCount
+    XCTAssertEqual(completedReadCount, 1)
+    XCTAssertFalse(model.isAwaitingResult)
+    XCTAssertFalse(model.isOperationInFlight)
+    XCTAssertTrue(model.canStart)
+  }
+
+  func testUSBInventoryModelTimesOutAndDiscardsTheLateResult() async {
+    let result = usbInventoryFixture()
+    let operation = USBInventoryOperationFixture(
+      delay: .milliseconds(60), outcome: .success(result))
+    let model = USBInventoryModel(
+      timeout: .milliseconds(10),
+      operation: { await operation.read() }
+    )
+
+    model.start()
+    await waitUntil { model.status == .timedOutWaiting }
+    XCTAssertNil(model.result)
+    XCTAssertTrue(model.isOperationInFlight)
+    XCTAssertFalse(model.canStart)
+
+    await waitUntil { !model.isOperationInFlight }
+    XCTAssertEqual(model.status, .timedOutWaiting)
+    XCTAssertNil(model.result)
+    let completedReadCount = await operation.readCount
+    XCTAssertEqual(completedReadCount, 1)
+  }
+
+  func testUSBInventoryModelClearsOnLeaveAndIgnoresAnInFlightResult() async {
+    let result = usbInventoryFixture()
+    let operation = USBInventoryOperationFixture(
+      delay: .milliseconds(40), outcome: .success(result))
+    let model = USBInventoryModel(
+      timeout: .seconds(1),
+      operation: { await operation.read() }
+    )
+
+    model.start()
+    model.leaveInventory()
+    XCTAssertEqual(model.status, .idle)
+    XCTAssertNil(model.result)
+    XCTAssertTrue(model.isOperationInFlight)
+
+    await waitUntil { !model.isOperationInFlight }
+    XCTAssertEqual(model.status, .idle)
+    XCTAssertNil(model.result)
+  }
+
   private func waitUntil(
     timeout: Duration = .seconds(1),
     condition: @MainActor () -> Bool
@@ -1324,6 +1387,38 @@ final class SensorDashboardModelTests: XCTestCase {
         )
       ]
     )
+  }
+
+  private func usbInventoryFixture() -> USBInventorySnapshot {
+    guard
+      case .success(let snapshot) = USBInventoryReducer.reduce(
+        devices: [USBInventoryRawDevice(sourceIndex: 1, deviceClass: .integer(9))],
+        interfaces: [],
+        completedAt: Date(timeIntervalSince1970: 20)
+      )
+    else {
+      preconditionFailure("Static USB fixture must reduce")
+    }
+    return snapshot
+  }
+}
+
+private actor USBInventoryOperationFixture {
+  let delay: Duration
+  let outcome: USBInventoryOutcome
+  private var count = 0
+
+  init(delay: Duration, outcome: USBInventoryOutcome) {
+    self.delay = delay
+    self.outcome = outcome
+  }
+
+  var readCount: Int { count }
+
+  func read() async -> USBInventoryOutcome {
+    count += 1
+    try? await Task.sleep(for: delay)
+    return outcome
   }
 }
 

@@ -33,6 +33,12 @@ if [[ -n "$(git grep -Il -E "$dangerous_source_pattern" -- Sources scripts ':(ex
   fail "source contains a forbidden privilege, registry-write, or SMC-write API"
 fi
 
+usb_source='Sources/SensorCore/USBInventoryIOKitSource.swift'
+usb_forbidden_pattern='IOUSBHostObject|IOServiceOpen|IORegistryEntryCreateCFProperties|SerialNumber|ContainerID|LocationID|ECID|UDID|Signature|VendorString|IOUSBLib|sendDeviceRequest|descriptor|endpoint|configure|reset|transfer'
+if /usr/bin/grep -Eq "$usb_forbidden_pattern" "$usb_source"; then
+  fail "USB inventory source contains an identity, bulk-property, open, or control path"
+fi
+
 permission_key_pattern='NSLocation[A-Za-z]*UsageDescription|NSCameraUsageDescription|NSAppleEventsUsageDescription'
 if /usr/bin/plutil -p Resources/Info.plist | /usr/bin/grep -Eq "$permission_key_pattern"; then
   fail "Info.plist declares an unsupported protected permission"

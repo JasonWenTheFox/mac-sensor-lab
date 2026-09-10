@@ -38,10 +38,14 @@
 	<string>%lld 台音频设备</string>
 	<key>%lld changes</key>
 	<string>%lld 次变化</string>
+	<key>%lld detached interfaces • %lld malformed fields omitted</key>
+	<string>已省略 %lld 个脱离设备的接口 • %lld 个异常字段</string>
 	<key>%lld device • %lld input • %lld output</key>
 	<string>%lld 台设备 • %lld 台支持输入 • %lld 台支持输出</string>
 	<key>%lld devices • %lld input • %lld output</key>
 	<string>%lld 台设备 • %lld 台支持输入 • %lld 台支持输出</string>
+	<key>%lld devices • %lld interfaces in this snapshot</key>
+	<string>本次快照包含 %lld 个设备 • %lld 个接口</string>
 	<key>%lld experimental sensor types detected</key>
 	<string>检测到 %lld 类实验性传感器</string>
 	<key>%lld malformed records discarded • %lld records omitted by the safety limit</key>
@@ -120,6 +124,8 @@
 	<string>所有读数都保留在这台 Mac 上，除非你主动导出快照、记录、校准或诊断文件。</string>
 	<key>Allow microphone input for Sound Input Check?</key>
 	<string>允许“声音输入检查”使用麦克风输入吗？</string>
+	<key>Alternate setting</key>
+	<string>备用设置</string>
 	<key>Ambient Light</key>
 	<string>环境光</string>
 	<key>Ambient intensity</key>
@@ -154,6 +160,8 @@
 	<string>AppleSMC 存在，但无法打开其用户客户端</string>
 	<key>AppleSMC is temporarily busy</key>
 	<string>AppleSMC 暂时繁忙</string>
+	<key>Application specific</key>
+	<string>应用程序专用</string>
 	<key>Architecture</key>
 	<string>架构</string>
 	<key>Associated</key>
@@ -234,6 +242,8 @@
 	<string>电池侧功率并非整机插座侧功率。</string>
 	<key>Battery-specific operating-system estimate; calculating sentinels are omitted.</key>
 	<string>操作系统针对电池的估算值；已省略‘正在计算’哨兵值。</string>
+	<key>Billboard</key>
+	<string>Billboard</string>
 	<key>Block-storage statistics were unavailable</key>
 	<string>块存储统计不可用</string>
 	<key>Blocked by platform</key>
@@ -252,6 +262,8 @@
 	<string>内置演示样本</string>
 	<key>Built-in deterministic demo fixture</key>
 	<string>内置确定性演示夹具</string>
+	<key>CDC data</key>
+	<string>CDC 数据</string>
 	<key>CPU</key>
 	<string>CPU</string>
 	<key>CPU %@</key>
@@ -322,6 +334,8 @@
 	<string>重新检查权限</string>
 	<key>Checking data source</key>
 	<string>正在检查数据源</string>
+	<key>Child of USB Device %lld</key>
+	<string>USB 设备 %lld 的子设备</string>
 	<key>Choose a tool to interpret, compare, or calibrate recent sensor data.</key>
 	<string>选择工具来解释、比较或校准近期传感器数据。</string>
 	<key>Clear</key>
@@ -352,6 +366,8 @@
 	<string>正在建立活动基线 • %lld 个块设备</string>
 	<key>Collecting network baseline • %lld active interfaces</key>
 	<string>正在建立网络基线 • %lld 个活动接口</string>
+	<key>Communications</key>
+	<string>通信</string>
 	<key>Compares aggregate read and write rates without exposing device identity</key>
 	<string>对比汇总读写速率，不暴露设备身份</string>
 	<key>Compares aggregate receive and send rates without exposing interface identity</key>
@@ -378,6 +394,12 @@
 	<string>综合温度超过临界阈值</string>
 	<key>Composite temperature describes the controller and NVM, not room temperature.</key>
 	<string>综合温度描述控制器与 NVM，并非室温。</string>
+	<key>Connection speed</key>
+	<string>连接速度</string>
+	<key>Connection speed is a reported link category, not a maximum capability or measured throughput.</key>
+	<string>连接速度是系统报告的链路类别，不是最大能力或实测吞吐量。</string>
+	<key>Content security</key>
+	<string>内容安全</string>
 	<key>Continue to macOS Permission</key>
 	<string>继续前往 macOS 权限确认</string>
 	<key>Continuity Camera (wired)</key>
@@ -422,6 +444,8 @@
 	<string>关键警告位</string>
 	<key>Current Capacity ÷ Max Capacity from Apple's public power-source API.</key>
 	<string>Apple 公开电源 API 返回的当前容量 ÷ 最大容量。</string>
+	<key>Current configuration value</key>
+	<string>当前配置值</string>
 	<key>Current display ready for a session-only calibration.</key>
 	<string>当前显示器已可进行仅限本次会话的校准。</string>
 	<key>Cycle count</key>
@@ -472,6 +496,8 @@
 	<string>默认输出标称采样率</string>
 	<key>Default output reported</key>
 	<string>已报告默认输出设备</string>
+	<key>Defined by interfaces</key>
+	<string>由接口定义</string>
 	<key>Demo data — no hardware is being read</key>
 	<string>演示数据 — 未读取硬件</string>
 	<key>Demo data — not live sensor readings</key>
@@ -502,10 +528,16 @@
 	<string>开发用可执行文件</string>
 	<key>Device UID, model UID, name, manufacturer, icon, clock domain, and free-form driver text are not read.</key>
 	<string>不读取设备 UID、型号 UID、名称、厂商、图标、时钟域或驱动自由文本。</string>
+	<key>Device class / subclass / protocol</key>
+	<string>设备类别 / 子类别 / 协议</string>
 	<key>Device model, vendor, revision, serial number, GUID, UUID, BSD name, registry path, volume name, and mount path are intentionally omitted.</key>
 	<string>有意省略设备型号、厂商、修订、序列号、GUID、UUID、BSD 名称、registry 路径、卷名和挂载路径。</string>
 	<key>Device names and unique identifiers are intentionally omitted.</key>
 	<string>有意省略设备名称和唯一标识符。</string>
+	<key>Device release number (bcdDevice)</key>
+	<string>设备发布编号（bcdDevice）</string>
+	<key>Diagnostic</key>
+	<string>诊断</string>
 	<key>Diagnostics</key>
 	<string>诊断</string>
 	<key>Diagnostics export failed: %@</key>
@@ -650,6 +682,8 @@
 	<string>频率 Hz</string>
 	<key>Frequency resolution</key>
 	<string>频率分辨率</string>
+	<key>Full Speed — 12 Mb/s</key>
+	<string>全速 — 12 Mb/s</string>
 	<key>Fully charged</key>
 	<string>已充满</string>
 	<key>GPU</key>
@@ -688,18 +722,28 @@
 	<string>已检测到硬件 • 等待测量 Provider</string>
 	<key>Hardware/service presence only.</key>
 	<string>仅表示硬件或服务存在。</string>
+	<key>High Speed — 480 Mb/s</key>
+	<string>高速 — 480 Mb/s</string>
 	<key>Highest recent pressure</key>
 	<string>近期最高热压力</string>
 	<key>Host read commands</key>
 	<string>主机读取命令</string>
 	<key>Host write commands</key>
 	<string>主机写入命令</string>
+	<key>Hub</key>
+	<string>集线器</string>
+	<key>Human interface device</key>
+	<string>人机接口设备</string>
 	<key>Idle — demo mode will not access the microphone.</key>
 	<string>空闲——演示模式不会访问麦克风。</string>
 	<key>Idle — microphone input has not started.</key>
 	<string>空闲——麦克风输入尚未开始。</string>
 	<key>Idle — no nearby scan has run this session.</key>
 	<string>空闲 — 本次会话尚未运行附近信道扫描。</string>
+	<key>Idle — the USB tree has not been read this session.</key>
+	<string>空闲——本次会话尚未读取 USB 树。</string>
+	<key>Image</key>
+	<string>图像</string>
 	<key>Import Ambient-Light Calibration</key>
 	<string>导入环境光校准</string>
 	<key>Import Calibration…</key>
@@ -716,6 +760,12 @@
 	<string>包含 Provider 状态和稳定的通道元数据，但不包含传感器读数或机器标识。</string>
 	<key>Input-capable audio devices</key>
 	<string>支持输入的音频设备</string>
+	<key>Interface %lld.%lld</key>
+	<string>接口 %lld.%lld</string>
+	<key>Interface class / subclass / protocol</key>
+	<string>接口类别 / 子类别 / 协议</string>
+	<key>Interface number</key>
+	<string>接口编号</string>
 	<key>Internal SMC telemetry; not wall-plug power.</key>
 	<string>内部 SMC 遥测；并非插座侧功率。</string>
 	<key>Internal component temperature, not ambient room temperature.</key>
@@ -774,6 +824,8 @@
 	<string>实时本地读数，始终显示数据源和可信度。</string>
 	<key>Live sampling attempts ordinary read-only access. If macOS denies an interface, its provider reports Permission required; this app does not request administrator access or bypass privacy controls.</key>
 	<string>实时采样只尝试普通的只读访问。如果 macOS 拒绝某个接口，对应 Provider 会报告“需要权限”；本 App 不请求管理员权限，也不绕过隐私控制。</string>
+	<key>Load Demo USB Tree</key>
+	<string>载入演示 USB 树</string>
 	<key>Load average (%lld min)</key>
 	<string>平均负载（%lld 分钟）</string>
 	<key>Loading</key>
@@ -786,6 +838,8 @@
 	<string>逻辑处理器</string>
 	<key>Low Power Mode</key>
 	<string>低电量模式</string>
+	<key>Low Speed — 1.5 Mb/s</key>
+	<string>低速 — 1.5 Mb/s</string>
 	<key>Low-rate acceleration variation; not a vibration spectrum analyzer</key>
 	<string>低速率加速度变化；不是振动频谱分析仪</string>
 	<key>MBR partition map</key>
@@ -804,6 +858,8 @@
 	<string>主显示器像素尺寸</string>
 	<key>Malformed provider output was discarded before display or export.</key>
 	<string>格式异常的 Provider 输出已在显示或导出前丢弃。</string>
+	<key>Mass storage</key>
+	<string>大容量存储</string>
 	<key>Match the on-screen line to a real ruler to calibrate only the current horizontal axis.</key>
 	<string>将屏幕线段与真实尺具对齐，只校准当前水平轴。</string>
 	<key>Match to reference</key>
@@ -844,6 +900,8 @@
 	<string>最小</string>
 	<key>Minimum amplitude</key>
 	<string>最小幅度</string>
+	<key>Miscellaneous</key>
+	<string>其他类别</string>
 	<key>Mixed</key>
 	<string>混合状态</string>
 	<key>Model identifier</key>
@@ -936,6 +994,8 @@
 	<string>没有已识别的警告位并不等于完整的健康评估。</string>
 	<key>No serial number, hardware UUID, UDID, host name, user name, location, process list, SSID or audio recording is collected by this build.</key>
 	<string>此构建不采集序列号、硬件 UUID、UDID、主机名、用户名、位置、进程列表、SSID 或录音。</string>
+	<key>No serial numbers, names, locations, registry paths, descriptors, device opens, persistence, history, diagnostics values, or export.</key>
+	<string>不读取序列号、名称、位置、注册表路径或描述符，不打开设备，不持久化，不进入历史、诊断值或导出。</string>
 	<key>No sudo, driver-property writes, or permission bypass was attempted.</key>
 	<string>未尝试 sudo、写入驱动属性或绕过权限。</string>
 	<key>No volume path or system error text is exported.</key>
@@ -956,10 +1016,14 @@
 	<string>不适用</string>
 	<key>Not associated</key>
 	<string>未关联</string>
+	<key>Not connected</key>
+	<string>未连接</string>
 	<key>Not detected</key>
 	<string>未检测到</string>
 	<key>Not implemented • provider pending</key>
 	<string>尚未实现 • 等待 Provider</string>
+	<key>Not reported</key>
+	<string>未报告</string>
 	<key>OWE transition</key>
 	<string>OWE 过渡</string>
 	<key>Observed PCM frames</key>
@@ -1008,6 +1072,8 @@
 	<string>序数编码仅用于趋势显示；等级间距没有物理意义，也不推断温度。</string>
 	<key>Original sample time: %@</key>
 	<string>原始采样时间：%@</string>
+	<key>Other reported speed</key>
+	<string>其他报告速度</string>
 	<key>Other sensors will continue updating while this read finishes.</key>
 	<string>这次读取完成前，其他传感器仍会继续更新。</string>
 	<key>Output-capable audio devices</key>
@@ -1050,8 +1116,12 @@
 	<string>权限处理</string>
 	<key>Permission required</key>
 	<string>需要权限</string>
+	<key>Personal healthcare</key>
+	<string>个人医疗保健</string>
 	<key>Personal security</key>
 	<string>个人级安全</string>
+	<key>Physical</key>
+	<string>物理接口</string>
 	<key>Physical Display Ruler</key>
 	<string>显示器物理尺</string>
 	<key>Physical memory</key>
@@ -1090,6 +1160,8 @@
 	<string>压力值在每个阶段内归一化为 0 到 1。它不是力、重量、克数或经过校准的物理测量。</string>
 	<key>Primary GPU</key>
 	<string>主 GPU</string>
+	<key>Printer</key>
+	<string>打印机</string>
 	<key>Privacy</key>
 	<string>隐私</string>
 	<key>Privacy manifest</key>
@@ -1154,6 +1226,8 @@
 	<string>读取 %@ • 写入 %@</string>
 	<key>Read 18 MB/s • write 4 MB/s</key>
 	<string>读取 18 MB/s • 写入 4 MB/s</string>
+	<key>Read Current USB Tree</key>
+	<string>读取当前 USB 树</string>
 	<key>Read errors</key>
 	<string>读取错误</string>
 	<key>Read operation rate</key>
@@ -1170,6 +1244,10 @@
 	<string>读取路径不可用</string>
 	<key>Reading in the background…</key>
 	<string>正在后台读取…</string>
+	<key>Reading the current bounded USB tree…</key>
+	<string>正在读取有界的当前 USB 树…</string>
+	<key>Reads one bounded USB registry snapshot only after you ask. Model-level numeric identifiers remain on this page for this session.</key>
+	<string>仅在你主动操作后读取一次有界 USB 注册表快照。型号级数字标识只在本次会话的此页面保留。</string>
 	<key>Reads public AppKit pressure events only inside the interaction area below.</key>
 	<string>只在下方交互区域内读取公开的 AppKit 压力事件。</string>
 	<key>Receive packet rate</key>
@@ -1338,6 +1416,8 @@
 	<string>单点缩放：%@ lux（原始值 %@）。</string>
 	<key>Smart battery</key>
 	<string>智能电池</string>
+	<key>Smart card</key>
+	<string>智能卡</string>
 	<key>SoC</key>
 	<string>SoC</string>
 	<key>SoC family</key>
@@ -1414,6 +1494,8 @@
 	<string>已停止 %@，共 %lld 行（%@）</string>
 	<key>Stopped waiting after 20 seconds; any late result will be discarded.</key>
 	<string>等待 20 秒后已停止；任何迟到结果都将被丢弃。</string>
+	<key>Stopped waiting after two seconds; any late result will be discarded.</key>
+	<string>等待两秒后已停止；任何迟到结果都会被丢弃。</string>
 	<key>Stopped waiting; any late system result will be discarded.</key>
 	<string>已停止等待；任何迟到的系统结果都将被丢弃。</string>
 	<key>Storage</key>
@@ -1428,6 +1510,12 @@
 	<string>数据流未活跃</string>
 	<key>Strongest non-DC bin center</key>
 	<string>最强非直流分箱中心</string>
+	<key>SuperSpeed — 5 Gb/s</key>
+	<string>SuperSpeed — 5 Gb/s</string>
+	<key>SuperSpeed+ ×2 — 20 Gb/s</key>
+	<string>SuperSpeed+ ×2 — 20 Gb/s</string>
+	<key>SuperSpeed+ — 10 Gb/s</key>
+	<string>SuperSpeed+ — 10 Gb/s</string>
 	<key>Support</key>
 	<string>支持</string>
 	<key>Swap encrypted</key>
@@ -1470,6 +1558,12 @@
 	<string>本 App 不会请求 sudo 或更改 HID 驱动属性。</string>
 	<key>The App will not request sudo or attempt a privileged helper in this build.</key>
 	<string>此构建不会请求 sudo，也不会尝试特权 Helper。</string>
+	<key>The USB registry read failed without exposing system error text.</key>
+	<string>USB 注册表读取失败，未回显系统错误文本。</string>
+	<key>The USB topology changed or was invalid while being read.</key>
+	<string>读取期间 USB 拓扑发生变化或无效。</string>
+	<key>The USB tree exceeded its safety limit and was not shown.</key>
+	<string>USB 树超过安全上限，因此未显示。</string>
 	<key>The Wi-Fi network service is inactive or unavailable.</key>
 	<string>Wi-Fi 网络服务未启用或不可用。</string>
 	<key>The Wi-Fi scan failed without exposing system error details.</key>
@@ -1496,6 +1590,10 @@
 	<string>上盖角度传感器暂时繁忙</string>
 	<key>The microphone permission request did not produce a decision.</key>
 	<string>麦克风权限请求未产生明确结果。</string>
+	<key>The registry read may still be finishing.</key>
+	<string>注册表读取可能仍在结束。</string>
+	<key>The registry snapshot contained no USB devices.</key>
+	<string>注册表快照中没有 USB 设备。</string>
 	<key>The safe reader did not wake or reconfigure the SPU.</key>
 	<string>安全读取器没有唤醒或重新配置 SPU。</string>
 	<key>The scan completed without usable channel records.</key>
@@ -1522,6 +1620,8 @@
 	<string>热压力等级</string>
 	<key>Thermals</key>
 	<string>散热状态</string>
+	<key>This Mac does not expose the required public USB registry service.</key>
+	<string>此 Mac 未公开所需的公共 USB 注册表服务。</string>
 	<key>This Wi-Fi scan is not supported on the current system.</key>
 	<string>当前系统不支持此 Wi-Fi 扫描。</string>
 	<key>This build never runs as root, changes fan settings, writes SMC values, or modifies Apple SPU driver state.</key>
@@ -1536,6 +1636,8 @@
 	<string>雷雳</string>
 	<key>Time remaining values are operating-system estimates.</key>
 	<string>剩余时间值是操作系统估算。</string>
+	<key>Top-level USB device</key>
+	<string>顶层 USB 设备</string>
 	<key>Totals are driver-lifetime counters aggregated across block-storage drivers.</key>
 	<string>总计是跨块存储驱动汇总的驱动生命周期计数器。</string>
 	<key>Touch ID available</key>
@@ -1568,6 +1670,16 @@
 	<string>UPS 电源</string>
 	<key>USB</key>
 	<string>USB</string>
+	<key>USB Device %lld</key>
+	<string>USB 设备 %lld</string>
+	<key>USB Device Tree</key>
+	<string>USB 设备树</string>
+	<key>USB registry enumeration is temporarily unavailable.</key>
+	<string>USB 注册表枚举暂时不可用。</string>
+	<key>USB tree available on this page for this session.</key>
+	<string>USB 树仅在本次会话的此页面可用。</string>
+	<key>USB tree available with malformed or detached records omitted.</key>
+	<string>USB 树可用；已省略异常或脱离设备的记录。</string>
 	<key>Unavailable</key>
 	<string>不可用</string>
 	<key>Uncalibrated raw channel.</key>
@@ -1624,8 +1736,14 @@
 	<string>使用最近的公开电量历史；仅在放电时显示</string>
 	<key>Uses the undocumented lid-angle sensor</key>
 	<string>使用未文档化的上盖角度传感器</string>
+	<key>Vendor ID / Product ID</key>
+	<string>厂商 ID / 产品 ID</string>
+	<key>Vendor specific</key>
+	<string>厂商专用</string>
 	<key>Version</key>
 	<string>版本</string>
+	<key>Video</key>
+	<string>视频</string>
 	<key>View Diagnostics</key>
 	<string>查看诊断</string>
 	<key>Virtual</key>
@@ -1686,6 +1804,8 @@
 	<string>Wi-Fi 无线电指标可用</string>
 	<key>Wi-Fi service is inactive or unavailable</key>
 	<string>Wi-Fi 网络服务未活跃或不可用</string>
+	<key>Wireless controller</key>
+	<string>无线控制器</string>
 	<key>Writable media</key>
 	<string>可写介质</string>
 	<key>Write errors</key>
@@ -1746,6 +1866,8 @@
 	<string>macOS 拒绝访问上盖角度传感器</string>
 	<key>macOS denied ordinary read access for %lld provider(s). Raw Sensors shows the provider-specific reason.</key>
 	<string>macOS 拒绝了 %lld 个 Provider 的普通只读访问。“原始传感器”会显示各 Provider 的具体原因。</string>
+	<key>macOS did not permit this USB registry read.</key>
+	<string>macOS 未允许此次 USB 注册表读取。</string>
 	<key>macOS did not permit this Wi-Fi scan.</key>
 	<string>macOS 未允许此次 Wi-Fi 扫描。</string>
 	<key>macOS will ask for microphone access. Capture begins only if you allow it; buffers stay in memory and are never saved or exported.</key>

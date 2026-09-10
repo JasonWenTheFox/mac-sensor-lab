@@ -8,6 +8,7 @@ struct RootView: View {
   @StateObject private var pressureLabModel = PressureLabModel()
   @StateObject private var wifiChannelScanModel: WiFiChannelScanModel
   @StateObject private var microphoneInputModel: MicrophoneInputModel
+  @StateObject private var usbInventoryModel: USBInventoryModel
 
   init(model: SensorDashboardModel) {
     self.model = model
@@ -16,6 +17,9 @@ struct RootView: View {
     )
     _microphoneInputModel = StateObject(
       wrappedValue: MicrophoneInputModel(isDemoMode: model.isDemoMode)
+    )
+    _usbInventoryModel = StateObject(
+      wrappedValue: USBInventoryModel(isDemoMode: model.isDemoMode)
     )
   }
 
@@ -52,7 +56,9 @@ struct RootView: View {
           case .hardwareInventory:
             HardwareInventoryView(
               snapshots: model.snapshots.filter { $0.id.hasPrefix("hardware.") },
-              history: model.history
+              history: model.history,
+              isDemoMode: model.isDemoMode,
+              usbInventoryModel: usbInventoryModel
             )
           case .rawSensors:
             RawSensorsView(snapshots: model.snapshots)
@@ -201,6 +207,8 @@ private struct OverviewView: View {
 private struct HardwareInventoryView: View {
   let snapshots: [SensorSnapshot]
   let history: [String: [SensorHistoryPoint]]
+  let isDemoMode: Bool
+  @ObservedObject var usbInventoryModel: USBInventoryModel
   private let columns = [GridItem(.adaptive(minimum: 300), spacing: 16)]
 
   var body: some View {
@@ -225,6 +233,9 @@ private struct HardwareInventoryView: View {
       .frame(maxWidth: .infinity, alignment: .leading)
       .padding(.bottom, 12)
 
+      USBInventoryPanel(model: usbInventoryModel, isDemoMode: isDemoMode)
+        .padding(.bottom, 16)
+
       LazyVGrid(columns: columns, spacing: 16) {
         ForEach(snapshots) { snapshot in
           SensorCard(snapshot: snapshot, history: history, allowsExpansion: true)
@@ -233,6 +244,7 @@ private struct HardwareInventoryView: View {
     }
     .padding(24)
     .navigationTitle(L10n.text("Hardware Inventory"))
+    .onDisappear { usbInventoryModel.leaveInventory() }
   }
 }
 

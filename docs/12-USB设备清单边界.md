@@ -1,6 +1,6 @@
 # 12 USB 设备清单边界
 
-更新：2026-09-10（E8a 设计门；尚未实现 USB 界面）
+更新：2026-09-10（E8b 已实现并通过本地发布验证）
 
 ## 结论
 
@@ -8,7 +8,7 @@ macOS 14+ 可以通过公开 IOKit 枚举 `IOUSBHostDevice` / `IOUSBHostInterfac
 
 这条路径适合一个 **identity-minimized、用户主动刷新、仅在当前面板保留** 的 USB Device Tree。它暂时不适合现有 `SensorProvider`：USB 拓扑和设备数会动态变化，而 Provider 通道会自动进入 Snapshot、JSON/CSV、连续记录、Diagnostics channel ID 和采样历史；用 `device_1` 之类的动态槽位既会泄漏不必要的外设清单，也可能把拔插后的不同设备误接成同一时间序列。
 
-因此 E8a 只固定设计，未宣称产品已经有 USB 清单。下一实现节点 E8b 应加入独立会话模型和最小 Hardware Inventory 面板，不注册 Provider、不改变导出 schema，也不后台轮询。
+E8b 已按该边界加入独立会话模型和最小 Hardware Inventory 面板，不注册 Provider、不改变导出 schema，也不后台轮询。用户点击后读取一次，页面只保留当次序号和有界数字事实；离页立即清空呈现状态。约两秒的 UI 协调边界只停止等待，不能取消的底层 IOKit 枚举返回前继续保持单飞，迟到结果不会重新出现。
 
 ## 公开 API 与只读路径
 
@@ -61,7 +61,7 @@ Apple 的旧版 [USB Device Interface Guide](https://developer.apple.com/library
 
 ## E8b 会话模型与 UI
 
-E8b 的最小实现范围：
+E8b 的实现范围：
 
 - 在 Hardware Inventory 页加入独立 “USB Device Tree” 区块；初始只显示说明和“读取当前 USB 树”按钮；
 - 一次点击只读取一次；不自动刷新、不注册设备通知、不在离开页面后继续工作；读取单飞，设置约 2 秒协调边界；
@@ -73,15 +73,15 @@ E8b 的最小实现范围：
 
 这个面板不需要二次确认或系统权限提示，因为它不读取唯一标识、隐私受控内容或执行控制操作；但按钮上方要先让用户看到“当前连接外设的型号级数字标识只留在本页”的说明。
 
-## 测试与验收门槛
+## 测试与验收结果
 
-E8b 合入前至少需要：
+E8b 已完成以下门槛：
 
 1. 纯 fixture 覆盖 simple device、hub、composite device、device-class 0、缺字段、未知 speed/class、孤立 interface 和多层父关系；
 2. 覆盖非数字/负数/越界值、计数/深度上限、整数溢出、重复/循环关系和读取消失；
 3. source audit 禁止 `IOUSBHostObject`、`IOServiceOpen`、IOUSB plugin、transfer/configure/reset、`IORegistryEntryCreateCFProperties` 全量复制，以及所有身份 key；
 4. 生命周期测试证明离页清空、迟到结果丢弃、同一时刻只有一次读取，且 Demo 不访问 IOKit；
-5. 无值真机探针只报告枚举是否成功、对象数量和 allowlist 数字类型覆盖率，不打印真实 VID/PID、class、speed 或任何名称/标识；
-6. 本地完整 `scripts/verify-local.sh`、Release App 签名/权限审计和后台 Demo 冒烟通过；不运行 GitHub Actions。
+5. 普通权限真机 smoke 成功完成有界读取，只输出固定 PASS 状态，不打印真实 VID/PID、class、speed、数量或任何名称/标识；
+6. 专项 fixture/source/lifecycle 测试、完整 `scripts/verify-local.sh`、Release App 签名/权限审计和后台 Demo 交互/离页清空验收均通过；未运行 GitHub Actions。
 
 若实现中发现必须打开 USB user client、使用内部 registry 字段或保存设备关联标识，E8b 必须停止并回到设计评审，不能用“只读目的”替代技术上的最小权限证明。

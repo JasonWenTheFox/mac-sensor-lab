@@ -3998,6 +3998,196 @@ final class SensorCoreTests: XCTestCase {
     )
   }
 
+  func testUSBInventoryReducerBuildsDeterministicPreorderAndCompositeInterfaces() throws {
+    let outcome = USBInventoryReducer.reduce(
+      devices: [
+        USBInventoryRawDevice(
+          sourceIndex: 20,
+          parentSourceIndex: 10,
+          vendorID: .integer(0x1234),
+          productID: .integer(0x5678),
+          deviceClass: .integer(0),
+          connectionSpeed: .integer(4)
+        ),
+        USBInventoryRawDevice(sourceIndex: 30, deviceClass: .integer(1)),
+        USBInventoryRawDevice(sourceIndex: 10, deviceClass: .integer(9)),
+      ],
+      interfaces: [
+        USBInventoryRawInterface(
+          sourceIndex: 101,
+          parentDeviceSourceIndex: 20,
+          interfaceNumber: .integer(1),
+          interfaceClass: .integer(8)
+        ),
+        USBInventoryRawInterface(
+          sourceIndex: 100,
+          parentDeviceSourceIndex: 20,
+          interfaceNumber: .integer(0),
+          interfaceClass: .integer(3)
+        ),
+      ],
+      completedAt: Date(timeIntervalSince1970: 42)
+    )
+    guard case .success(let snapshot) = outcome else {
+      return XCTFail("Expected a reduced USB snapshot")
+    }
+
+    XCTAssertEqual(snapshot.completedAt, Date(timeIntervalSince1970: 42))
+    XCTAssertEqual(snapshot.devices.map(\.id), [10, 20, 30])
+    XCTAssertEqual(snapshot.devices.map(\.ordinal), [1, 2, 3])
+    XCTAssertEqual(snapshot.devices.map(\.parentOrdinal), [nil, 1, nil])
+    XCTAssertEqual(snapshot.devices.map(\.depth), [0, 1, 0])
+    XCTAssertEqual(snapshot.devices[1].vendorID, 0x1234)
+    XCTAssertEqual(snapshot.devices[1].productID, 0x5678)
+    XCTAssertEqual(snapshot.devices[1].connectionSpeed, .superSpeed)
+    XCTAssertEqual(snapshot.devices[1].interfaces.map(\.id), [100, 101])
+    XCTAssertEqual(snapshot.devices[1].interfaces.map(\.ordinal), [1, 2])
+    XCTAssertEqual(snapshot.acceptedInterfaceCount, 2)
+    XCTAssertFalse(snapshot.isLimited)
+    XCTAssertEqual(
+      USBInventoryClassName.displayName(for: 0, deviceContext: true), "Defined by interfaces")
+    XCTAssertNil(USBInventoryClassName.displayName(for: 0, deviceContext: false))
+    XCTAssertEqual(USBInventoryClassName.displayName(for: 9, deviceContext: true), "Hub")
+  }
+
+  func testUSBInventoryReducerOmitsMalformedFieldsAndDetachedInterfaces() {
+    let outcome = USBInventoryReducer.reduce(
+      devices: [
+        USBInventoryRawDevice(
+          sourceIndex: 1,
+          vendorID: .integer(-1),
+          productID: .integer(65_536),
+          deviceClass: .missing,
+          currentConfiguration: .malformed,
+          connectionSpeed: .integer(99)
+        )
+      ],
+      interfaces: [
+        USBInventoryRawInterface(
+          sourceIndex: 1,
+          parentDeviceSourceIndex: 1,
+          interfaceClass: .malformed
+        ),
+        USBInventoryRawInterface(sourceIndex: 2, parentDeviceSourceIndex: 999),
+      ]
+    )
+    guard case .success(let snapshot) = outcome else {
+      return XCTFail("Expected malformed optional fields to be omitted")
+    }
+
+    XCTAssertNil(snapshot.devices[0].vendorID)
+    XCTAssertNil(snapshot.devices[0].productID)
+    XCTAssertNil(snapshot.devices[0].currentConfiguration)
+    XCTAssertNil(snapshot.devices[0].connectionSpeed)
+    XCTAssertNil(snapshot.devices[0].interfaces[0].interfaceClass)
+    XCTAssertEqual(snapshot.malformedFieldCount, 5)
+    XCTAssertEqual(snapshot.discardedInterfaceCount, 1)
+    XCTAssertTrue(snapshot.isLimited)
+  }
+
+  func testUSBInventoryReducerRejectsCyclesDepthAndCardinalityViolations() {
+    XCTAssertEqual(
+      USBInventoryReducer.reduce(
+        devices: [
+          USBInventoryRawDevice(sourceIndex: 1),
+          USBInventoryRawDevice(sourceIndex: 1),
+        ],
+        interfaces: []
+      ),
+      .failure(.invalidTopology)
+    )
+    XCTAssertEqual(
+      USBInventoryReducer.reduce(
+        devices: [
+          USBInventoryRawDevice(sourceIndex: 1, parentSourceIndex: 2),
+          USBInventoryRawDevice(sourceIndex: 2, parentSourceIndex: 1),
+        ],
+        interfaces: []
+      ),
+      .failure(.invalidTopology)
+    )
+    let tooDeep = (0...USBInventoryReducer.maximumHierarchyDepth).map { index in
+      USBInventoryRawDevice(
+        sourceIndex: index,
+        parentSourceIndex: index == 0 ? nil : index - 1
+      )
+    }
+    XCTAssertEqual(
+      USBInventoryReducer.reduce(devices: tooDeep, interfaces: []),
+      .failure(.invalidTopology)
+    )
+    let tooManyDevices = (0...USBInventoryReducer.maximumDeviceCount).map {
+      USBInventoryRawDevice(sourceIndex: $0)
+    }
+    XCTAssertEqual(
+      USBInventoryReducer.reduce(devices: tooManyDevices, interfaces: []),
+      .failure(.safetyLimitReached)
+    )
+    let tooManyInterfaces = (0...USBInventoryReducer.maximumInterfaceCount).map {
+      USBInventoryRawInterface(sourceIndex: $0, parentDeviceSourceIndex: nil)
+    }
+    XCTAssertEqual(
+      USBInventoryReducer.reduce(devices: [], interfaces: tooManyInterfaces),
+      .failure(.safetyLimitReached)
+    )
+  }
+
+  func testUSBInventorySourceUsesOnlyTheReviewedNumericReadPath() throws {
+    let projectRoot = URL(fileURLWithPath: #filePath)
+      .deletingLastPathComponent()
+      .deletingLastPathComponent()
+      .deletingLastPathComponent()
+    let sourceURL = projectRoot.appendingPathComponent(
+      "Sources/SensorCore/USBInventoryIOKitSource.swift"
+    )
+    let source = try String(contentsOf: sourceURL, encoding: .utf8)
+
+    for required in [
+      "IOServiceGetMatchingServices", "IORegistryEntryCreateCFProperty",
+      "IORegistryEntryGetParentEntry", "IOObjectConformsTo", "IOObjectIsEqualTo",
+      "IOObjectRelease", "IOUSBHostMatchingPropertyKey.vendorID",
+      "IOUSBHostDevicePropertyKey.currentConfiguration",
+      "IOUSBHostInterfacePropertyKey.alternateSetting",
+    ] {
+      XCTAssertTrue(source.contains(required), "Missing reviewed USB path: \(required)")
+    }
+    func referencedCases(_ typeName: String) throws -> Set<String> {
+      let expression = try NSRegularExpression(
+        pattern: NSRegularExpression.escapedPattern(for: typeName) + #"\.([A-Za-z]+)"#
+      )
+      let range = NSRange(source.startIndex..<source.endIndex, in: source)
+      return Set(
+        expression.matches(in: source, range: range).compactMap { match in
+          guard let caseRange = Range(match.range(at: 1), in: source) else { return nil }
+          return String(source[caseRange])
+        })
+    }
+    XCTAssertEqual(
+      try referencedCases("IOUSBHostMatchingPropertyKey"),
+      [
+        "vendorID", "productID", "deviceReleaseNumber", "deviceClass", "deviceSubClass",
+        "deviceProtocol", "speed", "interfaceNumber", "interfaceClass",
+        "interfaceSubClass", "interfaceProtocol",
+      ]
+    )
+    XCTAssertEqual(
+      try referencedCases("IOUSBHostDevicePropertyKey"),
+      ["currentConfiguration"]
+    )
+    XCTAssertEqual(
+      try referencedCases("IOUSBHostInterfacePropertyKey"),
+      ["alternateSetting"]
+    )
+    for forbidden in [
+      "IOUSBHostObject", "IOServiceOpen", "IORegistryEntryCreateCFProperties",
+      "SerialNumber", "ContainerID", "LocationID", "ECID", "UDID", "Signature",
+      "VendorString", "IOUSBLib", "sendDeviceRequest", "descriptor", "endpoint",
+      "configure", "reset", "transfer",
+    ] {
+      XCTAssertFalse(source.contains(forbidden), "Forbidden USB access path: \(forbidden)")
+    }
+  }
+
   private func makeSPUSnapshot(
     status: SensorStatus,
     channels: [SensorChannel] = [],
