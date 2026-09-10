@@ -54,7 +54,7 @@ Wi-Fi Signal 实验分别保留当前关联链路的 RSSI/noise 有界历史，�
 
 Nearby Wi-Fi Channels 是独立的用户主动实验：首次按钮只显示影响和隐私说明，用户再次确认后才运行一次非定向、排除 hidden 的公开 CoreWLAN 扫描。`CWNetwork` 必须立即缩减为频段、信道、报告记录数、有效 RSSI 和报告带宽，最多处理 512 条；不得调用 SSID/SSIDData/BSSID/countryCode/informationElementData 或接口身份 getter。结果只留在面板内存，离页清除，不进入 Provider 自动采样、Snapshot、Diagnostics、JSON/CSV 或连续记录。20 秒 UI watchdog 和“停止等待”只丢弃迟到结果，不能伪称中止无公开取消 API 的 CoreWLAN 阻塞调用；原调用结束前始终禁止另一轮扫描，结束后再冷却 10 秒。报告记录数与 RSSI 只是瞬时广播视图，不得命名为空口占用、干扰、吞吐量或完整拥塞测量。
 
-Sound Input Check 也是独立的用户主动实验，不属于 Audio Hardware Provider：未授权时，第一次开始只展示用途和数据边界，用户再次确认后才请求 macOS 麦克风 TCC。denied、restricted、not-determined 和 authorized 必须分开显示；拒绝后不得自动重试或修改系统设置。只有授权后才可启动 `AVAudioEngine` 输入 tap，会话最长五分钟，并在停止、离页、音频配置改变、休眠或 App 终止时释放。E7b 只将每个 PCM buffer 缩减为受限的 sample rate/channel/buffer/frame 元数据，不访问样本数组，不录制、播放、持久化或导出，不进入 Snapshot/Diagnostics/连续记录。waveform、RMS、peak、dBFS 和 FFT 仍属于后续节点；dBFS 不得冒充 dBA 或 dB SPL。
+Sound Input Check 也是独立的用户主动实验，不属于 Audio Hardware Provider：未授权时，第一次开始只展示用途和数据边界，用户再次确认后才请求 macOS 麦克风 TCC。denied、restricted、not-determined 和 authorized 必须分开显示；拒绝后不得自动重试或修改系统设置。只有授权后才可启动 `AVAudioEngine` 输入 tap，会话最长五分钟，并在停止、离页、音频配置改变、休眠或 App 终止时释放。E7c 允许每个 Float32 PCM buffer 在音频回调内即时归约为最多 128 个通道平均 min/max 波形分箱、全通道 RMS/峰值幅度和以 1.0 为数字满刻度的 dBFS；历史最多 300 点。原始样本不得离开回调、保留、录制、播放、持久化或导出，派生值不进入 Snapshot/Diagnostics/连续记录且离页清空。dBFS 不得冒充 dBA、dB SPL 或校准响度；FFT 仍属于后续节点。
 
 ### About & Diagnostics
 

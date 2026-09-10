@@ -1,5 +1,6 @@
 import AVFoundation
 import AppKit
+import Charts
 import Combine
 import Foundation
 import SwiftUI
@@ -61,8 +62,14 @@ struct MicrophonePCMObservation: Equatable, Sendable {
 
   let frameCount: Int
   let format: MicrophonePCMFormatMetadata
+  let analysis: MicrophonePCMAnalysis
 
-  init?(frameCount: Int, sampleRate: Double, channelCount: Int) {
+  init?(
+    frameCount: Int,
+    sampleRate: Double,
+    channelCount: Int,
+    analysis: MicrophonePCMAnalysis
+  ) {
     guard (1...Self.maximumFrameCount).contains(frameCount),
       let format = MicrophonePCMFormatMetadata(
         sampleRate: sampleRate,
@@ -71,6 +78,7 @@ struct MicrophonePCMObservation: Equatable, Sendable {
     else { return nil }
     self.frameCount = frameCount
     self.format = format
+    self.analysis = analysis
   }
 }
 
@@ -148,6 +156,7 @@ final class SystemMicrophoneCaptureSession: MicrophoneCaptureSession {
     let inputNode = engine.inputNode
     let format = inputNode.outputFormat(forBus: 0)
     guard
+      format.commonFormat == .pcmFormatFloat32,
       let metadata = MicrophonePCMFormatMetadata(
         sampleRate: format.sampleRate,
         channelCount: Int(format.channelCount)
@@ -157,13 +166,15 @@ final class SystemMicrophoneCaptureSession: MicrophoneCaptureSession {
     }
 
     installLifecycleObservers(onTermination: onTermination)
-    inputNode.installTap(onBus: 0, bufferSize: Self.tapBufferSize, format: nil) {
+    inputNode.installTap(onBus: 0, bufferSize: Self.tapBufferSize, format: format) {
       buffer, _ in
       guard
+        let analysis = MicrophonePCMAnalyzer.analyze(buffer: buffer),
         let observation = MicrophonePCMObservation(
           frameCount: Int(buffer.frameLength),
           sampleRate: buffer.format.sampleRate,
-          channelCount: Int(buffer.format.channelCount)
+          channelCount: Int(buffer.format.channelCount),
+          analysis: analysis
         )
       else {
         onTermination(.invalidBuffer)
@@ -261,6 +272,16 @@ final class DemoMicrophoneCaptureSession: MicrophoneCaptureSession {
     guard let format = MicrophonePCMFormatMetadata(sampleRate: 48_000, channelCount: 2) else {
       throw MicrophoneCaptureSessionError.inputUnavailable
     }
+    let demoSamples = (0..<1_024).map { frame in
+      Float(0.25 * sin(2 * Double.pi * Double(frame) / 64))
+    }
+    guard
+      let analysis = MicrophonePCMAnalyzer.analyze(
+        channels: [demoSamples, demoSamples]
+      )
+    else {
+      throw MicrophoneCaptureSessionError.inputUnavailable
+    }
 
     task = Task {
       while !Task.isCancelled {
@@ -273,7 +294,8 @@ final class DemoMicrophoneCaptureSession: MicrophoneCaptureSession {
           let observation = MicrophonePCMObservation(
             frameCount: 1_024,
             sampleRate: format.sampleRate,
-            channelCount: format.channelCount
+            channelCount: format.channelCount,
+            analysis: analysis
           )
         else {
           onTermination(.invalidBuffer)
@@ -296,18 +318,23 @@ final class MicrophoneInputModel: ObservableObject {
   static let defaultMaximumSessionDuration: Duration = .seconds(300)
   static let maximumObservationCount: UInt64 = 1_000_000
   static let maximumTotalFrameCount: UInt64 = 500_000_000
+  static let maximumLevelHistoryCount = 300
+  static let defaultMinimumLevelHistoryInterval = 0.08
 
   @Published private(set) var authorizationState: MicrophoneAuthorizationState
   @Published private(set) var status = MicrophoneInputStatus.idle
   @Published private(set) var format: MicrophonePCMFormatMetadata?
   @Published private(set) var observationCount: UInt64 = 0
   @Published private(set) var totalFrameCount: UInt64 = 0
+  @Published private(set) var latestAnalysis: MicrophonePCMAnalysis?
+  @Published private(set) var levelHistory: [MicrophoneLevelPoint] = []
 
   let isDemoMode: Bool
 
   private let authorizationClient: MicrophoneAuthorizationClient
   private let captureSession: any MicrophoneCaptureSession
   private let maximumSessionDuration: Duration
+  private let minimumLevelHistoryInterval: Double
   private var nextOperationID: UInt64 = 1
   private var activeOperationID: UInt64?
   private var permissionTask: Task<Void, Never>?
@@ -329,7 +356,8 @@ final class MicrophoneInputModel: ObservableObject {
     isDemoMode: Bool = false,
     authorizationClient: MicrophoneAuthorizationClient? = nil,
     captureSession: (any MicrophoneCaptureSession)? = nil,
-    maximumSessionDuration: Duration = defaultMaximumSessionDuration
+    maximumSessionDuration: Duration = defaultMaximumSessionDuration,
+    minimumLevelHistoryInterval: Double = defaultMinimumLevelHistoryInterval
   ) {
     self.isDemoMode = isDemoMode
     self.authorizationClient = authorizationClient ?? (isDemoMode ? .demo : .live)
@@ -337,6 +365,7 @@ final class MicrophoneInputModel: ObservableObject {
       captureSession
       ?? (isDemoMode ? DemoMicrophoneCaptureSession() : SystemMicrophoneCaptureSession())
     self.maximumSessionDuration = maximumSessionDuration
+    self.minimumLevelHistoryInterval = max(0, minimumLevelHistoryInterval)
     self.authorizationState = self.authorizationClient.current()
     switch self.authorizationState {
     case .denied:
@@ -500,6 +529,12 @@ final class MicrophoneInputModel: ObservableObject {
     }
     observationCount = nextObservationCount
     totalFrameCount = nextFrameCount
+    latestAnalysis = observation.analysis
+    recordLevelPoint(
+      observation.analysis,
+      id: nextObservationCount,
+      elapsedSeconds: Double(nextFrameCount) / observation.format.sampleRate
+    )
   }
 
   private func terminate(
@@ -538,6 +573,38 @@ final class MicrophoneInputModel: ObservableObject {
     format = nil
     observationCount = 0
     totalFrameCount = 0
+    latestAnalysis = nil
+    levelHistory.removeAll(keepingCapacity: true)
+  }
+
+  private func recordLevelPoint(
+    _ analysis: MicrophonePCMAnalysis,
+    id: UInt64,
+    elapsedSeconds: Double
+  ) {
+    guard
+      let point = MicrophoneLevelPoint(
+        id: id,
+        elapsedSeconds: elapsedSeconds,
+        analysis: analysis
+      )
+    else { return }
+
+    if let lastPoint = levelHistory.last,
+      elapsedSeconds - lastPoint.elapsedSeconds < minimumLevelHistoryInterval
+    {
+      levelHistory[levelHistory.count - 1] =
+        MicrophoneLevelPoint(
+          id: lastPoint.id,
+          elapsedSeconds: elapsedSeconds,
+          analysis: analysis
+        ) ?? lastPoint
+    } else {
+      levelHistory.append(point)
+      if levelHistory.count > Self.maximumLevelHistoryCount {
+        levelHistory.removeFirst(levelHistory.count - Self.maximumLevelHistoryCount)
+      }
+    }
   }
 }
 
@@ -550,7 +617,7 @@ struct MicrophoneInputPanel: View {
         .font(.title3.weight(.semibold))
       Text(
         L10n.text(
-          "Starts a bounded microphone session only after an explicit action and reports PCM delivery metadata."
+          "Starts a bounded microphone session only after an explicit action and derives a waveform envelope, RMS, peak, and dBFS in memory."
         )
       )
       .font(.callout)
@@ -562,17 +629,24 @@ struct MicrophoneInputPanel: View {
       if let format = model.format {
         metrics(format)
       }
+      if let analysis = model.latestAnalysis {
+        signalMetrics(analysis)
+        waveformChart(analysis)
+      }
+      if !model.levelHistory.isEmpty {
+        levelHistoryChart
+      }
 
       Text(
         L10n.text(
-          "Audio buffers are discarded immediately after counting frames. No samples, recordings, device identity, persistence, snapshot, diagnostics values, or export."
+          "Raw PCM is inspected only inside the audio callback and immediately reduced to bounded derived values. No samples, recordings, device identity, persistence, snapshot, diagnostics values, or export."
         )
       )
       .font(.caption2)
       .foregroundStyle(.secondary)
       Text(
         L10n.text(
-          "This step does not calculate waveform, loudness, dBFS, dBA, spectrum, or dominant frequency."
+          "dBFS uses digital full scale 1.0; it is not dBA, sound-pressure level, calibrated loudness, a spectrum, or dominant frequency. The history chart clips values below −96 dBFS, while exact digital silence is reported as −∞ dBFS."
         )
       )
       .font(.caption2)
@@ -660,10 +734,12 @@ struct MicrophoneInputPanel: View {
     case .starting:
       (L10n.text("Starting the bounded audio input session…"), "circle.dashed", .blue)
     case .capturing:
-      (L10n.text("Receiving PCM buffers in memory."), "checkmark.circle", .green)
+      (L10n.text("Analyzing PCM buffers in memory."), "checkmark.circle", .green)
     case .stopped:
       (
-        L10n.text("Sound input stopped; only counters remain until this page is left."),
+        L10n.text(
+          "Sound input stopped; counters and bounded derived analysis remain until this page is left."
+        ),
         "stop.circle", .secondary
       )
     case .permissionDenied:
@@ -728,6 +804,92 @@ struct MicrophoneInputPanel: View {
         value: String(model.totalFrameCount)
       )
     }
+  }
+
+  private func signalMetrics(_ analysis: MicrophonePCMAnalysis) -> some View {
+    LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], spacing: 8) {
+      MicrophoneInputMetric(
+        label: L10n.text("RMS amplitude"),
+        value: formatAmplitude(analysis.rootMeanSquareAmplitude)
+      )
+      MicrophoneInputMetric(
+        label: L10n.text("Peak amplitude"),
+        value: formatAmplitude(analysis.peakAmplitude)
+      )
+      MicrophoneInputMetric(
+        label: L10n.text("RMS level"),
+        value: formatDBFS(analysis.rootMeanSquareDBFS)
+      )
+      MicrophoneInputMetric(
+        label: L10n.text("Peak level"),
+        value: formatDBFS(analysis.peakDBFS)
+      )
+    }
+  }
+
+  private func waveformChart(_ analysis: MicrophonePCMAnalysis) -> some View {
+    let amplitudeDomain = max(1, analysis.peakAmplitude)
+    return VStack(alignment: .leading, spacing: 6) {
+      Text(L10n.text("Latest waveform envelope"))
+        .font(.callout.weight(.semibold))
+      Text(
+        L10n.text(
+          "Up to 128 min/max bins from the latest buffer after averaging channels per frame."
+        )
+      )
+      .font(.caption2)
+      .foregroundStyle(.secondary)
+      Chart(analysis.waveform) { bin in
+        AreaMark(
+          x: .value(L10n.text("Waveform bin"), bin.index),
+          yStart: .value(L10n.text("Minimum amplitude"), bin.minimum),
+          yEnd: .value(L10n.text("Maximum amplitude"), bin.maximum)
+        )
+        .foregroundStyle(.blue.opacity(0.45))
+      }
+      .chartYScale(domain: -amplitudeDomain...amplitudeDomain)
+      .frame(height: 120)
+      .accessibilityIdentifier("sound-input-waveform")
+    }
+  }
+
+  private var levelHistoryChart: some View {
+    let upperBound = max(0, model.levelHistory.map(\.peakDBFS).max() ?? 0)
+    return VStack(alignment: .leading, spacing: 6) {
+      Text(L10n.text("Bounded level history"))
+        .font(.callout.weight(.semibold))
+      HStack(spacing: 14) {
+        Label(L10n.text("RMS dBFS"), systemImage: "circle.fill")
+          .foregroundStyle(.blue)
+        Label(L10n.text("Peak dBFS"), systemImage: "circle.fill")
+          .foregroundStyle(.orange)
+      }
+      .font(.caption2)
+      Chart(model.levelHistory) { point in
+        LineMark(
+          x: .value(L10n.text("Elapsed seconds"), point.elapsedSeconds),
+          y: .value(L10n.text("RMS dBFS"), point.rootMeanSquareDBFS)
+        )
+        .foregroundStyle(.blue)
+        LineMark(
+          x: .value(L10n.text("Elapsed seconds"), point.elapsedSeconds),
+          y: .value(L10n.text("Peak dBFS"), point.peakDBFS)
+        )
+        .foregroundStyle(.orange)
+      }
+      .chartYScale(domain: MicrophoneLevelPoint.displayFloorDBFS...upperBound)
+      .frame(height: 140)
+      .accessibilityIdentifier("sound-input-level-history")
+    }
+  }
+
+  private func formatAmplitude(_ value: Double) -> String {
+    value.formatted(.number.precision(.fractionLength(4)))
+  }
+
+  private func formatDBFS(_ value: Double?) -> String {
+    guard let value else { return "−∞ dBFS" }
+    return "\(value.formatted(.number.precision(.fractionLength(1)))) dBFS"
   }
 }
 

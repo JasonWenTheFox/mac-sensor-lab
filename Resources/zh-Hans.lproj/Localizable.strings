@@ -126,6 +126,8 @@
 	<string>环境光强度</string>
 	<key>Ambient light</key>
 	<string>环境光</string>
+	<key>Analyzing PCM buffers in memory.</key>
+	<string>正在内存中分析 PCM 缓冲区。</string>
 	<key>Angular velocity</key>
 	<string>角速度</string>
 	<key>Apple GPU performance statistics were unavailable</key>
@@ -164,8 +166,6 @@
 	<string>音频</string>
 	<key>Audio Hardware</key>
 	<string>音频硬件</string>
-	<key>Audio buffers are discarded immediately after counting frames. No samples, recordings, device identity, persistence, snapshot, diagnostics values, or export.</key>
-	<string>音频缓冲区在统计帧数后立即丢弃。不保留样本、录音或设备身份，不持久化，也不进入快照、诊断值或导出。</string>
 	<key>Audio devices</key>
 	<string>音频设备</string>
 	<key>Audio hardware list was temporarily unavailable</key>
@@ -242,6 +242,8 @@
 	<string>蓝牙</string>
 	<key>Bluetooth LE</key>
 	<string>低功耗蓝牙</string>
+	<key>Bounded level history</key>
+	<string>有界电平历史</string>
 	<key>Build</key>
 	<string>构建</string>
 	<key>Built-in</key>
@@ -546,6 +548,8 @@
 	<string>早期告警</string>
 	<key>Ejectable media</key>
 	<string>可推出介质</string>
+	<key>Elapsed seconds</key>
+	<string>已过秒数</string>
 	<key>Enter 10–2000 mm and choose a line width that produces a plausible 10–2000 PPI result.</key>
 	<string>请输入 10–2000 mm，并选择能得到合理 10–2000 PPI 结果的线段宽度。</string>
 	<key>Enterprise security</key>
@@ -728,6 +732,8 @@
 	<string>上次刷新</string>
 	<key>Last refresh duration</key>
 	<string>上次刷新耗时</string>
+	<key>Latest waveform envelope</key>
+	<string>最新波形包络</string>
 	<key>Level</key>
 	<string>水平仪</string>
 	<key>Lid</key>
@@ -798,6 +804,8 @@
 	<string>与参考的匹配度</string>
 	<key>Max</key>
 	<string>最大</string>
+	<key>Maximum amplitude</key>
+	<string>最大幅度</string>
 	<key>Media and data integrity errors</key>
 	<string>介质与数据完整性错误</string>
 	<key>Media block size</key>
@@ -828,6 +836,8 @@
 	<string>每点毫米数</string>
 	<key>Min</key>
 	<string>最小</string>
+	<key>Minimum amplitude</key>
+	<string>最小幅度</string>
 	<key>Mixed</key>
 	<string>混合状态</string>
 	<key>Model identifier</key>
@@ -1010,8 +1020,14 @@
 	<string>暂停自动采样</string>
 	<key>Paused</key>
 	<string>已暂停</string>
+	<key>Peak amplitude</key>
+	<string>峰值幅度</string>
+	<key>Peak dBFS</key>
+	<string>峰值 dBFS</string>
 	<key>Peak in current stage</key>
 	<string>当前阶段内峰值</string>
+	<key>Peak level</key>
+	<string>峰值电平</string>
 	<key>Peak-to-peak</key>
 	<string>峰峰值</string>
 	<key>Percentage used estimate</key>
@@ -1102,6 +1118,12 @@
 	<string>公开电源信息未返回白名单值</string>
 	<key>Public power-source information was unavailable</key>
 	<string>公开电源信息不可用</string>
+	<key>RMS amplitude</key>
+	<string>RMS 幅度</string>
+	<key>RMS dBFS</key>
+	<string>RMS dBFS</string>
+	<key>RMS level</key>
+	<string>RMS 电平</string>
 	<key>RMS variation</key>
 	<string>RMS 变化</string>
 	<key>RSSI</key>
@@ -1114,6 +1136,8 @@
 	<string>速率需要两次采样；首次读取或活动接口数量变化时会建立基线。</string>
 	<key>Raw</key>
 	<string>原始</string>
+	<key>Raw PCM is inspected only inside the audio callback and immediately reduced to bounded derived values. No samples, recordings, device identity, persistence, snapshot, diagnostics values, or export.</key>
+	<string>原始 PCM 只在音频回调内检查，并立即归约为有界派生值。不保留样本、录音或设备身份，不持久化，也不进入快照、诊断值或导出。</string>
 	<key>Raw Sensors</key>
 	<string>原始传感器</string>
 	<key>Raw read-only SMC key %@; model-specific meaning.</key>
@@ -1142,8 +1166,6 @@
 	<string>只在下方交互区域内读取公开的 AppKit 压力事件。</string>
 	<key>Receive packet rate</key>
 	<string>接收包速率</string>
-	<key>Receiving PCM buffers in memory.</key>
-	<string>正在内存中接收 PCM 缓冲区。</string>
 	<key>Receiving view-local AppKit pressure events.</key>
 	<string>正在接收仅限当前视图的 AppKit 压力事件。</string>
 	<key>Recent data • source limited</key>
@@ -1326,8 +1348,8 @@
 	<string>音频设备配置已变化，声音输入已停止。</string>
 	<key>Sound input stopped before the Mac went to sleep.</key>
 	<string>Mac 进入睡眠前已停止声音输入。</string>
-	<key>Sound input stopped; only counters remain until this page is left.</key>
-	<string>声音输入已停止；离开本页前只保留计数。</string>
+	<key>Sound input stopped; counters and bounded derived analysis remain until this page is left.</key>
+	<string>声音输入已停止；计数和有界派生分析会保留到离开本页。</string>
 	<key>Source: %@</key>
 	<string>来源：%@</string>
 	<key>Spectral channel %lld</key>
@@ -1356,8 +1378,8 @@
 	<string>已开始记录 %@</string>
 	<key>Starting the bounded audio input session…</key>
 	<string>正在启动有界的音频输入会话…</string>
-	<key>Starts a bounded microphone session only after an explicit action and reports PCM delivery metadata.</key>
-	<string>仅在明确操作后启动有界的麦克风会话，并报告 PCM 传递元数据。</string>
+	<key>Starts a bounded microphone session only after an explicit action and derives a waveform envelope, RMS, peak, and dBFS in memory.</key>
+	<string>仅在明确操作后启动有界的麦克风会话，并在内存中派生波形包络、RMS、峰值和 dBFS。</string>
 	<key>State changes</key>
 	<string>状态变化</string>
 	<key>Status changes this launch</key>
@@ -1490,8 +1512,6 @@
 	<string>此 Provider 只接受长度受限的 Apple M 系列名称。</string>
 	<key>This provider only queries hardware properties; it does not open an audio stream, capture samples, record audio, or request microphone permission.</key>
 	<string>此 Provider 只查询硬件属性；不会打开音频流、采集样本、录音或请求麦克风权限。</string>
-	<key>This step does not calculate waveform, loudness, dBFS, dBA, spectrum, or dominant frequency.</key>
-	<string>此阶段不计算波形、响度、dBFS、dBA、频谱或主频。</string>
 	<key>Thunderbolt</key>
 	<string>雷雳</string>
 	<key>Time remaining values are operating-system estimates.</key>
@@ -1556,6 +1576,8 @@
 	<string>非正常关机与介质错误是控制器报告的累计事实，不用于归因或预测故障。</string>
 	<key>Unsupported</key>
 	<string>不支持</string>
+	<key>Up to 128 min/max bins from the latest buffer after averaging channels per frame.</key>
+	<string>对每帧的各通道取平均后，从最新缓冲区生成最多 128 个最小/最大值分箱。</string>
 	<key>Update Reference</key>
 	<string>更新参考值</string>
 	<key>Updated </key>
@@ -1622,6 +1644,8 @@
 	<string>正在等待 macOS 的麦克风权限决定…</string>
 	<key>Waiting for the system Wi-Fi scan…</key>
 	<string>正在等待系统 Wi-Fi 扫描…</string>
+	<key>Waveform bin</key>
+	<string>波形分箱</string>
 	<key>Wi-Fi</key>
 	<string>Wi-Fi</string>
 	<key>Wi-Fi Radio</key>
@@ -1672,6 +1696,8 @@
 	<string>当前像素尺寸</string>
 	<key>cycles</key>
 	<string>次</string>
+	<key>dBFS uses digital full scale 1.0; it is not dBA, sound-pressure level, calibrated loudness, a spectrum, or dominant frequency. The history chart clips values below −96 dBFS, while exact digital silence is reported as −∞ dBFS.</key>
+	<string>dBFS 以数字满刻度 1.0 为基准；它不是 dBA、声压级、校准响度、频谱或主频。历史图会裁剪低于 −96 dBFS 的值，精确的数字静音则报告为 −∞ dBFS。</string>
 	<key>data units</key>
 	<string>数据单元</string>
 	<key>entries</key>

@@ -756,6 +756,8 @@ final class SensorDashboardModelTests: XCTestCase {
     await waitUntil { model.observationCount == 1 }
     XCTAssertEqual(model.totalFrameCount, 1_024)
     XCTAssertEqual(model.format, MicrophonePCMFormatMetadata(sampleRate: 48_000, channelCount: 2))
+    XCTAssertEqual(model.latestAnalysis, microphoneAnalysisFixture())
+    XCTAssertEqual(model.levelHistory.count, 1)
 
     model.stop()
     XCTAssertEqual(model.status, .stopped)
@@ -767,6 +769,8 @@ final class SensorDashboardModelTests: XCTestCase {
     XCTAssertNil(model.format)
     XCTAssertEqual(model.observationCount, 0)
     XCTAssertEqual(model.totalFrameCount, 0)
+    XCTAssertNil(model.latestAnalysis)
+    XCTAssertTrue(model.levelHistory.isEmpty)
   }
 
   func testMicrophoneInputDeniedAndRestrictedStatesNeverStartCapture() {
@@ -879,13 +883,19 @@ final class SensorDashboardModelTests: XCTestCase {
     XCTAssertNil(MicrophonePCMFormatMetadata(sampleRate: .nan, channelCount: 2))
     XCTAssertNil(MicrophonePCMFormatMetadata(sampleRate: 48_000, channelCount: 0))
     XCTAssertNil(
-      MicrophonePCMObservation(frameCount: 0, sampleRate: 48_000, channelCount: 2)
+      MicrophonePCMObservation(
+        frameCount: 0,
+        sampleRate: 48_000,
+        channelCount: 2,
+        analysis: microphoneAnalysisFixture()
+      )
     )
     XCTAssertNil(
       MicrophonePCMObservation(
         frameCount: MicrophonePCMObservation.maximumFrameCount + 1,
         sampleRate: 48_000,
-        channelCount: 2
+        channelCount: 2,
+        analysis: microphoneAnalysisFixture()
       )
     )
 
@@ -920,30 +930,157 @@ final class SensorDashboardModelTests: XCTestCase {
     XCTAssertGreaterThan(model.totalFrameCount, 0)
     XCTAssertEqual(model.format?.sampleRate, 48_000)
     XCTAssertEqual(model.format?.channelCount, 2)
+    XCTAssertNotNil(model.latestAnalysis)
+    XCTAssertFalse(model.levelHistory.isEmpty)
 
     model.leaveExperiment()
     XCTAssertEqual(model.status, .idle)
     XCTAssertNil(model.format)
     XCTAssertEqual(model.totalFrameCount, 0)
+    XCTAssertNil(model.latestAnalysis)
+    XCTAssertTrue(model.levelHistory.isEmpty)
   }
 
-  func testMicrophoneInputSourceExcludesRawSampleRetentionAndSystemMutation() throws {
+  func testMicrophonePCMAnalysisCalculatesRMSPeakAndDBFS() throws {
+    let analysis = try XCTUnwrap(
+      MicrophonePCMAnalyzer.analyze(channels: [[0, 1, 0, -1]])
+    )
+
+    XCTAssertEqual(analysis.rootMeanSquareAmplitude, sqrt(0.5), accuracy: 0.000_001)
+    XCTAssertEqual(analysis.peakAmplitude, 1, accuracy: 0.000_001)
+    XCTAssertEqual(
+      try XCTUnwrap(analysis.rootMeanSquareDBFS),
+      -3.010_299_956,
+      accuracy: 0.000_001
+    )
+    XCTAssertEqual(try XCTUnwrap(analysis.peakDBFS), 0, accuracy: 0.000_001)
+    XCTAssertEqual(analysis.waveform.count, 4)
+    XCTAssertEqual(analysis.waveform.map(\.minimum), [0, 1, 0, -1])
+    XCTAssertEqual(analysis.waveform.map(\.maximum), [0, 1, 0, -1])
+  }
+
+  func testMicrophonePCMAnalysisKeepsMultichannelEnergyWithoutWaveformCancellation() throws {
+    let analysis = try XCTUnwrap(
+      MicrophonePCMAnalyzer.analyze(channels: [[1, -1], [-1, 1]])
+    )
+
+    XCTAssertEqual(analysis.rootMeanSquareAmplitude, 1, accuracy: 0.000_001)
+    XCTAssertEqual(analysis.peakAmplitude, 1, accuracy: 0.000_001)
+    XCTAssertTrue(analysis.waveform.allSatisfy { $0.minimum == 0 && $0.maximum == 0 })
+  }
+
+  func testMicrophonePCMAnalysisRepresentsSilenceWithoutInventingFiniteDBFS() throws {
+    let analysis = try XCTUnwrap(
+      MicrophonePCMAnalyzer.analyze(channels: [Array(repeating: 0, count: 32)])
+    )
+    let level = try XCTUnwrap(
+      MicrophoneLevelPoint(id: 1, elapsedSeconds: 0.1, analysis: analysis)
+    )
+
+    XCTAssertEqual(analysis.rootMeanSquareAmplitude, 0)
+    XCTAssertEqual(analysis.peakAmplitude, 0)
+    XCTAssertNil(analysis.rootMeanSquareDBFS)
+    XCTAssertNil(analysis.peakDBFS)
+    XCTAssertEqual(level.rootMeanSquareDBFS, MicrophoneLevelPoint.displayFloorDBFS)
+    XCTAssertEqual(level.peakDBFS, MicrophoneLevelPoint.displayFloorDBFS)
+  }
+
+  func testMicrophonePCMAnalysisRejectsMalformedOrUnboundedInput() {
+    XCTAssertNil(MicrophonePCMAnalyzer.analyze(channels: []))
+    XCTAssertNil(MicrophonePCMAnalyzer.analyze(channels: [[]]))
+    XCTAssertNil(MicrophonePCMAnalyzer.analyze(channels: [[0], [0, 1]]))
+    XCTAssertNil(MicrophonePCMAnalyzer.analyze(channels: [[.nan]]))
+    XCTAssertNil(MicrophonePCMAnalyzer.analyze(channels: [[.infinity]]))
+    XCTAssertNil(
+      MicrophonePCMAnalyzer.analyze(
+        channels: [[Float(MicrophonePCMAnalyzer.maximumAbsoluteSample + 1)]]
+      )
+    )
+    XCTAssertNil(
+      MicrophonePCMAnalyzer.analyze(
+        channels: Array(
+          repeating: [Float.zero],
+          count: MicrophonePCMAnalyzer.maximumChannelCount + 1
+        )
+      )
+    )
+    XCTAssertNil(
+      MicrophonePCMAnalyzer.analyze(
+        channels: [
+          Array(
+            repeating: 0,
+            count: MicrophonePCMAnalyzer.maximumFrameCount + 1
+          )
+        ]
+      )
+    )
+    XCTAssertNil(
+      MicrophonePCMAnalyzer.analyze(
+        channels: Array(
+          repeating: Array(repeating: 0, count: 4_097),
+          count: MicrophonePCMAnalyzer.maximumChannelCount
+        )
+      )
+    )
+  }
+
+  func testMicrophonePCMAnalysisBoundsWaveformAndLevelHistory() async throws {
+    let samples = (0..<1_024).map { Float($0 % 5) / 5 }
+    let analysis = try XCTUnwrap(MicrophonePCMAnalyzer.analyze(channels: [samples]))
+    XCTAssertEqual(analysis.waveform.count, MicrophonePCMAnalyzer.maximumWaveformBinCount)
+
+    let authorization = MicrophoneAuthorizationFixture(state: .authorized)
+    let capture = FixtureMicrophoneCaptureSession()
+    let model = MicrophoneInputModel(
+      authorizationClient: authorization.client,
+      captureSession: capture,
+      minimumLevelHistoryInterval: 0
+    )
+    model.beginStart()
+    for _ in 0..<(MicrophoneInputModel.maximumLevelHistoryCount + 50) {
+      capture.emit(
+        frameCount: 1_024,
+        sampleRate: 48_000,
+        channelCount: 2,
+        analysis: analysis
+      )
+    }
+    await waitUntil { model.observationCount == 350 }
+
+    XCTAssertEqual(model.levelHistory.count, MicrophoneInputModel.maximumLevelHistoryCount)
+    XCTAssertEqual(model.levelHistory.first?.id, 51)
+    XCTAssertEqual(model.levelHistory.last?.id, 350)
+  }
+
+  func testMicrophoneInputSourceLimitsRawSampleAccessAndSystemMutation() throws {
     let projectRoot = URL(fileURLWithPath: #filePath)
       .deletingLastPathComponent()
       .deletingLastPathComponent()
       .deletingLastPathComponent()
-    let sourceURL = projectRoot.appendingPathComponent(
+    let inputSourceURL = projectRoot.appendingPathComponent(
       "Sources/MacSensorLab/MicrophoneInputView.swift"
     )
-    let source = try String(contentsOf: sourceURL, encoding: .utf8)
+    let analysisSourceURL = projectRoot.appendingPathComponent(
+      "Sources/MacSensorLab/MicrophoneAnalysis.swift"
+    )
+    let inputSource = try String(contentsOf: inputSourceURL, encoding: .utf8)
+    let analysisSource = try String(contentsOf: analysisSourceURL, encoding: .utf8)
+    let combinedSource = inputSource + analysisSource
 
-    XCTAssertTrue(source.contains("confirmPermissionAndStart"))
-    XCTAssertEqual(source.components(separatedBy: "AVCaptureDevice.requestAccess").count - 1, 1)
+    XCTAssertTrue(inputSource.contains("confirmPermissionAndStart"))
+    XCTAssertEqual(
+      inputSource.components(separatedBy: "AVCaptureDevice.requestAccess").count - 1,
+      1
+    )
+    XCTAssertEqual(analysisSource.components(separatedBy: "floatChannelData").count - 1, 1)
     for forbidden in [
-      "floatChannelData", "int16ChannelData", "audioBufferList", "AVAudioRecorder",
-      "AVAudioFile", "FileHandle", "tccutil", "NSWorkspace.open",
+      "int16ChannelData", "int32ChannelData", "audioBufferList", "AVAudioRecorder",
+      "AVAudioFile", "FileHandle", "tccutil", "NSWorkspace.open", "UserDefaults",
     ] {
-      XCTAssertFalse(source.contains(forbidden), "Forbidden microphone path: \(forbidden)")
+      XCTAssertFalse(
+        combinedSource.contains(forbidden),
+        "Forbidden microphone path: \(forbidden)"
+      )
     }
   }
 
@@ -1104,23 +1241,35 @@ private final class FixtureMicrophoneCaptureSession: MicrophoneCaptureSession {
     terminationHandler = nil
   }
 
-  func emit(frameCount: Int, sampleRate: Double, channelCount: Int) {
+  func emit(
+    frameCount: Int,
+    sampleRate: Double,
+    channelCount: Int,
+    analysis: MicrophonePCMAnalysis = microphoneAnalysisFixture()
+  ) {
     guard
       let observation = MicrophonePCMObservation(
         frameCount: frameCount,
         sampleRate: sampleRate,
-        channelCount: channelCount
+        channelCount: channelCount,
+        analysis: analysis
       )
     else { return }
     observationHandler?(observation)
   }
 
-  func emitLate(frameCount: Int, sampleRate: Double, channelCount: Int) {
+  func emitLate(
+    frameCount: Int,
+    sampleRate: Double,
+    channelCount: Int,
+    analysis: MicrophonePCMAnalysis = microphoneAnalysisFixture()
+  ) {
     guard
       let observation = MicrophonePCMObservation(
         frameCount: frameCount,
         sampleRate: sampleRate,
-        channelCount: channelCount
+        channelCount: channelCount,
+        analysis: analysis
       )
     else { return }
     lastObservationHandler?(observation)
@@ -1129,6 +1278,10 @@ private final class FixtureMicrophoneCaptureSession: MicrophoneCaptureSession {
   func terminate(_ reason: MicrophoneCaptureTermination) {
     terminationHandler?(reason)
   }
+}
+
+private func microphoneAnalysisFixture() -> MicrophonePCMAnalysis {
+  MicrophonePCMAnalyzer.analyze(channels: [[0, 0.25, 0, -0.25]])!
 }
 
 private actor SlowDashboardProvider: SensorProvider {

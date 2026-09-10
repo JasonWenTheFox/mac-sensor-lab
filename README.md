@@ -28,7 +28,7 @@ Wi-Fi Radio Provider 使用公开 CoreWLAN getter 展示开关/服务/关联状�
 
 Audio Hardware Provider 只查询公开 Core Audio HAL 属性，展示当前可见/可用、输入/输出/双工设备数量，以及默认输入/输出的连接类别、通道数、标称采样率和设备级延迟。AudioDevice 数字句柄只在单次读取内临时使用；设备 UID、model UID、名称、厂商和驱动自由文本均不读取。它不会打开音频流、采集 PCM、录音或请求麦克风权限；标称采样率不是录音数据，设备延迟也不包含额外的 stream latency 与 safety offset。
 
-Sound Input Check 是与设备清单隔离的 `publicTCC` 实验。它不在启动或自动采样时运行：首次按钮只显示用途说明，用户再次确认后才可能触发 macOS 麦克风授权。授权后的会话最长五分钟，停止、离页、音频配置变化或系统休眠都会释放输入流。PCM buffer 只被即时缩减为采样率、通道数、buffer 数和 frame 数；不访问、保留、播放、写盘或导出样本。当前节点只验证授权与 PCM 生命周期，还没有 waveform、RMS、peak、dBFS、dBA 或频谱。
+Sound Input Check 是与设备清单隔离的 `publicTCC` 实验。它不在启动或自动采样时运行：首次按钮只显示用途说明，用户再次确认后才可能触发 macOS 麦克风授权。授权后的会话最长五分钟，停止、离页、音频配置变化或系统休眠都会释放输入流。每个 Float32 PCM buffer 只在音频回调内被即时归约为最多 128 个通道平均 min/max 波形分箱、全通道 RMS/峰值幅度和相对数字满刻度 1.0 的 dBFS；历史最多 300 点，离页清空。原始样本不离开回调，不保留、播放、写盘或导出，派生值也不进入 Snapshot/Diagnostics。dBFS 不是 dBA、dB SPL 或校准响度，当前也不做频谱/FFT。
 
 慢 Provider 有独立的两秒协调等待边界；超时只让该模块降级，不会阻塞整页刷新，也不会在仍有同步读取占用时重复启动同一读取。
 
