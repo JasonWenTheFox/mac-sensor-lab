@@ -15,6 +15,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - A confirmation-gated, session-only nearby Wi-Fi channel snapshot that reduces one CoreWLAN scan to non-identifying band, channel, record-count, RSSI, and width summaries, with a 512-record processing limit and deterministic Demo data.
 - A public Core Audio hardware-inventory provider for bounded device/input/output/duplex counts and current default input/output transport, channels, nominal sample rate, and device latency without opening audio IO.
 - A confirmation-gated Sound Input Check with explicit macOS microphone-permission states, bounded `AVAudioEngine` PCM lifecycle, deterministic Demo analysis, a 128-bin waveform envelope, all-channel RMS/peak amplitudes, dBFS, a 300-point level history, and a Hann-windowed relative spectrum with a bounded strongest non-DC bin center.
+- An E8a public-API design record for a session-only, identity-minimized USB device tree, with a numeric field allowlist, topology/cardinality limits, and an explicit separation from providers and exports before implementation.
 
 ### Security and privacy
 
@@ -25,6 +26,7 @@ All notable changes to Mac Sensor Lab will be documented here. The project follo
 - Nearby-channel scans never run at launch, on a timer, or from Provider sampling. The App does not access SSID, BSSID, country code, information elements, or interface identity; results stay in the panel, disappear when it is left, and are never persisted or exported. A 20-second UI watchdog can stop waiting and discard late results, while single-flight state prevents overlap until CoreWLAN's blocking call actually returns.
 - Audio inventory keeps numeric AudioDevice handles within one read and never queries device/model UIDs, names, manufacturers, or free-form driver text. It still does not create or start audio IO, capture PCM, or request microphone permission.
 - Sound Input Check is isolated from providers, snapshots, diagnostics, persistence, and exports. It can request microphone access only after a two-step user action and runs for at most five minutes. Raw Float32 PCM is inspected only inside the audio callback and immediately reduced to bounded derived values; samples are never retained, played, written, or exported. Spectrum work uses a reusable Accelerate DFT setup, fixed 256–2,048-frame Hann windows, at most 128 positive-frequency display bands, a −80 dB relative floor, and a 10 Hz maximum refresh cadence. dBFS remains explicitly distinct from dBA, dB SPL, and calibrated loudness; the strongest non-DC bin center is not labeled as source or pitch recognition. The bundle carries the reviewed English/Simplified Chinese purpose strings and only the Hardened Runtime Audio Input entitlement.
+- The planned USB inventory may read only public numeric VID/PID, release, class/interface, current-configuration, speed, alternate-setting, and current parent-edge facts after a user action. Serial/container/ECID/UDID/signature, location/path/entry ID/address, free-form names, descriptor blobs, power internals, device opens, transfers, configuration, and reset remain excluded.
 
 ## 0.3.1 - 2026-09-08
 
