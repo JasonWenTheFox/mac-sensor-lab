@@ -1,6 +1,6 @@
 # 11 Audio 硬件清单与录音权限边界
 
-更新：2026-09-10（E7a + E7b + E7c）
+更新：2026-09-10（E7a + E7b + E7c + E7d）
 
 ## 结论
 
@@ -8,7 +8,7 @@
 
 该 Provider 不创建 IOProc、Audio Unit、Audio Queue、AVAudioEngine 或 capture session，不读取 PCM，不录音，也不调用麦克风授权 API。在一台测试 Mac 上以普通用户运行时为 Available，且没有出现 TCC 提示。
 
-E7b/E7c 新增的 Sound Input Check 是与该 Provider 隔离的 `publicTCC` 面板。它仅在用户完成二次确认且授权后启动 `AVAudioEngine` input tap，并在音频回调内把 Float32 PCM 立即归约为受限元数据、波形包络、RMS/峰值幅度和 dBFS。原始样本不离开回调，没有录制、播放、持久化或导出路径；当前也没有 FFT 或物理声级估算。App Bundle 因此现在包含经审阅的中英文 `NSMicrophoneUsageDescription` 和 Hardened Runtime Audio Input entitlement；这不改变 `hardware.audio` 的普通权限属性。
+E7b…E7d 新增的 Sound Input Check 是与该 Provider 隔离的 `publicTCC` 面板。它仅在用户完成二次确认且授权后启动 `AVAudioEngine` input tap，并在音频回调内把 Float32 PCM 立即归约为受限元数据、波形包络、RMS/峰值幅度、dBFS 和相对频谱。原始样本不离开回调，没有录制、播放、持久化或导出路径；当前频谱只报有限分辨率的最强非 DC 分箱中心，不做声源/音高/语音/环境识别或物理声级估算。App Bundle 因此现在包含经审阅的中英文 `NSMicrophoneUsageDescription` 和 Hardened Runtime Audio Input entitlement；这不改变 `hardware.audio` 的普通权限属性。
 
 ## 公开 API 与固定输出
 
@@ -36,7 +36,7 @@ Apple 对 [`AudioHardwareClock.uid`](https://developer.apple.com/documentation/c
 - device UID、model UID、clock UID 或任何 UID translation；
 - 设备名称、厂商、图标、配置应用、clock domain、相关设备列表；
 - AudioObject/AudioDevice 数字句柄、驱动自由文本或系统错误文本；
-- PCM payload、音频片段、麦克风设备身份或正在播放内容。Sound Input Check 只显示当次会话的授权/生命周期状态、受限格式/计数元数据、最新波形包络和有界电平历史，并在离页时全部清除。
+- PCM payload、音频片段、麦克风设备身份或正在播放内容。Sound Input Check 只显示当次会话的授权/生命周期状态、受限格式/计数元数据、最新波形包络、有界电平历史和最近相对频谱，并在离页时全部清除。
 
 完整 Snapshot/JSON/CSV 只包含上述固定非身份字段。Privacy-Safe Diagnostics 仍只包含 Provider/Channel ID、状态和语义，不包含值、摘要、备注或来源。Demo 使用固定合成清单，不访问真实 Core Audio 设备。
 
@@ -46,7 +46,7 @@ Apple 对 [`AudioHardwareClock.uid`](https://developer.apple.com/documentation/c
 
 Apple 的[macOS 媒体采集授权说明](https://developer.apple.com/documentation/bundleresources/requesting-authorization-for-media-capture-on-macos)要求摄像头和麦克风采集在首次访问前取得用户授权，并为麦克风提供 [`NSMicrophoneUsageDescription`](https://developer.apple.com/documentation/bundleresources/information-property-list/nsmicrophoneusagedescription)。E7a 只读取 HAL 硬件属性，没有“先打开流再丢弃样本”的隐藏路径，因此仍归 `publicOrdinary`。
 
-E7b/E7c 把 user-started PCM 作为独立 `publicTCC` 功能落地，实现边界如下：
+E7b…E7d 把 user-started PCM 作为独立 `publicTCC` 功能落地，实现边界如下：
 
 - `AVCaptureDevice.authorizationStatus(for: .audio)` 是产品的 not-determined/authorized/denied/restricted 四态来源；
 - 第一次“Start”仅打开 App 内用途说明；用户再次确认后，且当时状态仍为 not-determined，才调用 `requestAccess(for: .audio)`；
@@ -55,12 +55,15 @@ E7b/E7c 把 user-started PCM 作为独立 `publicTCC` 功能落地，实现边�
 - tap 只在回调内读取一次 `floatChannelData`，拒绝空数据、非有限值、不一致结构、越界样本和超过 262,144 个分析样本的 buffer；原始样本不捕获到主线程或任何状态对象；
 - 每个合法 buffer 输出最多 128 个 min/max 波形分箱；波形先对每帧各通道取平均，RMS 和峰值则覆盖所有通道样本，避免反相通道把能量指标抵消；
 - dBFS 按 Apple vDSP 公开的[amplitude-to-decibels 公式](https://developer.apple.com/documentation/accelerate/vdsp/convert%28amplitude%3Atodecibels%3Azeroreference%3A%29-83uy1) `20 × log10(amplitude / 1.0)` 计算；精确数字静音显示 `−∞ dBFS`，图表仅为显示把低于 `−96 dBFS` 的值裁剪到下限。这不是 dBA、dB SPL 或经外部参考校准的响度；
+- 频谱只使用不超过当前 buffer 的最大 256/512/1024/2048-frame 窗口，对每帧的通道平均值去除均值，再应用 Accelerate denormalized Hann 窗和可复用 `vDSP.DiscreteFourierTransform` setup。只保留正频率且不含 DC，按每组峰值归约为最多 128 个显示频带；当前非 DC 峰值归一化为 0 dB，低于 −80 dB 只做显示裁剪；
+- 频率分辨率明示为 `sampleRate / FFT size`，最强值只报对应 FFT 分箱的中心频率；精确静音或去均值后的纯 DC 不报峰值。该频率不是精密音高，也不识别声源、语音或环境；
+- 频谱节流器按 PCM frame duration 将更新频率限制为最快 10 Hz；DFT size 最大 2,048，显示数组最大 128 个分箱。频谱创建或输入失败时不发布频谱，不影响同一合法 buffer 的其他有界派生值；
 - 会话总数上限为 1,000,000 buffers / 500,000,000 frames，电平历史最小间隔 80 ms 且最多 300 点，任一安全边界失败都先停流；
 - 会话最长五分钟；Stop、离页、`AVAudioEngineConfigurationChange`、系统休眠、App 终止、格式变化或非法 buffer 均 fail closed，且 operation ID 使迟到的授权/音频回调无法重启已离开的会话；
 - 停止时可在面板暂留计数和派生分析供阅读，离页时全部清除。任何状态、元数据或派生值都不进入 Provider、Dashboard history、Snapshot、Diagnostics、JSON/CSV、UserDefaults 或日志；
 - `Info.plist` 和简体中文 `InfoPlist.strings` 包含精确、用户可见的用途文案；Hardened Runtime 签名只加入 Apple 文档化的 [`com.apple.security.device.audio-input`](https://developer.apple.com/documentation/bundleresources/entitlements/com.apple.security.device.audio-input) entitlement。App 当前没有 App Sandbox，不混用 Sandbox microphone entitlement。
 
-E7c 已在这条生命周期上完成 waveform/RMS/peak/dBFS。dBFS 与物理 dB SPL/dBA 永久分开，只有外部声级参考和独立校准设计后才能使用 Estimated/Calibrated 物理声级。FFT 在 E7d 单独评审频率分辨率、窗函数、采样率和性能上限。
+E7c 完成 waveform/RMS/peak/dBFS，E7d 完成有界相对频谱。dBFS 与物理 dB SPL/dBA 永久分开，只有外部声级参考和独立校准设计后才能使用 Estimated/Calibrated 物理声级。频谱相对幅度也不是 dBFS 或 SPL，未来任何声源/音高分析都需单独的产品价值、误差和隐私评审。
 
 ## 失败与就绪语义
 
@@ -78,6 +81,6 @@ E7c 已在这条生命周期上完成 waveform/RMS/peak/dBFS。dBFS 与物理 dB
 
 E7a fixture 覆盖：完整清单、不同默认输入/输出、合法 0-buffer 单向设备、无默认设备、空设备、未知 transport、越界 channel/sample-rate/latency、局部属性缺失、临时失败、权限拒绝和普通失败。源码回归禁止 UID/name/manufacturer 与音频启动/采集/授权 API。
 
-E7b/E7c fixture 覆盖：明确二次确认前不请求权限/不启动、denied/restricted fail closed、授权请求未完成不伪称 denied、离页后迟到授权不得启动、格式改变后迟到 buffer 不得计入、五分钟上限/休眠中止、格式/启动失败、Demo 确定性合成分析且离页清空；还覆盖 RMS/峰值/dBFS 数学、反相通道、精确静音、非有限/越界输入、128 个波形分箱和 300 点历史上限。源码回归只允许分析器内唯一的 `floatChannelData` 读取，禁止其他 channel sample path、音频文件/录音 API、`tccutil`、UserDefaults 和系统设置打开路径。发布审计另外固定中英文用途文案、单一 entitlement、资源 lint 和签名 entitlement 验收。
+E7b…E7d fixture 覆盖：明确二次确认前不请求权限/不启动、denied/restricted fail closed、授权请求未完成不伪称 denied、离页后迟到授权不得启动、格式改变后迟到 buffer 不得计入、五分钟上限/休眠中止、格式/启动失败、Demo 确定性合成分析且离页清空；还覆盖 RMS/峰值/dBFS 数学、反相通道、精确静音、非有限/越界输入、128 个波形分箱和 300 点历史上限，以及精确正弦/复合频点、静音与纯 DC、FFT 尺寸/显示分箱上限、异常频谱输入、10 Hz 节流和模型最近频谱生命周期。源码回归只允许分析器内唯一的 `floatChannelData` 读取，禁止其他 channel sample path、音频文件/录音 API、`tccutil`、UserDefaults 和系统设置打开路径。发布审计另外固定中英文用途文案、单一 entitlement、资源 lint 和签名 entitlement 验收。
 
-本机无值验证只记录 `hardware.audio` 为 Available 及其固定 Channel ID，不记录设备数量、默认设备类型、采样率或延迟值。该证据证明当前开发机路径可读，不宣称所有驱动、虚拟设备和 macOS 版本都已验证。E7b/E7c 本轮没有触发真实 TCC 提示或读取真实 PCM；首次授权、拒绝后重试、真实 buffer/波形/电平和设备切换属于必须用户在场的手动验收。
+本机无值验证只记录 `hardware.audio` 为 Available 及其固定 Channel ID，不记录设备数量、默认设备类型、采样率或延迟值。该证据证明当前开发机路径可读，不宣称所有驱动、虚拟设备和 macOS 版本都已验证。E7b…E7d 本轮没有触发真实 TCC 提示或读取真实 PCM；首次授权、拒绝后重试、真实 buffer/波形/电平/频谱和设备切换属于必须用户在场的手动验收。

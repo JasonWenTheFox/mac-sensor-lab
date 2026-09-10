@@ -166,10 +166,19 @@ final class SystemMicrophoneCaptureSession: MicrophoneCaptureSession {
     }
 
     installLifecycleObservers(onTermination: onTermination)
+    let spectrumAnalyzer = MicrophoneSpectrumAnalyzer()
+    let spectrumCadence = MicrophoneSpectrumCadence()
     inputNode.installTap(onBus: 0, bufferSize: Self.tapBufferSize, format: format) {
       buffer, _ in
+      let shouldAnalyzeSpectrum = spectrumCadence.shouldAnalyze(
+        frameCount: Int(buffer.frameLength),
+        sampleRate: buffer.format.sampleRate
+      )
       guard
-        let analysis = MicrophonePCMAnalyzer.analyze(buffer: buffer),
+        let analysis = MicrophonePCMAnalyzer.analyze(
+          buffer: buffer,
+          spectrumAnalyzer: shouldAnalyzeSpectrum ? spectrumAnalyzer : nil
+        ),
         let observation = MicrophonePCMObservation(
           frameCount: Int(buffer.frameLength),
           sampleRate: buffer.format.sampleRate,
@@ -275,9 +284,16 @@ final class DemoMicrophoneCaptureSession: MicrophoneCaptureSession {
     let demoSamples = (0..<1_024).map { frame in
       Float(0.25 * sin(2 * Double.pi * Double(frame) / 64))
     }
+    let spectrumAnalyzer = MicrophoneSpectrumAnalyzer()
+    let spectrumCadence = MicrophoneSpectrumCadence()
     guard
-      let analysis = MicrophonePCMAnalyzer.analyze(
+      let baseAnalysis = MicrophonePCMAnalyzer.analyze(
         channels: [demoSamples, demoSamples]
+      ),
+      let spectrumAnalysis = MicrophonePCMAnalyzer.analyze(
+        channels: [demoSamples, demoSamples],
+        sampleRate: format.sampleRate,
+        spectrumAnalyzer: spectrumAnalyzer
       )
     else {
       throw MicrophoneCaptureSessionError.inputUnavailable
@@ -295,7 +311,10 @@ final class DemoMicrophoneCaptureSession: MicrophoneCaptureSession {
             frameCount: 1_024,
             sampleRate: format.sampleRate,
             channelCount: format.channelCount,
-            analysis: analysis
+            analysis: spectrumCadence.shouldAnalyze(
+              frameCount: 1_024,
+              sampleRate: format.sampleRate
+            ) ? spectrumAnalysis : baseAnalysis
           )
         else {
           onTermination(.invalidBuffer)
@@ -327,6 +346,7 @@ final class MicrophoneInputModel: ObservableObject {
   @Published private(set) var observationCount: UInt64 = 0
   @Published private(set) var totalFrameCount: UInt64 = 0
   @Published private(set) var latestAnalysis: MicrophonePCMAnalysis?
+  @Published private(set) var latestSpectrum: MicrophoneSpectrumAnalysis?
   @Published private(set) var levelHistory: [MicrophoneLevelPoint] = []
 
   let isDemoMode: Bool
@@ -530,6 +550,9 @@ final class MicrophoneInputModel: ObservableObject {
     observationCount = nextObservationCount
     totalFrameCount = nextFrameCount
     latestAnalysis = observation.analysis
+    if let spectrum = observation.analysis.spectrum {
+      latestSpectrum = spectrum
+    }
     recordLevelPoint(
       observation.analysis,
       id: nextObservationCount,
@@ -574,6 +597,7 @@ final class MicrophoneInputModel: ObservableObject {
     observationCount = 0
     totalFrameCount = 0
     latestAnalysis = nil
+    latestSpectrum = nil
     levelHistory.removeAll(keepingCapacity: true)
   }
 
@@ -617,7 +641,7 @@ struct MicrophoneInputPanel: View {
         .font(.title3.weight(.semibold))
       Text(
         L10n.text(
-          "Starts a bounded microphone session only after an explicit action and derives a waveform envelope, RMS, peak, and dBFS in memory."
+          "Starts a bounded microphone session only after an explicit action and derives a waveform envelope, RMS, peak, dBFS, and a relative frequency spectrum in memory."
         )
       )
       .font(.callout)
@@ -636,6 +660,10 @@ struct MicrophoneInputPanel: View {
       if !model.levelHistory.isEmpty {
         levelHistoryChart
       }
+      if let spectrum = model.latestSpectrum {
+        spectrumMetrics(spectrum)
+        spectrumChart(spectrum)
+      }
 
       Text(
         L10n.text(
@@ -646,7 +674,7 @@ struct MicrophoneInputPanel: View {
       .foregroundStyle(.secondary)
       Text(
         L10n.text(
-          "dBFS uses digital full scale 1.0; it is not dBA, sound-pressure level, calibrated loudness, a spectrum, or dominant frequency. The history chart clips values below −96 dBFS, while exact digital silence is reported as −∞ dBFS."
+          "dBFS uses digital full scale 1.0; it is not dBA, sound-pressure level, or calibrated loudness. The history chart clips values below −96 dBFS, while exact digital silence is reported as −∞ dBFS. Spectrum values are relative to the current non-DC peak, not dBFS or SPL."
         )
       )
       .font(.caption2)
@@ -883,6 +911,57 @@ struct MicrophoneInputPanel: View {
     }
   }
 
+  private func spectrumMetrics(_ spectrum: MicrophoneSpectrumAnalysis) -> some View {
+    LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], spacing: 8) {
+      MicrophoneInputMetric(
+        label: L10n.text("Spectrum FFT size"),
+        value: String(spectrum.fftSize)
+      )
+      MicrophoneInputMetric(
+        label: L10n.text("Frequency resolution"),
+        value:
+          "\(spectrum.frequencyResolutionHz.formatted(.number.precision(.fractionLength(1)))) Hz"
+      )
+      MicrophoneInputMetric(
+        label: L10n.text("Strongest non-DC bin center"),
+        value: formatStrongestFrequency(spectrum.strongestBinCenterFrequencyHz)
+      )
+    }
+  }
+
+  private func spectrumChart(_ spectrum: MicrophoneSpectrumAnalysis) -> some View {
+    VStack(alignment: .leading, spacing: 6) {
+      Text(L10n.text("Latest relative spectrum"))
+        .font(.callout.weight(.semibold))
+      Text(
+        L10n.text(
+          "The latest spectrum uses at most 2,048 recent channel-averaged frames, removes the mean, applies a Hann window, and reduces positive frequencies to at most 128 bands. It refreshes no faster than 10 Hz."
+        )
+      )
+      .font(.caption2)
+      .foregroundStyle(.secondary)
+      Chart(spectrum.bins) { bin in
+        AreaMark(
+          x: .value(L10n.text("Frequency Hz"), bin.centerFrequencyHz),
+          yStart: .value(L10n.text("Spectrum floor"), MicrophoneSpectrumAnalyzer.displayFloorDB),
+          yEnd: .value(L10n.text("Relative magnitude dB"), bin.relativeMagnitudeDB)
+        )
+        .foregroundStyle(.purple.opacity(0.5))
+      }
+      .chartXScale(domain: 0...spectrum.nyquistFrequencyHz)
+      .chartYScale(domain: MicrophoneSpectrumAnalyzer.displayFloorDB...0)
+      .frame(height: 140)
+      .accessibilityIdentifier("sound-input-spectrum")
+      Text(
+        L10n.text(
+          "The strongest value is the center of a finite-resolution FFT bin. It does not identify a sound source, musical pitch, speech, or the surrounding environment."
+        )
+      )
+      .font(.caption2)
+      .foregroundStyle(.secondary)
+    }
+  }
+
   private func formatAmplitude(_ value: Double) -> String {
     value.formatted(.number.precision(.fractionLength(4)))
   }
@@ -890,6 +969,11 @@ struct MicrophoneInputPanel: View {
   private func formatDBFS(_ value: Double?) -> String {
     guard let value else { return "−∞ dBFS" }
     return "\(value.formatted(.number.precision(.fractionLength(1)))) dBFS"
+  }
+
+  private func formatStrongestFrequency(_ value: Double?) -> String {
+    guard let value else { return L10n.text("No non-DC spectral peak") }
+    return "\(value.formatted(.number.precision(.fractionLength(1)))) Hz"
   }
 }
 

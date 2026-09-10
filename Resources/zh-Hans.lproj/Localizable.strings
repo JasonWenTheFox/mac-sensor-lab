@@ -646,6 +646,10 @@
 	<string>Foundation 估算值，可能包含可为重要用途清理的空间。</string>
 	<key>Four uncalibrated ambient spectral channels</key>
 	<string>4 个未校准的环境光谱通道</string>
+	<key>Frequency Hz</key>
+	<string>频率 Hz</string>
+	<key>Frequency resolution</key>
+	<string>频率分辨率</string>
 	<key>Fully charged</key>
 	<string>已充满</string>
 	<key>GPU</key>
@@ -732,6 +736,8 @@
 	<string>上次刷新</string>
 	<key>Last refresh duration</key>
 	<string>上次刷新耗时</string>
+	<key>Latest relative spectrum</key>
+	<string>最新相对频谱</string>
 	<key>Latest waveform envelope</key>
 	<string>最新波形包络</string>
 	<key>Level</key>
@@ -918,6 +924,8 @@
 	<string>不读取网络名称、接入点地址、国家代码、接口身份、信息元素或位置，也不持久化或导出。</string>
 	<key>No network name, access-point address, interface identity, location, or scan results are collected.</key>
 	<string>不收集网络名称、接入点地址、接口身份、位置或扫描结果。</string>
+	<key>No non-DC spectral peak</key>
+	<string>无非直流频谱峰值</string>
 	<key>No private data fields are read during capability discovery.</key>
 	<string>能力发现期间不读取私有数据字段。</string>
 	<key>No process list or identifying information was requested.</key>
@@ -1200,6 +1208,8 @@
 	<string>相对变化由原始上盖角度派生，不会更改传感器。</string>
 	<key>Relative channel balance</key>
 	<string>相对通道比例</string>
+	<key>Relative magnitude dB</key>
+	<string>相对幅度 dB</string>
 	<key>Reliability degraded warning</key>
 	<string>可靠性下降警告</string>
 	<key>Removable media</key>
@@ -1354,6 +1364,10 @@
 	<string>来源：%@</string>
 	<key>Spectral channel %lld</key>
 	<string>光谱通道 %lld</string>
+	<key>Spectrum FFT size</key>
+	<string>频谱 FFT 尺寸</string>
+	<key>Spectrum floor</key>
+	<string>频谱显示下限</string>
 	<key>Stage</key>
 	<string>阶段</string>
 	<key>Stage 2 entries</key>
@@ -1378,8 +1392,8 @@
 	<string>已开始记录 %@</string>
 	<key>Starting the bounded audio input session…</key>
 	<string>正在启动有界的音频输入会话…</string>
-	<key>Starts a bounded microphone session only after an explicit action and derives a waveform envelope, RMS, peak, and dBFS in memory.</key>
-	<string>仅在明确操作后启动有界的麦克风会话，并在内存中派生波形包络、RMS、峰值和 dBFS。</string>
+	<key>Starts a bounded microphone session only after an explicit action and derives a waveform envelope, RMS, peak, dBFS, and a relative frequency spectrum in memory.</key>
+	<string>仅在明确操作后启动有界的麦克风会话，并在内存中派生波形包络、RMS、峰值、dBFS 和相对频谱。</string>
 	<key>State changes</key>
 	<string>状态变化</string>
 	<key>Status changes this launch</key>
@@ -1412,6 +1426,8 @@
 	<string>数据流活跃</string>
 	<key>Stream inactive</key>
 	<string>数据流未活跃</string>
+	<key>Strongest non-DC bin center</key>
+	<string>最强非直流分箱中心</string>
 	<key>Support</key>
 	<string>支持</string>
 	<key>Swap encrypted</key>
@@ -1470,6 +1486,8 @@
 	<string>采样间隔会被记住；每次启动时会有意重置暂停状态。</string>
 	<key>The last click did not advertise pressure events. Try the Force Touch trackpad.</key>
 	<string>上次点击未声明支持压力事件。请尝试使用 Force Touch 触控板。</string>
+	<key>The latest spectrum uses at most 2,048 recent channel-averaged frames, removes the mean, applies a Hann window, and reduces positive frequencies to at most 128 bands. It refreshes no faster than 10 Hz.</key>
+	<string>最新频谱使用最多 2,048 个近期的通道平均帧，移除均值，应用 Hann 窗，并将正频率归约为最多 128 个频带。刷新频率不超过 10 Hz。</string>
 	<key>The lid-angle sensor could not be opened</key>
 	<string>无法打开上盖角度传感器</string>
 	<key>The lid-angle sensor is not available on this Mac</key>
@@ -1482,6 +1500,8 @@
 	<string>安全读取器没有唤醒或重新配置 SPU。</string>
 	<key>The scan completed without usable channel records.</key>
 	<string>扫描已完成，但没有可用的信道记录。</string>
+	<key>The strongest value is the center of a finite-resolution FFT bin. It does not identify a sound source, musical pitch, speech, or the surrounding environment.</key>
+	<string>最强值是有限分辨率 FFT 分箱的中心频率。它不识别声源、音高、语音或周边环境。</string>
 	<key>The support report contains provider status and stable channel metadata, never sensor readings, notes, source strings, machine identifiers, or file paths.</key>
 	<string>支持报告只包含 Provider 状态和稳定的通道元数据，不包含传感器读数、备注、来源字符串、机器标识或文件路径。</string>
 	<key>The support report contains sensor availability and channel types, but no readings.</key>
@@ -1696,8 +1716,8 @@
 	<string>当前像素尺寸</string>
 	<key>cycles</key>
 	<string>次</string>
-	<key>dBFS uses digital full scale 1.0; it is not dBA, sound-pressure level, calibrated loudness, a spectrum, or dominant frequency. The history chart clips values below −96 dBFS, while exact digital silence is reported as −∞ dBFS.</key>
-	<string>dBFS 以数字满刻度 1.0 为基准；它不是 dBA、声压级、校准响度、频谱或主频。历史图会裁剪低于 −96 dBFS 的值，精确的数字静音则报告为 −∞ dBFS。</string>
+	<key>dBFS uses digital full scale 1.0; it is not dBA, sound-pressure level, or calibrated loudness. The history chart clips values below −96 dBFS, while exact digital silence is reported as −∞ dBFS. Spectrum values are relative to the current non-DC peak, not dBFS or SPL.</key>
+	<string>dBFS 以数字满刻度 1.0 为基准；它不是 dBA、声压级或校准响度。历史图会裁剪低于 −96 dBFS 的值，精确的数字静音则报告为 −∞ dBFS。频谱值相对于当前非直流峰值，不是 dBFS 或 SPL。</string>
 	<key>data units</key>
 	<string>数据单元</string>
 	<key>entries</key>

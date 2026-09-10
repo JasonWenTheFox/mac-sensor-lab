@@ -931,6 +931,7 @@ final class SensorDashboardModelTests: XCTestCase {
     XCTAssertEqual(model.format?.sampleRate, 48_000)
     XCTAssertEqual(model.format?.channelCount, 2)
     XCTAssertNotNil(model.latestAnalysis)
+    XCTAssertNotNil(model.latestSpectrum)
     XCTAssertFalse(model.levelHistory.isEmpty)
 
     model.leaveExperiment()
@@ -938,6 +939,7 @@ final class SensorDashboardModelTests: XCTestCase {
     XCTAssertNil(model.format)
     XCTAssertEqual(model.totalFrameCount, 0)
     XCTAssertNil(model.latestAnalysis)
+    XCTAssertNil(model.latestSpectrum)
     XCTAssertTrue(model.levelHistory.isEmpty)
   }
 
@@ -1050,6 +1052,145 @@ final class SensorDashboardModelTests: XCTestCase {
     XCTAssertEqual(model.levelHistory.count, MicrophoneInputModel.maximumLevelHistoryCount)
     XCTAssertEqual(model.levelHistory.first?.id, 51)
     XCTAssertEqual(model.levelHistory.last?.id, 350)
+  }
+
+  func testMicrophoneSpectrumFindsExactSineBinWithBoundedOutput() throws {
+    let sampleRate = 48_000.0
+    let samples = (0..<1_024).map { frame in
+      Float(0.5 * sin(2 * Double.pi * 3_000 * Double(frame) / sampleRate))
+    }
+    let analysis = try XCTUnwrap(
+      MicrophonePCMAnalyzer.analyze(
+        channels: [samples, samples],
+        sampleRate: sampleRate,
+        spectrumAnalyzer: MicrophoneSpectrumAnalyzer()
+      )
+    )
+    let spectrum = try XCTUnwrap(analysis.spectrum)
+
+    XCTAssertEqual(spectrum.fftSize, 1_024)
+    XCTAssertEqual(spectrum.frequencyResolutionHz, 46.875, accuracy: 0.000_001)
+    XCTAssertEqual(spectrum.nyquistFrequencyHz, 24_000, accuracy: 0.000_001)
+    XCTAssertEqual(
+      try XCTUnwrap(spectrum.strongestBinCenterFrequencyHz),
+      3_000,
+      accuracy: 0.000_001
+    )
+    XCTAssertEqual(spectrum.bins.count, MicrophoneSpectrumAnalyzer.maximumDisplayBinCount)
+    XCTAssertEqual(
+      try XCTUnwrap(spectrum.bins.map(\.relativeMagnitudeDB).max()),
+      0,
+      accuracy: 0.000_001
+    )
+  }
+
+  func testMicrophoneSpectrumReportsStrongerCompositeComponent() throws {
+    let sampleRate = 48_000.0
+    let samples = (0..<2_048).map { frame in
+      let time = Double(frame) / sampleRate
+      return Float(
+        0.2 * sin(2 * Double.pi * 750 * time)
+          + 0.6 * sin(2 * Double.pi * 3_000 * time)
+      )
+    }
+    let spectrum = try XCTUnwrap(
+      MicrophoneSpectrumAnalyzer().analyze(samples: samples, sampleRate: sampleRate)
+    )
+
+    XCTAssertEqual(spectrum.fftSize, 2_048)
+    XCTAssertEqual(
+      try XCTUnwrap(spectrum.strongestBinCenterFrequencyHz),
+      3_000,
+      accuracy: spectrum.frequencyResolutionHz / 2
+    )
+  }
+
+  func testMicrophoneSpectrumTreatsSilenceAndConstantInputAsNoNonDCPeak() throws {
+    for samples in [
+      Array(repeating: Float.zero, count: 1_024),
+      Array(repeating: Float(0.25), count: 1_024),
+    ] {
+      let spectrum = try XCTUnwrap(
+        MicrophoneSpectrumAnalyzer().analyze(samples: samples, sampleRate: 48_000)
+      )
+      XCTAssertNil(spectrum.strongestBinCenterFrequencyHz)
+      XCTAssertTrue(
+        spectrum.bins.allSatisfy {
+          $0.relativeMagnitudeDB == MicrophoneSpectrumAnalyzer.displayFloorDB
+        }
+      )
+    }
+  }
+
+  func testMicrophoneSpectrumRejectsInvalidInputAndCapsFFTSize() throws {
+    let analyzer = MicrophoneSpectrumAnalyzer()
+    XCTAssertNil(analyzer.analyze(samples: Array(repeating: 0, count: 255), sampleRate: 48_000))
+    XCTAssertNil(analyzer.analyze(samples: Array(repeating: 0, count: 256), sampleRate: 0))
+    XCTAssertNil(analyzer.analyze(samples: Array(repeating: 0, count: 256), sampleRate: .nan))
+    XCTAssertNil(analyzer.analyze(samples: Array(repeating: .nan, count: 256), sampleRate: 48_000))
+    XCTAssertNil(
+      analyzer.analyze(
+        samples: Array(repeating: 0, count: MicrophonePCMAnalyzer.maximumFrameCount + 1),
+        sampleRate: 48_000
+      )
+    )
+
+    let bounded = try XCTUnwrap(
+      analyzer.analyze(samples: Array(repeating: 0, count: 4_096), sampleRate: 48_000)
+    )
+    XCTAssertEqual(bounded.fftSize, 2_048)
+    XCTAssertEqual(bounded.bins.count, MicrophoneSpectrumAnalyzer.maximumDisplayBinCount)
+  }
+
+  func testMicrophoneSpectrumCadenceAndModelRetainOnlyLatestDerivedSpectrum() async throws {
+    let cadence = MicrophoneSpectrumCadence()
+    XCTAssertTrue(cadence.shouldAnalyze(frameCount: 1_024, sampleRate: 48_000))
+    XCTAssertFalse(cadence.shouldAnalyze(frameCount: 1_024, sampleRate: 48_000))
+    XCTAssertFalse(cadence.shouldAnalyze(frameCount: 1_024, sampleRate: 48_000))
+    XCTAssertFalse(cadence.shouldAnalyze(frameCount: 1_024, sampleRate: 48_000))
+    XCTAssertTrue(cadence.shouldAnalyze(frameCount: 1_024, sampleRate: 48_000))
+    XCTAssertFalse(cadence.shouldAnalyze(frameCount: 0, sampleRate: 48_000))
+
+    let samples = (0..<1_024).map { frame in
+      Float(0.25 * sin(2 * Double.pi * Double(frame) / 64))
+    }
+    let spectrumAnalysis = try XCTUnwrap(
+      MicrophonePCMAnalyzer.analyze(
+        channels: [samples, samples],
+        sampleRate: 48_000,
+        spectrumAnalyzer: MicrophoneSpectrumAnalyzer()
+      )
+    )
+    let baseAnalysis = try XCTUnwrap(
+      MicrophonePCMAnalyzer.analyze(channels: [samples, samples])
+    )
+    let authorization = MicrophoneAuthorizationFixture(state: .authorized)
+    let capture = FixtureMicrophoneCaptureSession()
+    let model = MicrophoneInputModel(
+      authorizationClient: authorization.client,
+      captureSession: capture
+    )
+    model.beginStart()
+    capture.emit(
+      frameCount: 1_024,
+      sampleRate: 48_000,
+      channelCount: 2,
+      analysis: spectrumAnalysis
+    )
+    await waitUntil { model.latestSpectrum != nil }
+    let retainedSpectrum = try XCTUnwrap(model.latestSpectrum)
+
+    capture.emit(
+      frameCount: 1_024,
+      sampleRate: 48_000,
+      channelCount: 2,
+      analysis: baseAnalysis
+    )
+    await waitUntil { model.observationCount == 2 }
+    XCTAssertEqual(model.latestSpectrum, retainedSpectrum)
+
+    model.leaveExperiment()
+    XCTAssertNil(model.latestSpectrum)
   }
 
   func testMicrophoneInputSourceLimitsRawSampleAccessAndSystemMutation() throws {

@@ -40,6 +40,7 @@ let package = Package(
         .linkedFramework("AppKit"),
         .linkedFramework("AVFAudio"),
         .linkedFramework("AVFoundation"),
+        .linkedFramework("Accelerate"),
         .linkedFramework("SwiftUI"),
         .linkedFramework("Charts"),
       ]
