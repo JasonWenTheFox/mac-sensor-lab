@@ -4353,13 +4353,18 @@ final class SensorCoreTests: XCTestCase {
       NSDictionary(contentsOf: projectRoot.appendingPathComponent("Resources/Info.plist"))
     )
     XCTAssertEqual(info["NSCameraUseContinuityCameraDeviceType"] as? Bool, true)
-    XCTAssertNil(info["NSCameraUsageDescription"])
+    XCTAssertEqual(
+      info["NSCameraUsageDescription"] as? String,
+      "Mac Sensor Lab uses camera input only while you run Camera Check. Frames stay in memory for live preview and bounded analysis and are never saved or exported."
+    )
     let entitlements = try XCTUnwrap(
       NSDictionary(
         contentsOf: projectRoot.appendingPathComponent("Resources/MacSensorLab.entitlements")
       )
     )
-    XCTAssertNil(entitlements["com.apple.security.device.camera"])
+    XCTAssertEqual(entitlements["com.apple.security.device.camera"] as? Bool, true)
+    XCTAssertEqual(entitlements["com.apple.security.device.audio-input"] as? Bool, true)
+    XCTAssertEqual(entitlements.count, 2)
   }
 
   private func cameraFormat(

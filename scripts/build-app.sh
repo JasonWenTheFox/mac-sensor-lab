@@ -70,6 +70,11 @@ if [[ "$(/usr/bin/codesign --display --entitlements :- "$staged_app_path" 2>/dev
     echo "app signature is missing the Audio Input entitlement" >&2
     exit 1
 fi
+if [[ "$(/usr/bin/codesign --display --entitlements :- "$staged_app_path" 2>/dev/null \
+    | /usr/bin/plutil -extract 'com\.apple\.security\.device\.camera' raw -o - -)" != "true" ]]; then
+    echo "app signature is missing the Camera entitlement" >&2
+    exit 1
+fi
 if [[ "$configuration" == "release" ]]; then
     if /usr/bin/codesign --display --verbose=4 "$staged_app_path" 2>&1 \
         | /usr/bin/grep -E 'flags=.*runtime' >/dev/null; then

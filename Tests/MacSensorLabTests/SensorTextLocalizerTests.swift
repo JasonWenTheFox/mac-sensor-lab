@@ -943,6 +943,333 @@ final class SensorDashboardModelTests: XCTestCase {
     XCTAssertTrue(model.levelHistory.isEmpty)
   }
 
+  func testCameraFrameAnalyzerReducesBGRAWithoutRetainingPixels() throws {
+    let analysis = try XCTUnwrap(
+      CameraFrameAnalyzer.analyzeBGRA(
+        width: 2,
+        height: 1,
+        bytesPerRow: 8,
+        bytes: [
+          0, 0, 0, 255,
+          255, 255, 255, 255,
+        ]
+      )
+    )
+
+    XCTAssertEqual(analysis.sampledPixelCount, 2)
+    XCTAssertEqual(analysis.minimumRelativeLuma, 0, accuracy: 1e-12)
+    XCTAssertEqual(analysis.meanRelativeLuma, 0.5, accuracy: 1e-12)
+    XCTAssertEqual(analysis.maximumRelativeLuma, 1, accuracy: 1e-12)
+    XCTAssertEqual(analysis.sampledContrastSpan, 1, accuracy: 1e-12)
+
+    let bounded = try XCTUnwrap(
+      CameraFrameAnalyzer.analyzeBGRA(
+        width: 128,
+        height: 128,
+        bytesPerRow: 512,
+        bytes: Array(repeating: 64, count: 65_536)
+      )
+    )
+    XCTAssertLessThanOrEqual(
+      bounded.sampledPixelCount,
+      CameraFrameAnalyzer.maximumSampledPixelCount
+    )
+    XCTAssertEqual(bounded.meanRelativeLuma, 64.0 / 255, accuracy: 1e-12)
+  }
+
+  func testCameraFrameAnalyzerRejectsMalformedOrOverLimitBuffers() {
+    XCTAssertNil(
+      CameraFrameAnalyzer.analyzeBGRA(
+        width: 0,
+        height: 1,
+        bytesPerRow: 4,
+        bytes: [0, 0, 0, 255]
+      )
+    )
+    XCTAssertNil(
+      CameraFrameAnalyzer.analyzeBGRA(
+        width: 2,
+        height: 1,
+        bytesPerRow: 4,
+        bytes: Array(repeating: 0, count: 8)
+      )
+    )
+    XCTAssertNil(
+      CameraFrameAnalyzer.analyzeBGRA(
+        width: 2,
+        height: 2,
+        bytesPerRow: 8,
+        bytes: Array(repeating: 0, count: 15)
+      )
+    )
+    XCTAssertNil(
+      CameraFrameAnalyzer.analyzeBGRA(
+        width: CameraFrameAnalyzer.maximumDimension + 1,
+        height: 1,
+        bytesPerRow: 4,
+        bytes: [0, 0, 0, 255]
+      )
+    )
+  }
+
+  func testCameraCheckAlwaysRequiresLiveConfirmationBeforeCapture() async {
+    let authorization = CameraAuthorizationFixture(state: .authorized)
+    let capture = FixtureCameraCaptureSession()
+    let model = CameraCheckModel(
+      authorizationClient: authorization.client,
+      captureSession: capture,
+      maximumSessionDuration: .seconds(1)
+    )
+
+    model.beginStart()
+    XCTAssertEqual(model.status, .awaitingPermissionConfirmation)
+    XCTAssertEqual(authorization.requestCount, 0)
+    XCTAssertEqual(capture.startCount, 0)
+
+    model.confirmPermissionAndStart()
+    await waitUntil { model.status == .capturing }
+    XCTAssertEqual(authorization.requestCount, 0)
+    XCTAssertEqual(capture.startCount, 1)
+
+    capture.emit(cameraObservation(delivered: 3, time: 1))
+    await waitUntil { model.analyzedObservationCount == 1 }
+    XCTAssertEqual(model.latestObservation?.width, 1_280)
+    XCTAssertNil(model.observedDeliveryFrameRate)
+
+    capture.emit(cameraObservation(delivered: 6, time: 1.1))
+    await waitUntil { model.analyzedObservationCount == 2 }
+    XCTAssertEqual(model.observedDeliveryFrameRate ?? 0, 30, accuracy: 1e-8)
+
+    model.stop()
+    XCTAssertEqual(model.status, .stopped)
+    XCTAssertEqual(capture.stopCount, 1)
+    XCTAssertNotNil(model.latestObservation)
+
+    model.leaveExperiment()
+    XCTAssertEqual(model.status, .idle)
+    XCTAssertNil(model.latestObservation)
+    XCTAssertEqual(model.analyzedObservationCount, 0)
+    XCTAssertNil(model.observedDeliveryFrameRate)
+  }
+
+  func testCameraCheckRequestsPermissionOnlyAfterSecondAction() async {
+    let authorization = CameraAuthorizationFixture(state: .notDetermined)
+    authorization.requestResult = .authorized
+    let capture = FixtureCameraCaptureSession()
+    let model = CameraCheckModel(
+      authorizationClient: authorization.client,
+      captureSession: capture
+    )
+
+    model.beginStart()
+    XCTAssertEqual(model.status, .awaitingPermissionConfirmation)
+    XCTAssertEqual(authorization.requestCount, 0)
+    model.confirmPermissionAndStart()
+    await waitUntil { model.status == .capturing }
+
+    XCTAssertEqual(authorization.requestCount, 1)
+    XCTAssertEqual(model.authorizationState, .authorized)
+    XCTAssertEqual(capture.startCount, 1)
+    model.leaveExperiment()
+  }
+
+  func testCameraCheckDeniedRestrictedAndIncompletePermissionFailClosed() async {
+    for permission in [CameraAuthorizationState.denied, .restricted] {
+      let authorization = CameraAuthorizationFixture(state: permission)
+      let capture = FixtureCameraCaptureSession()
+      let model = CameraCheckModel(
+        authorizationClient: authorization.client,
+        captureSession: capture
+      )
+
+      model.beginStart()
+      XCTAssertEqual(
+        model.status,
+        permission == .denied ? .permissionDenied : .permissionRestricted
+      )
+      XCTAssertEqual(capture.startCount, 0)
+      XCTAssertFalse(model.canStart)
+    }
+
+    let incompleteAuthorization = CameraAuthorizationFixture(state: .notDetermined)
+    incompleteAuthorization.requestResult = .notDetermined
+    let incompleteCapture = FixtureCameraCaptureSession()
+    let incompleteModel = CameraCheckModel(
+      authorizationClient: incompleteAuthorization.client,
+      captureSession: incompleteCapture
+    )
+    incompleteModel.beginStart()
+    incompleteModel.confirmPermissionAndStart()
+    await waitUntil {
+      incompleteModel.status == .failed(.permissionRequestIncomplete)
+    }
+    XCTAssertEqual(incompleteCapture.startCount, 0)
+  }
+
+  func testCameraCheckLeaveRejectsLatePermissionAndFrameCallbacks() async {
+    let authorization = CameraAuthorizationFixture(state: .notDetermined)
+    authorization.requestResult = .authorized
+    authorization.requestDelay = .milliseconds(30)
+    let capture = FixtureCameraCaptureSession()
+    let model = CameraCheckModel(
+      authorizationClient: authorization.client,
+      captureSession: capture
+    )
+
+    model.beginStart()
+    model.confirmPermissionAndStart()
+    XCTAssertEqual(model.status, .requestingPermission)
+    model.leaveExperiment()
+    try? await Task.sleep(for: .milliseconds(60))
+    XCTAssertEqual(capture.startCount, 0)
+    XCTAssertEqual(model.status, .idle)
+
+    let authorized = CameraAuthorizationFixture(state: .authorized)
+    let activeCapture = FixtureCameraCaptureSession()
+    let activeModel = CameraCheckModel(
+      authorizationClient: authorized.client,
+      captureSession: activeCapture
+    )
+    activeModel.beginStart()
+    activeModel.confirmPermissionAndStart()
+    await waitUntil { activeModel.status == .capturing }
+    activeCapture.emit(cameraObservation(delivered: 1, time: 1))
+    await waitUntil { activeModel.analyzedObservationCount == 1 }
+    activeModel.leaveExperiment()
+    activeCapture.emitLate(cameraObservation(delivered: 2, time: 1.1))
+    await Task.yield()
+    XCTAssertEqual(activeModel.analyzedObservationCount, 0)
+    XCTAssertNil(activeModel.latestObservation)
+  }
+
+  func testCameraCheckStopsAtDurationLifecycleAndMalformedSequence() async {
+    let authorization = CameraAuthorizationFixture(state: .authorized)
+    let timedCapture = FixtureCameraCaptureSession()
+    let timedModel = CameraCheckModel(
+      authorizationClient: authorization.client,
+      captureSession: timedCapture,
+      maximumSessionDuration: .milliseconds(10)
+    )
+    timedModel.beginStart()
+    timedModel.confirmPermissionAndStart()
+    await waitUntil { timedModel.status == .sessionLimitReached }
+    XCTAssertEqual(timedCapture.stopCount, 1)
+
+    let interruptedCapture = FixtureCameraCaptureSession()
+    let interruptedModel = CameraCheckModel(
+      authorizationClient: authorization.client,
+      captureSession: interruptedCapture
+    )
+    interruptedModel.beginStart()
+    interruptedModel.confirmPermissionAndStart()
+    await waitUntil { interruptedModel.status == .capturing }
+    interruptedCapture.terminate(.systemSleep)
+    await waitUntil { interruptedModel.status == .interrupted(.systemSleep) }
+    XCTAssertEqual(interruptedCapture.stopCount, 1)
+
+    let malformedCapture = FixtureCameraCaptureSession()
+    let malformedModel = CameraCheckModel(
+      authorizationClient: authorization.client,
+      captureSession: malformedCapture
+    )
+    malformedModel.beginStart()
+    malformedModel.confirmPermissionAndStart()
+    await waitUntil { malformedModel.status == .capturing }
+    malformedCapture.emit(cameraObservation(delivered: 3, time: 1))
+    await waitUntil { malformedModel.analyzedObservationCount == 1 }
+    malformedCapture.emit(cameraObservation(delivered: 3, time: 1.1))
+    await waitUntil { malformedModel.status == .interrupted(.invalidFrame) }
+    XCTAssertEqual(malformedCapture.stopCount, 1)
+  }
+
+  func testCameraCheckStartFailuresAndDemoStayBounded() async {
+    let authorization = CameraAuthorizationFixture(state: .authorized)
+    for (error, failure) in [
+      (CameraCaptureSessionError.noSupportedLocalCamera, CameraCheckFailure.noSupportedLocalCamera),
+      (CameraCaptureSessionError.configurationFailed, CameraCheckFailure.configurationFailed),
+      (
+        CameraCaptureSessionError.continuityBoundaryMissing,
+        CameraCheckFailure.continuityBoundaryMissing
+      ),
+    ] {
+      let capture = FixtureCameraCaptureSession()
+      capture.startError = error
+      let model = CameraCheckModel(
+        authorizationClient: authorization.client,
+        captureSession: capture
+      )
+      model.beginStart()
+      model.confirmPermissionAndStart()
+      XCTAssertEqual(model.status, .failed(failure))
+      XCTAssertGreaterThanOrEqual(capture.stopCount, 1)
+    }
+
+    let startCapture = FixtureCameraCaptureSession()
+    startCapture.startsSuccessfully = false
+    let startModel = CameraCheckModel(
+      authorizationClient: authorization.client,
+      captureSession: startCapture
+    )
+    startModel.beginStart()
+    startModel.confirmPermissionAndStart()
+    await waitUntil { startModel.status == .failed(.startFailed) }
+
+    let demoModel = CameraCheckModel(isDemoMode: true)
+    demoModel.beginStart()
+    await waitUntil { demoModel.status == .capturing }
+    await waitUntil(timeout: .seconds(1)) { demoModel.latestObservation != nil }
+    XCTAssertEqual(demoModel.authorizationState, .authorized)
+    XCTAssertLessThanOrEqual(
+      demoModel.latestObservation?.analysis.sampledPixelCount ?? .max,
+      CameraFrameAnalyzer.maximumSampledPixelCount
+    )
+    demoModel.leaveExperiment()
+    XCTAssertEqual(demoModel.status, .idle)
+    XCTAssertNil(demoModel.latestObservation)
+  }
+
+  func testCameraCheckSourceUsesOnlyReviewedCaptureAndReductionPaths() throws {
+    let projectRoot = URL(fileURLWithPath: #filePath)
+      .deletingLastPathComponent()
+      .deletingLastPathComponent()
+      .deletingLastPathComponent()
+    let captureSource = try String(
+      contentsOf: projectRoot.appendingPathComponent(
+        "Sources/MacSensorLab/CameraCheckView.swift"
+      ),
+      encoding: .utf8
+    )
+    let analysisSource = try String(
+      contentsOf: projectRoot.appendingPathComponent(
+        "Sources/MacSensorLab/CameraFrameAnalysis.swift"
+      ),
+      encoding: .utf8
+    )
+
+    for required in [
+      "AVCaptureDevice.authorizationStatus(for: .video)",
+      "AVCaptureDevice.requestAccess(for: .video)",
+      "AVCaptureDevice.DiscoverySession", ".builtInWideAngleCamera", ".external",
+      "AVCaptureDeviceInput(device:", "AVCaptureSession()", "AVCaptureVideoDataOutput()",
+      "alwaysDiscardsLateVideoFrames = true", "kCVPixelFormatType_32BGRA",
+      "defaultMaximumSessionDuration: Duration = .seconds(120)",
+    ] {
+      XCTAssertTrue(captureSource.contains(required), "Missing Camera Check path: \(required)")
+    }
+    XCTAssertTrue(analysisSource.contains("maximumSampledPixelCount = 4_096"))
+
+    for forbidden in [
+      "uniqueID", "modelID", "localizedName", "manufacturer", "linkedDevices",
+      "constituentDevices", "userPreferredCamera", "systemPreferredCamera", "defaultDevice",
+      "PhotoOutput", "MovieFileOutput", "MetadataOutput", "AudioDataOutput",
+      "AVAssetWriter", "lockForConfiguration", "activeFormat",
+      "isInUseByAnotherApplication", "isSuspended", "CGImageDestination", "CIContext",
+      "VNDetect", "VNRecognize", "URLSession",
+    ] {
+      XCTAssertFalse(captureSource.contains(forbidden), "Forbidden Camera Check path: \(forbidden)")
+    }
+  }
+
   func testMicrophonePCMAnalysisCalculatesRMSPeakAndDBFS() throws {
     let analysis = try XCTUnwrap(
       MicrophonePCMAnalyzer.analyze(channels: [[0, 1, 0, -1]])
@@ -1679,6 +2006,97 @@ private final class FixtureMicrophoneCaptureSession: MicrophoneCaptureSession {
 
 private func microphoneAnalysisFixture() -> MicrophonePCMAnalysis {
   MicrophonePCMAnalyzer.analyze(channels: [[0, 0.25, 0, -0.25]])!
+}
+
+@MainActor
+private final class CameraAuthorizationFixture {
+  var state: CameraAuthorizationState
+  var requestResult: CameraAuthorizationState
+  var requestDelay: Duration = .zero
+  private(set) var requestCount = 0
+
+  init(state: CameraAuthorizationState) {
+    self.state = state
+    self.requestResult = state
+  }
+
+  var client: CameraAuthorizationClient {
+    CameraAuthorizationClient(
+      current: { [weak self] in self?.state ?? .restricted },
+      request: { [weak self] in
+        guard let self else { return .restricted }
+        self.requestCount += 1
+        if self.requestDelay > .zero {
+          try? await Task.sleep(for: self.requestDelay)
+        }
+        self.state = self.requestResult
+        return self.state
+      }
+    )
+  }
+}
+
+@MainActor
+private final class FixtureCameraCaptureSession: CameraCaptureSession {
+  var startError: CameraCaptureSessionError?
+  var startsSuccessfully = true
+  private(set) var startCount = 0
+  private(set) var stopCount = 0
+  private var observationHandler: (@Sendable (CameraFrameObservation) -> Void)?
+  private var lastObservationHandler: (@Sendable (CameraFrameObservation) -> Void)?
+  private var terminationHandler: (@Sendable (CameraCaptureTermination) -> Void)?
+
+  func start(
+    onStarted: @escaping @Sendable (Bool) -> Void,
+    onObservation: @escaping @Sendable (CameraFrameObservation) -> Void,
+    onTermination: @escaping @Sendable (CameraCaptureTermination) -> Void
+  ) throws -> CameraPreviewHandle? {
+    startCount += 1
+    if let startError { throw startError }
+    observationHandler = onObservation
+    lastObservationHandler = onObservation
+    terminationHandler = onTermination
+    onStarted(startsSuccessfully)
+    return nil
+  }
+
+  func stop() {
+    stopCount += 1
+    observationHandler = nil
+    terminationHandler = nil
+  }
+
+  func emit(_ observation: CameraFrameObservation) {
+    observationHandler?(observation)
+  }
+
+  func emitLate(_ observation: CameraFrameObservation) {
+    lastObservationHandler?(observation)
+  }
+
+  func terminate(_ reason: CameraCaptureTermination) {
+    terminationHandler?(reason)
+  }
+}
+
+private func cameraObservation(
+  delivered: UInt64,
+  dropped: UInt64 = 0,
+  time: Double
+) -> CameraFrameObservation {
+  CameraFrameObservation(
+    deliveredFrameCount: delivered,
+    droppedFrameCount: dropped,
+    observationUptimeSeconds: time,
+    width: 1_280,
+    height: 720,
+    analysis: CameraFrameAnalysis(
+      sampledPixelCount: 4_096,
+      meanRelativeLuma: 0.45,
+      minimumRelativeLuma: 0.1,
+      maximumRelativeLuma: 0.8
+    )
+  )!
 }
 
 private actor SlowDashboardProvider: SensorProvider {

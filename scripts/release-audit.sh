@@ -55,7 +55,31 @@ for required_camera_path in \
     || fail "Camera inventory source is missing reviewed path: $required_camera_path"
 done
 
-permission_key_pattern='NSLocation[A-Za-z]*UsageDescription|NSCameraUsageDescription|NSAppleEventsUsageDescription'
+camera_check_source='Sources/MacSensorLab/CameraCheckView.swift'
+camera_analysis_source='Sources/MacSensorLab/CameraFrameAnalysis.swift'
+camera_check_forbidden_pattern='uniqueID|modelID|localizedName|manufacturer|linkedDevices|constituentDevices|userPreferredCamera|systemPreferredCamera|defaultDevice|PhotoOutput|MovieFileOutput|MetadataOutput|AudioDataOutput|AVAssetWriter|AVCaptureMovie|AVCapturePhoto|lockForConfiguration|activeFormat|isInUseByAnotherApplication|isSuspended|CGImageDestination|CIContext|VNDetect|VNRecognize|Vision|URLSession'
+if /usr/bin/grep -Eq "$camera_check_forbidden_pattern" "$camera_check_source"; then
+  fail "Camera Check source contains an identity, recording, recognition, configuration, or upload path"
+fi
+for required_camera_check_path in \
+  'AVCaptureDevice.authorizationStatus(for: .video)' \
+  'AVCaptureDevice.requestAccess(for: .video)' \
+  'AVCaptureDevice.DiscoverySession' \
+  '.builtInWideAngleCamera' \
+  '.external' \
+  'AVCaptureDeviceInput(device:' \
+  'AVCaptureSession()' \
+  'AVCaptureVideoDataOutput()' \
+  'alwaysDiscardsLateVideoFrames = true' \
+  'kCVPixelFormatType_32BGRA' \
+  'defaultMaximumSessionDuration: Duration = .seconds(120)'; do
+  /usr/bin/grep -Fq "$required_camera_check_path" "$camera_check_source" \
+    || fail "Camera Check is missing reviewed path: $required_camera_check_path"
+done
+/usr/bin/grep -Fq 'maximumSampledPixelCount = 4_096' "$camera_analysis_source" \
+  || fail "Camera Check is missing the reviewed raw-frame sample limit"
+
+permission_key_pattern='NSLocation[A-Za-z]*UsageDescription|NSAppleEventsUsageDescription'
 if /usr/bin/plutil -p Resources/Info.plist | /usr/bin/grep -Eq "$permission_key_pattern"; then
   fail "Info.plist declares an unsupported protected permission"
 fi
@@ -65,19 +89,23 @@ microphone_purpose='Mac Sensor Lab uses microphone input only while you run Soun
   || fail "Info.plist must contain the reviewed microphone purpose string"
 [[ "$(/usr/bin/plutil -extract NSCameraUseContinuityCameraDeviceType raw -o - Resources/Info.plist)" == "true" ]] \
   || fail "Info.plist must retain the Continuity Camera classification boundary"
+camera_purpose='Mac Sensor Lab uses camera input only while you run Camera Check. Frames stay in memory for live preview and bounded analysis and are never saved or exported.'
+[[ "$(/usr/bin/plutil -extract NSCameraUsageDescription raw -o - Resources/Info.plist)" == "$camera_purpose" ]] \
+  || fail "Info.plist must contain the reviewed Camera purpose string"
 
 [[ "$(/usr/bin/plutil -extract 'com\.apple\.security\.device\.audio-input' raw -o - Resources/MacSensorLab.entitlements)" == "true" ]] \
   || fail "the Audio Input entitlement must be enabled"
-[[ "$(/usr/bin/plutil -p Resources/MacSensorLab.entitlements | /usr/bin/grep -c '=>')" == "1" ]] \
-  || fail "the app entitlement file must contain only Audio Input"
-if /usr/bin/plutil -p Resources/MacSensorLab.entitlements \
-  | /usr/bin/grep -Fq 'com.apple.security.device.camera'; then
-  fail "Camera Capabilities must not add a Camera entitlement"
-fi
+[[ "$(/usr/bin/plutil -extract 'com\.apple\.security\.device\.camera' raw -o - Resources/MacSensorLab.entitlements)" == "true" ]] \
+  || fail "the Camera entitlement must be enabled"
+[[ "$(/usr/bin/plutil -p Resources/MacSensorLab.entitlements | /usr/bin/grep -c '=>')" == "2" ]] \
+  || fail "the app entitlement file must contain only Audio Input and Camera"
 
 localized_microphone_purpose='Mac Sensor Lab 仅在你主动运行声音输入检查时使用麦克风。音频样本只在内存中即时处理，不会保存或导出。'
 [[ "$(/usr/bin/plutil -extract NSMicrophoneUsageDescription raw -o - Resources/zh-Hans.lproj/InfoPlist.strings)" == "$localized_microphone_purpose" ]] \
   || fail "the Simplified Chinese microphone purpose string is missing or changed"
+localized_camera_purpose='Mac Sensor Lab 仅在你主动运行相机检查时使用摄像头。画面只在内存中用于实时预览和有界分析，不会保存或导出。'
+[[ "$(/usr/bin/plutil -extract NSCameraUsageDescription raw -o - Resources/zh-Hans.lproj/InfoPlist.strings)" == "$localized_camera_purpose" ]] \
+  || fail "the Simplified Chinese Camera purpose string is missing or changed"
 
 /usr/bin/plutil -lint Resources/Info.plist >/dev/null
 /usr/bin/plutil -lint Resources/MacSensorLab.entitlements >/dev/null

@@ -146,6 +146,8 @@
 	<string>环境光强度</string>
 	<key>Ambient light</key>
 	<string>环境光</string>
+	<key>Analyzed observations</key>
+	<string>已分析观测</string>
 	<key>Analyzing PCM buffers in memory.</key>
 	<string>正在内存中分析 PCM 缓冲区。</string>
 	<key>Angular velocity</key>
@@ -330,6 +332,32 @@
 	<string>相机 %lld</string>
 	<key>Camera Capabilities</key>
 	<string>相机能力</string>
+	<key>Camera Check</key>
+	<string>相机检查</string>
+	<key>Camera Check stopped after a capture-session error.</key>
+	<string>采集会话出错后，相机检查已停止。</string>
+	<key>Camera Check stopped after an invalid or unsupported frame.</key>
+	<string>检测到无效或不受支持的帧后，相机检查已停止。</string>
+	<key>Camera Check stopped at the two-minute safety limit.</key>
+	<string>相机检查已在两分钟安全上限处停止。</string>
+	<key>Camera Check stopped because a frame counter exceeded its safety limit.</key>
+	<string>帧计数超过安全上限，相机检查已停止。</string>
+	<key>Camera Check stopped because macOS interrupted the capture session.</key>
+	<string>macOS 中断了采集会话，相机检查已停止。</string>
+	<key>Camera Check stopped because the Continuity Camera classification boundary is missing.</key>
+	<string>缺少 Continuity Camera 分类边界，相机检查已停止。</string>
+	<key>Camera Check stopped because the app is closing.</key>
+	<string>App 正在关闭，相机检查已停止。</string>
+	<key>Camera Check stopped because the selected local camera disconnected.</key>
+	<string>选中的本地相机已断开，相机检查已停止。</string>
+	<key>Camera Check stopped before the Mac went to sleep.</key>
+	<string>Mac 进入睡眠前已停止相机检查。</string>
+	<key>Camera Check stopped; bounded derived values remain until this page is left.</key>
+	<string>相机检查已停止；有界派生值会保留到离开本页。</string>
+	<key>Camera access is denied. Change it in System Settings if desired, then check again.</key>
+	<string>相机访问已被拒绝。如需可在“系统设置”中更改，然后重新检查。</string>
+	<key>Camera access is restricted by the current system policy.</key>
+	<string>当前系统策略限制了相机访问。</string>
 	<key>Camera capabilities are available on this page for this session.</key>
 	<string>相机能力仅在本次会话的此页面可用。</string>
 	<key>Camera capabilities are available with unsupported metadata omitted.</key>
@@ -440,6 +468,8 @@
 	<string>连接速度是系统报告的链路类别，不是最大能力或实测吞吐量。</string>
 	<key>Content security</key>
 	<string>内容安全</string>
+	<key>Continue to Camera Check</key>
+	<string>继续启动相机检查</string>
 	<key>Continue to macOS Permission</key>
 	<string>继续前往 macOS 权限确认</string>
 	<key>Continuity Camera (wired)</key>
@@ -542,6 +572,8 @@
 	<string>已报告默认输出设备</string>
 	<key>Defined by interfaces</key>
 	<string>由接口定义</string>
+	<key>Delivered frames</key>
+	<string>已传递帧</string>
 	<key>Demo data — no hardware is being read</key>
 	<string>演示数据 — 未读取硬件</string>
 	<key>Demo data — not live sensor readings</key>
@@ -790,6 +822,10 @@
 	<string>人机接口设备</string>
 	<key>Idle — camera capabilities have not been read this session.</key>
 	<string>空闲——本次会话尚未读取相机能力。</string>
+	<key>Idle — camera input has not started.</key>
+	<string>空闲——相机输入尚未开始。</string>
+	<key>Idle — demo mode will not access the camera.</key>
+	<string>空闲——演示模式不会访问相机。</string>
 	<key>Idle — demo mode will not access the microphone.</key>
 	<string>空闲——演示模式不会访问麦克风。</string>
 	<key>Idle — microphone input has not started.</key>
@@ -798,6 +834,8 @@
 	<string>空闲 — 本次会话尚未运行附近信道扫描。</string>
 	<key>Idle — the USB tree has not been read this session.</key>
 	<string>空闲——本次会话尚未读取 USB 树。</string>
+	<key>If Camera access is undecided, macOS will ask now. Otherwise the bounded preview starts immediately. Frames remain in memory and are never saved or exported.</key>
+	<string>如果尚未决定相机权限，macOS 现在会发起询问；否则会立即启动有界预览。画面只保留在内存中，绝不保存或导出。</string>
 	<key>Image</key>
 	<string>图像</string>
 	<key>Import Ambient-Light Calibration</key>
@@ -1058,6 +1096,8 @@
 	<string>不读取序列号、名称、位置、注册表路径或描述符，不打开设备，不持久化，不进入历史、诊断值或导出。</string>
 	<key>No sudo, driver-property writes, or permission bypass was attempted.</key>
 	<string>未尝试 sudo、写入驱动属性或绕过权限。</string>
+	<key>No supported local built-in or external camera was available.</key>
+	<string>没有可用的受支持本机内置或外接相机。</string>
 	<key>No supported local camera was discovered.</key>
 	<string>未发现受支持的本地相机。</string>
 	<key>No valid capability rows were reported.</key>
@@ -1098,8 +1138,12 @@
 	<string>已观察 PCM 帧</string>
 	<key>Observed buffers</key>
 	<string>已观察缓冲区</string>
+	<key>Observed delivery rate</key>
+	<string>观测传递帧率</string>
 	<key>Observed drain</key>
 	<string>观察到的耗电速率</string>
+	<key>Observed frame size</key>
+	<string>观测帧尺寸</string>
 	<key>Observed on multiple models</key>
 	<string>已在多款机型观察</string>
 	<key>Observed on one model</key>
@@ -1146,6 +1190,8 @@
 	<string>这次读取完成前，其他传感器仍会继续更新。</string>
 	<key>Output-capable audio devices</key>
 	<string>支持输出的音频设备</string>
+	<key>Output-dropped frames</key>
+	<string>输出丢弃帧</string>
 	<key>Overview</key>
 	<string>概览</string>
 	<key>P3 D65</key>
@@ -1206,6 +1252,8 @@
 	<string>像素与点尺寸来自当前显示模式，缩放倍率为派生值；有意省略持久显示器标识符。</string>
 	<key>Pixel and point dimensions describe the current display mode; scale is derived.</key>
 	<string>像素与点尺寸描述当前显示模式；缩放倍率为派生值。</string>
+	<key>Pixels sampled per analysis</key>
+	<string>每次分析采样像素</string>
 	<key>Position</key>
 	<string>方位</string>
 	<key>Position in observed raw range</key>
@@ -1232,6 +1280,8 @@
 	<string>压力实验需要本机实时输入，因此在演示模式下不可用。</string>
 	<key>Pressure is normalized from 0 to 1 within each stage. It is not force, weight, grams, or a calibrated physical measurement.</key>
 	<string>压力值在每个阶段内归一化为 0 到 1。它不是力、重量、克数或经过校准的物理测量。</string>
+	<key>Previewing and reducing frames in memory.</key>
+	<string>正在内存中预览并归约画面帧。</string>
 	<key>Primary GPU</key>
 	<string>主 GPU</string>
 	<key>Printer</key>
@@ -1290,6 +1340,8 @@
 	<string>速率需要两次采样；首次读取或活动接口数量变化时会建立基线。</string>
 	<key>Raw</key>
 	<string>原始</string>
+	<key>Raw BGRA frames are sampled only inside the capture callback and immediately reduced to at most 4,096 relative-luma samples. No frame, recording, photo, audio, device identity, persistence, snapshot, diagnostics value, or export.</key>
+	<string>原始 BGRA 帧只在采集回调内采样，并立即归约为最多 4,096 个相对亮度样本。不保留帧、录像、照片、音频或设备身份，不持久化，也不进入快照、诊断值或导出。</string>
 	<key>Raw PCM is inspected only inside the audio callback and immediately reduced to bounded derived values. No samples, recordings, device identity, persistence, snapshot, diagnostics values, or export.</key>
 	<string>原始 PCM 只在音频回调内检查，并立即归约为有界派生值。不保留样本、录音或设备身份，不持久化，也不进入快照、诊断值或导出。</string>
 	<key>Raw Sensors</key>
@@ -1364,6 +1416,8 @@
 	<string>相对变化由原始上盖角度派生，不会更改传感器。</string>
 	<key>Relative channel balance</key>
 	<string>相对通道比例</string>
+	<key>Relative luma is an uncalibrated digital image statistic, not lux, exposure, ambient brightness, display brightness, or camera quality. The session stops after two minutes at most.</key>
+	<string>相对亮度是未经校准的数字图像统计，不是 lux、曝光、环境亮度、显示器亮度或相机质量。会话最长两分钟后停止。</string>
 	<key>Relative magnitude dB</key>
 	<string>相对幅度 dB</string>
 	<key>Reliability degraded warning</key>
@@ -1406,10 +1460,14 @@
 	<string>保留样本数</string>
 	<key>Review Raw Sensors</key>
 	<string>查看原始传感器</string>
+	<key>Review the camera privacy explanation before continuing.</key>
+	<string>继续前请查看相机隐私说明。</string>
 	<key>Review the privacy explanation before continuing.</key>
 	<string>继续前请查看隐私说明。</string>
 	<key>Roll %@°</key>
 	<string>横滚 %@°</string>
+	<key>Run Demo Camera Check</key>
+	<string>运行演示相机检查</string>
 	<key>Run Demo Scan</key>
 	<string>运行演示扫描</string>
 	<key>Run Demo Sound Input</key>
@@ -1438,6 +1496,10 @@
 	<string>检测到 SPU 接口，但无法打开</string>
 	<key>Safety</key>
 	<string>安全</string>
+	<key>Sampled luma span</key>
+	<string>采样亮度跨度</string>
+	<key>Sampled relative luma</key>
+	<string>采样相对亮度</string>
 	<key>Sampling</key>
 	<string>采样</string>
 	<key>Sampling &amp; recording</key>
@@ -1536,6 +1598,10 @@
 	<string>阶段过渡量</string>
 	<key>Standard lid-angle HID interface not found</key>
 	<string>未找到标准上盖角度 HID 接口</string>
+	<key>Start Camera Check</key>
+	<string>开始相机检查</string>
+	<key>Start Camera Check with local video input?</key>
+	<string>要使用本地视频输入启动相机检查吗？</string>
 	<key>Start Continuous CSV Recording…</key>
 	<string>开始连续 CSV 记录…</string>
 	<key>Start Continuous Sensor Recording</key>
@@ -1552,12 +1618,18 @@
 	<string>已开始记录 %@</string>
 	<key>Starting the bounded audio input session…</key>
 	<string>正在启动有界的音频输入会话…</string>
+	<key>Starting the bounded camera session…</key>
+	<string>正在启动有界的相机会话…</string>
+	<key>Starts a bounded local-camera preview only after a two-step action and derives relative digital luma and observed frame delivery in memory.</key>
+	<string>只有经过两步操作才会启动有界的本地相机预览，并在内存中派生相对数字亮度与观测帧传递情况。</string>
 	<key>Starts a bounded microphone session only after an explicit action and derives a waveform envelope, RMS, peak, dBFS, and a relative frequency spectrum in memory.</key>
 	<string>仅在明确操作后启动有界的麦克风会话，并在内存中派生波形包络、RMS、峰值、dBFS 和相对频谱。</string>
 	<key>State changes</key>
 	<string>状态变化</string>
 	<key>Status changes this launch</key>
 	<string>本次启动的状态变化</string>
+	<key>Stop Camera Check</key>
+	<string>停止相机检查</string>
 	<key>Stop Continuous Recording</key>
 	<string>停止连续记录</string>
 	<key>Stop Pressure Capture</key>
@@ -1602,6 +1674,8 @@
 	<string>Swap 已加密</string>
 	<key>Synthetic demo data; not a hardware reading.</key>
 	<string>合成演示数据；并非硬件读数。</string>
+	<key>Synthetic demo frame — no camera access</key>
+	<string>合成演示画面——未访问相机</string>
 	<key>System</key>
 	<string>系统</string>
 	<key>System Hardware</key>
@@ -1638,6 +1712,8 @@
 	<string>本 App 不会请求 sudo 或更改 HID 驱动属性。</string>
 	<key>The App will not request sudo or attempt a privileged helper in this build.</key>
 	<string>此构建不会请求 sudo，也不会尝试特权 Helper。</string>
+	<key>The Camera permission request did not produce an authorized state.</key>
+	<string>相机权限请求未得到已授权状态。</string>
 	<key>The USB registry read failed without exposing system error text.</key>
 	<string>USB 注册表读取失败，未回显系统错误文本。</string>
 	<key>The USB topology changed or was invalid while being read.</key>
@@ -1670,6 +1746,10 @@
 	<string>这台 Mac 不提供上盖角度传感器</string>
 	<key>The lid-angle sensor is temporarily busy</key>
 	<string>上盖角度传感器暂时繁忙</string>
+	<key>The local camera session could not be configured.</key>
+	<string>无法配置本地相机会话。</string>
+	<key>The local camera session could not start.</key>
+	<string>无法启动本地相机会话。</string>
 	<key>The microphone permission request did not produce a decision.</key>
 	<string>麦克风权限请求未产生明确结果。</string>
 	<key>The registry read may still be finishing.</key>
@@ -1860,10 +1940,14 @@
 	<string>WPA3 个人级</string>
 	<key>WPA3 transition</key>
 	<string>WPA3 过渡</string>
+	<key>Waiting for another observation</key>
+	<string>等待下一次观测</string>
 	<key>Waiting for at least five minutes and a measurable charge drop.</key>
 	<string>正在等待至少五分钟和可测量的电量下降。</string>
 	<key>Waiting for pressure events inside the interaction area.</key>
 	<string>正在等待交互区域内的压力事件。</string>
+	<key>Waiting for the macOS Camera decision…</key>
+	<string>正在等待 macOS 的相机权限决定…</string>
 	<key>Waiting for the macOS microphone decision…</key>
 	<string>正在等待 macOS 的麦克风权限决定…</string>
 	<key>Waiting for the system Wi-Fi scan…</key>

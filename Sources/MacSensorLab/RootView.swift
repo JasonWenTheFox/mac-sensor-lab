@@ -8,6 +8,7 @@ struct RootView: View {
   @StateObject private var pressureLabModel = PressureLabModel()
   @StateObject private var wifiChannelScanModel: WiFiChannelScanModel
   @StateObject private var microphoneInputModel: MicrophoneInputModel
+  @StateObject private var cameraCheckModel: CameraCheckModel
   @StateObject private var usbInventoryModel: USBInventoryModel
   @StateObject private var cameraInventoryModel: CameraInventoryModel
 
@@ -18,6 +19,9 @@ struct RootView: View {
     )
     _microphoneInputModel = StateObject(
       wrappedValue: MicrophoneInputModel(isDemoMode: model.isDemoMode)
+    )
+    _cameraCheckModel = StateObject(
+      wrappedValue: CameraCheckModel(isDemoMode: model.isDemoMode)
     )
     _usbInventoryModel = StateObject(
       wrappedValue: USBInventoryModel(isDemoMode: model.isDemoMode)
@@ -78,6 +82,7 @@ struct RootView: View {
               pressureLabModel: pressureLabModel,
               wifiChannelScanModel: wifiChannelScanModel,
               microphoneInputModel: microphoneInputModel,
+              cameraCheckModel: cameraCheckModel,
               onSetAmbientCalibration: model.setAmbientLuxCalibration,
               onUndoAmbientCalibrationPoint: model.undoLastAmbientLuxCalibrationPoint,
               onClearAmbientCalibration: model.clearAmbientLuxCalibration,
@@ -666,6 +671,7 @@ private struct ExperimentsView: View {
   @ObservedObject var pressureLabModel: PressureLabModel
   @ObservedObject var wifiChannelScanModel: WiFiChannelScanModel
   @ObservedObject var microphoneInputModel: MicrophoneInputModel
+  @ObservedObject var cameraCheckModel: CameraCheckModel
   let onSetAmbientCalibration: (Double, Double) -> Void
   let onUndoAmbientCalibrationPoint: () -> Void
   let onClearAmbientCalibration: () -> Void
@@ -784,6 +790,9 @@ private struct ExperimentsView: View {
       .padding(.top, 16)
 
       MicrophoneInputPanel(model: microphoneInputModel)
+        .padding(.top, 16)
+
+      CameraCheckPanel(model: cameraCheckModel)
         .padding(.top, 16)
 
       LazyVGrid(columns: [GridItem(.adaptive(minimum: 280), spacing: 16)], spacing: 16) {

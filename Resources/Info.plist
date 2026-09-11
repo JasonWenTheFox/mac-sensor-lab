@@ -30,6 +30,8 @@
 	<true/>
 	<key>NSCameraUseContinuityCameraDeviceType</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Mac Sensor Lab uses camera input only while you run Camera Check. Frames stay in memory for live preview and bounded analysis and are never saved or exported.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2026 Mac Sensor Lab contributors. MIT licensed.</string>
 	<key>NSMicrophoneUsageDescription</key>
